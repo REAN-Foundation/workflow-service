@@ -1,0 +1,112 @@
+[
+    {
+        "Role": "Admin",
+        "Privileges": [
+            "User.GetRoleTypes",
+            "User.Create",
+            "User.GetById",
+            "User.Search",
+            "User.Update",
+            "User.Delete",
+            "User.LoginWithPassword",
+            "User.ResetPassword",
+            "User.LoginWithOtp",
+            "User.SendOtp",
+            "User.Logout",
+
+            "FileResource.Upload",
+            "FileResource.GetById",
+            "FileResource.Search",
+            "FileResource.Download",
+            "FileResource.DownloadByVersion",
+
+            "Client.Create",
+            "Client.Search",
+            "Client.GetById",
+            "Client.Update",
+            "Client.Delete",
+            "Client.GetApiKey",
+            "Client.RenewApiKey",
+
+            "Badge.GetStockBadgeImages"
+        ]
+    },
+    {
+        "Role": "ContentModerator",
+        "Privileges": [
+            "User.Create",
+            "User.GetById",
+            "User.Search",
+            "User.Update",
+            "User.Delete",
+            "User.LoginWithPassword",
+            "User.ResetPassword",
+            "User.LoginWithOtp",
+            "User.SendOtp",
+            "User.Logout",
+
+            "FileResource.Upload",
+            "FileResource.GetById",
+            "FileResource.Search",
+            "FileResource.Download",
+            "FileResource.DownloadByVersion",
+
+            "Participant.Create",
+            "Participant.Search",
+            "Participant.GetById",
+            "Participant.Update",
+            "Participant.Delete",
+
+            "Schema.Create",
+            "Schema.Search",
+            "Schema.GetById",
+            "Schema.Update",
+            "Schema.Delete",
+
+            "IncomingEventType.Create",
+            "IncomingEventType.Search",
+            "IncomingEventType.GetById",
+            "IncomingEventType.Update",
+            "IncomingEventType.Delete",
+
+            "IncomingEvent.Create",
+            "IncomingEvent.Search",
+            "IncomingEvent.GetById",
+
+            "Condition.Create",
+            "Condition.Search",
+            "Condition.GetById",
+            "Condition.Update",
+            "Condition.Delete",
+
+            "Node.Create",
+            "Node.Search",
+            "Node.GetById",
+            "Node.Update",
+            "Node.Delete",
+
+            "Rule.Create",
+            "Rule.Search",
+            "Rule.GetById",
+            "Rule.Update",
+            "Rule.Delete",
+
+            "SchemaInstance.Create",
+            "SchemaInstance.Search",
+            "SchemaInstance.GetById",
+            "SchemaInstance.Update",
+            "SchemaInstance.Delete",
+
+            "Redemption.Create",
+            "Redemption.Search",
+            "Redemption.GetById",
+            "Redemption.Update",
+            "Redemption.Delete",
+
+            "Types.GetEventActionTypes",
+            "Types.GetRoles",
+
+            "Badge.GetStockBadgeImages"
+        ]
+    }
+]

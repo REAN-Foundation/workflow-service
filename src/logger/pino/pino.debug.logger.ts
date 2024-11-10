@@ -12,27 +12,28 @@ export class PinoDebugLogger extends AbstrctPinoLogger {
         super();
 
         this._logger = pino({
-            level     : 'debug',
-            transport : {
-                target : 'pino-pretty',
+            level: 'debug',
+            transport: {
+                target: 'pino-pretty',
                 //target : this._logFile
             },
-            // formatters : {
-            //     level : (label) => {
-            //         return { level: label };
-            //     },
-            // },
-            options : {
-                append          : true,
-                colorizeObjects : true,
-                colorize        : true,
-                //translateTime   : false,
-                //timestampKey    : 'time',
-                ignore          : 'pid',
-            }
-        }
-        //, pino.destination(this._logFile) // Another way to specify logfile
-        );
+            formatters: {
+                level: (label) => {
+                    return { level: label };
+                },
+            },
+            timestamp: pino.stdTimeFunctions.isoTime,
+            serializers: {
+                req: pino.stdSerializers.req,
+                res: pino.stdSerializers.res,
+                err: pino.stdSerializers.err,
+            },
+            safe: true,
+            customLevels: {
+                log: 35,
+            },
+            name: 'workflow-service',
+        });
     }
 
     info = (str: string) => {

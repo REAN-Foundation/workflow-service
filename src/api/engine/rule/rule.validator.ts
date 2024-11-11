@@ -4,20 +4,20 @@ import { RuleCreateModel, RuleUpdateModel, RuleSearchFilters } from '../../../do
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
 import { EventActionType } from '../../../domain.types/engine/engine.types';
-import { 
-    ActionInputParamsObj_Create, 
-    ActionInputParamsObj_Update, 
-    ActionOutputParamsObj_Create, 
-    ActionOutputParamsObj_Update, 
-    ContinuityInputParamsObj_Create, 
-    ContinuityInputParamsObj_Update, 
-    DataExtractionInputParamsObj_Create, 
-    DataExtractionInputParamsObj_Update, 
-    DataStorageInputParamsObj_Create, 
-    DataStorageInputParamsObj_Update, 
-    RangeComparisonInputParamsObj_Create, 
-    RangeComparisonInputParamsObj_Update, 
-    ValueComparisonInputParamsObj_Create, 
+import {
+    ActionInputParamsObj_Create,
+    ActionInputParamsObj_Update,
+    ActionOutputParamsObj_Create,
+    ActionOutputParamsObj_Update,
+    ContinuityInputParamsObj_Create,
+    ContinuityInputParamsObj_Update,
+    DataExtractionInputParamsObj_Create,
+    DataExtractionInputParamsObj_Update,
+    DataStorageInputParamsObj_Create,
+    DataStorageInputParamsObj_Update,
+    RangeComparisonInputParamsObj_Create,
+    RangeComparisonInputParamsObj_Update,
+    ValueComparisonInputParamsObj_Create,
     ValueComparisonInputParamsObj_Update } from '../common.validations';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,8 +43,8 @@ export class RuleValidator extends BaseValidator {
                         DataStorageInputParamsObj_Create,
                         RangeComparisonInputParamsObj_Create,
                         ValueComparisonInputParamsObj_Create).optional(),
-                    OutputParams: joi.alternatives().try(ActionOutputParamsObj_Create).optional(),
-            }
+                    OutputParams : joi.alternatives().try(ActionOutputParamsObj_Create).optional(),
+                }
             });
             await rule.validateAsync(request.body);
             return {
@@ -53,10 +53,10 @@ export class RuleValidator extends BaseValidator {
                 ParentNodeId : request.body.ParentNodeId,
                 SchemaId     : request.body.SchemaId,
                 Action       : {
-                    ActionType  : request.body.Action.ActionType,
-                    Name        : request.body.Action.Name,
-                    Description : request.body.Action.Description ?? null,
-                    InputParams : request.body.Action.InputParams ?? null,
+                    ActionType   : request.body.Action.ActionType,
+                    Name         : request.body.Action.Name,
+                    Description  : request.body.Action.Description ?? null,
+                    InputParams  : request.body.Action.InputParams ?? null,
                     OutputParams : request.body.Action.OutputParams ?? null,
                 },
             };
@@ -83,7 +83,7 @@ export class RuleValidator extends BaseValidator {
                         DataStorageInputParamsObj_Update,
                         RangeComparisonInputParamsObj_Update,
                         ValueComparisonInputParamsObj_Update).optional(),
-                    OutputParams: joi.alternatives().try(ActionOutputParamsObj_Update).optional(),
+                    OutputParams : joi.alternatives().try(ActionOutputParamsObj_Update).optional(),
                 }
             });
             await rule.validateAsync(request.body);
@@ -97,11 +97,11 @@ export class RuleValidator extends BaseValidator {
                     Description : request.body.Action.Description ?? null,
                     ActionType  : request.body.Action.ActionType ?? null,
                     InputParams : request.body.Action &&
-                                  request.body.Action?.InputParams ? 
-                                  request.body.Action?.InputParams : null,
-                    OutputParams: request.body.Action &&
-                                  request.body.Action?.OutputParams ? 
-                                  request.body.Action?.OutputParams : null,
+                                  request.body.Action?.InputParams ?
+                        request.body.Action?.InputParams : null,
+                    OutputParams : request.body.Action &&
+                                  request.body.Action?.OutputParams ?
+                        request.body.Action?.OutputParams : null,
                 } : null,
             };
         } catch (error) {

@@ -16,7 +16,6 @@ export class IncomingEventTypeController {
 
     _validator: IncomingEventTypeValidator = new IncomingEventTypeValidator();
 
-
     //#endregion
 
     create = async (request: express.Request, response: express.Response) => {

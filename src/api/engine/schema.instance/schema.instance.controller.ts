@@ -16,7 +16,6 @@ export class SchemaInstanceController {
 
     _validator: SchemaInstanceValidator = new SchemaInstanceValidator();
 
-
     //#endregion
 
     create = async (request: express.Request, response: express.Response) => {

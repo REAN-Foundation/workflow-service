@@ -128,3 +128,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+seed.data/default.users.seed.json
+seed.data/internal.clients.seed.json

@@ -4,13 +4,13 @@ import { SchemaCreateModel, SchemaUpdateModel, SchemaSearchFilters } from '../..
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
 import { EventActionType, NodeType, SchemaType } from '../../../domain.types/engine/engine.types';
-import { 
-    ActionInputParamsObj_Create, 
-    ActionOutputParamsObj_Create, 
-    ContinuityInputParamsObj_Create, 
-    DataExtractionInputParamsObj_Create, 
-    DataStorageInputParamsObj_Create, 
-    RangeComparisonInputParamsObj_Create, 
+import {
+    ActionInputParamsObj_Create,
+    ActionOutputParamsObj_Create,
+    ContinuityInputParamsObj_Create,
+    DataExtractionInputParamsObj_Create,
+    DataStorageInputParamsObj_Create,
+    RangeComparisonInputParamsObj_Create,
     ValueComparisonInputParamsObj_Create } from '../common.validations';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ export class SchemaValidator extends BaseValidator {
                     Type        : joi.string().valid(...Object.values(NodeType)).required(),
                     Name        : joi.string().max(32).required(),
                     Description : joi.string().max(256).optional(),
-                    Action   : {
+                    Action      : {
                         ActionType  : joi.string().valid(...Object.values(EventActionType)).required(),
                         Name        : joi.string().max(32).required(),
                         Description : joi.string().max(256).optional(),
@@ -43,7 +43,7 @@ export class SchemaValidator extends BaseValidator {
                             DataStorageInputParamsObj_Create,
                             RangeComparisonInputParamsObj_Create,
                             ValueComparisonInputParamsObj_Create).optional(),
-                        OutputParams: joi.alternatives().try(ActionOutputParamsObj_Create).optional(),
+                        OutputParams : joi.alternatives().try(ActionOutputParamsObj_Create).optional(),
                     }
                 }).optional()
             });
@@ -57,15 +57,15 @@ export class SchemaValidator extends BaseValidator {
             // }
 
             return {
-                ClientId    : request.body.ClientId,
-                Name        : request.body.Name,
-                Description : request.body.Description ?? null,
-                Type        : request.body.Type,
-                ValidFrom   : request.body.ValidFrom ?? new Date(),
-                ValidTill   : request.body.ValidTill ?? null,
-                IsValid     : request.body.IsValid ?? true,
-                EventTypeIds: request.body.EventTypeIds ?? [],
-                RootNode    : node ?? null,
+                ClientId     : request.body.ClientId,
+                Name         : request.body.Name,
+                Description  : request.body.Description ?? null,
+                Type         : request.body.Type,
+                ValidFrom    : request.body.ValidFrom ?? new Date(),
+                ValidTill    : request.body.ValidTill ?? null,
+                IsValid      : request.body.IsValid ?? true,
+                EventTypeIds : request.body.EventTypeIds ?? [],
+                RootNode     : node ?? null,
             };
 
         } catch (error) {
@@ -130,7 +130,7 @@ export class SchemaValidator extends BaseValidator {
         if (clientId != null) {
             filters['ClientId'] = clientId;
         }
-        
+
         return filters;
     };
 

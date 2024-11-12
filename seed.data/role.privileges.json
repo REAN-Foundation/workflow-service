@@ -63,15 +63,15 @@
             "Schema.Update",
             "Schema.Delete",
 
-            "IncomingEventType.Create",
-            "IncomingEventType.Search",
-            "IncomingEventType.GetById",
-            "IncomingEventType.Update",
-            "IncomingEventType.Delete",
+            "EventType.Create",
+            "EventType.Search",
+            "EventType.GetById",
+            "EventType.Update",
+            "EventType.Delete",
 
-            "IncomingEvent.Create",
-            "IncomingEvent.Search",
-            "IncomingEvent.GetById",
+            "Event.Create",
+            "Event.Search",
+            "Event.GetById",
 
             "Condition.Create",
             "Condition.Search",

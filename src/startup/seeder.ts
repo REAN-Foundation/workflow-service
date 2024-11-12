@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import { logger } from "../logger/logger";
 import * as RolePrivilegesList from '../../seed.data/role.privileges.json';
-import * as howToEarnBadgeContent from '../../seed.data/how.to.earn.badge.content.seed.json';
 import { UserService } from '../database/services/user/user.service';
 import { UserCreateModel } from "../domain.types/user/user.domain.types";
 import { Gender } from "../domain.types/miscellaneous/system.types";
@@ -16,13 +15,12 @@ import { StringUtils } from "../common/utilities/string.utils";
 import { BadgeStockImageDomainModel } from "../domain.types/badge.stock.image/badge.stock.image.domain.model";
 import { BadgeStockImageService } from "../database/services/badge.stock.images/badge.stock.image.service";
 import { ClientService } from "../database/services/client/client.service";
-import { BadgeService } from "../database/services/awards/badge.service";
-import { BadgeUpdateModel } from "../domain.types/awards/badge.domain.types";
 import { Injector } from "./injector";
 
 //////////////////////////////////////////////////////////////////////////////
 
 export class Seeder {
+
     public static seed = async (): Promise<void> => {
         try {
             await createTempFolders();
@@ -31,11 +29,11 @@ export class Seeder {
             await seedRolePrivileges();
             await seedDefaultUsers();
             await seedBadgeStockImages();
-            await seedHowToEarnBadgeContent();
         } catch (error) {
             logger.error(error.message);
         }
     };
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -64,7 +62,7 @@ const seedRolePrivileges = async () => {
                 var privilegeDto = await privilegeService.getByPrivilegeName(privilege);
                 if (!privilegeDto) {
                     privilegeDto = await privilegeService.create({
-                        Name: privilege,
+                        Name : privilege,
                     });
                 }
                 await privilegeService.addToRole(privilegeDto.id, role.id);
@@ -99,18 +97,18 @@ const seedDefaultUsers = async () => {
         }
 
         const createModel: UserCreateModel = {
-            ClientId: internalClientId,
-            Phone: u.Phone,
-            FirstName: u.FirstName,
-            LastName: u.LastName,
-            UserName: u.UserName,
-            Password: u.Password,
-            RoleId: role.id,
-            CountryCode: u.CountryCode,
-            Email: u.Email,
-            Gender: Gender.Male,
-            BirthDate: null,
-            Prefix: '',
+            ClientId    : internalClientId,
+            Phone       : u.Phone,
+            FirstName   : u.FirstName,
+            LastName    : u.LastName,
+            UserName    : u.UserName,
+            Password    : u.Password,
+            RoleId      : role.id,
+            CountryCode : u.CountryCode,
+            Email       : u.Email,
+            Gender      : Gender.Male,
+            BirthDate   : null,
+            Prefix      : '',
         };
 
         createModel.Password = StringUtils.generateHashedPassword(u.Password);
@@ -133,16 +131,16 @@ const seedInternalClients = async () => {
         let client = await clientService.getByClientCode(c.Code);
         if (client == null) {
             const model = {
-                Name: c['Name'],
-                Code: c['Code'],
-                IsPrivileged: c['IsPrivileged'],
-                CountryCode: '+91',
-                Phone: '1000000000',
-                Email: c['Email'],
-                Password: c['Password'],
-                ValidFrom: new Date(),
-                ValidTill: new Date(2030, 12, 31),
-                ApiKey: c['ApiKey'],
+                Name         : c['Name'],
+                Code         : c['Code'],
+                IsPrivileged : c['IsPrivileged'],
+                CountryCode  : '+91',
+                Phone        : '1000000000',
+                Email        : c['Email'],
+                Password     : c['Password'],
+                ValidFrom    : new Date(),
+                ValidTill    : new Date(2030, 12, 31),
+                ApiKey       : c['ApiKey'],
             };
             client = await clientService.create(model);
             logger.info(JSON.stringify(client, null, 2));
@@ -156,12 +154,12 @@ const seedDefaultRoles = async () => {
     const roleService: RoleService = new RoleService();
     const defaultRoles = [
         {
-            Name: 'Admin',
-            Description: 'Administrator of the Awards service',
+            Name        : 'Admin',
+            Description : 'Administrator of the Awards service',
         },
         {
-            Name: 'ContentModerator',
-            Description: 'The content moderator representing a particular client.',
+            Name        : 'ContentModerator',
+            Description : 'The content moderator representing a particular client.',
         },
     ];
     for await (var role of defaultRoles) {
@@ -204,40 +202,15 @@ const seedBadgeStockImages = async () => {
         }
 
         var domainModel: BadgeStockImageDomainModel = {
-            Code: fileName.replace('.png', ''),
-            FileName: fileName,
-            ResourceId: uploaded.id,
-            PublicUrl: uploaded.DefaultVersion.Url,
+            Code       : fileName.replace('.png', ''),
+            FileName   : fileName,
+            ResourceId : uploaded.id,
+            PublicUrl  : uploaded.DefaultVersion.Url,
         };
 
         var badgeStockImage = await badgeStockImageService.create(domainModel);
         if (!badgeStockImage) {
             logger.info('Error occurred while seeding badge stock images!');
-        }
-    }
-};
-
-const seedHowToEarnBadgeContent = async () => {
-    const badgeService: BadgeService = new BadgeService();
-    logger.info('Seeding how to earn content for badges...');
-    const arr = howToEarnBadgeContent['default'];
-    //console.log(JSON.stringify(arr, null, 2));
-    for (let i = 0; i < arr.length; i++) {
-        const filters = {
-            Name: arr[i]['Name'],
-        };
-        const existingRecord = await badgeService.search(filters);
-        //console.log(JSON.stringify(existingRecord, null, 2));
-        if (existingRecord.Items.length > 0) {
-            const entity = existingRecord.Items[0];
-            const model: BadgeUpdateModel = {
-                HowToEarn: arr[i]['HowToEarn'],
-                ClientId: entity.Client.id,
-                CategoryId: entity.Category.id,
-            };
-            var record = await badgeService.update(entity.id, model);
-            var str = JSON.stringify(record, null, '  ');
-            logger.info(str);
         }
     }
 };

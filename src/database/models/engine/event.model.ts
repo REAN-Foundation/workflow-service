@@ -7,23 +7,21 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     ManyToOne,
-    JoinColumn,
 } from 'typeorm';
-import { IncomingEventType } from "./incoming.event.type.model";
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
 import { Context } from "./context.model";
+import { EventType } from "../../../domain.types/enums/event.type";
 
 ////////////////////////////////////////////////////////////////////////
 
-@Entity({ name: 'incoming_events' })
-export class IncomingEvent {
+@Entity({ name: 'events' })
+export class Event {
 
     @PrimaryGeneratedColumn('uuid')
     id : string;
 
-    @ManyToOne(() => IncomingEventType)
-    @JoinColumn()
-    EventType: IncomingEventType;
+    @Column({ type: 'enum', enum: EventType, nullable: false })
+    EventType: EventType;
 
     @ManyToOne(() => Context)
     Context: Context;

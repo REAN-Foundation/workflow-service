@@ -2,19 +2,18 @@ import express from 'express';
 import { ResponseHandler } from '../../common/handlers/response.handler';
 import { ErrorHandler } from '../../common/handlers/error.handler';
 import { RoleService } from '../../database/services/user/role.service';
-import { 
-    CompositionOperatorList, 
-    ConditionOperandDataTypeList, 
-    ContextTypeList, 
-    DataActionTypeList, 
-    EventActionTypeList, 
-    ExecutionStatusList, 
-    InputSourceTypeList, 
-    LogicalOperatorList, 
-    MathematicalOperatorList, 
-    OperatorList, 
+import {
+    CompositionOperatorList,
+    ConditionOperandDataTypeList,
+    ContextTypeList,
+    DataActionTypeList,
+    EventActionTypeList,
+    ExecutionStatusList,
+    InputSourceTypeList,
+    LogicalOperatorList,
+    MathematicalOperatorList,
+    OperatorList,
     OutputSourceTypeList } from '../../domain.types/engine/engine.types';
-import { IncomingEventTypeService } from '../../database/services/engine/incoming.event.type.service';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -24,11 +23,8 @@ export class TypesController {
 
     _roleService: RoleService = null;
 
-    _eventTypeService: IncomingEventTypeService = null;
-
     constructor() {
         this._roleService = new RoleService();
-        this._eventTypeService = new IncomingEventTypeService();
     }
 
     //#endregion
@@ -41,17 +37,6 @@ export class TypesController {
             if (types === null || types.length === 0) {
                 ErrorHandler.throwInternalServerError(`Unable to retrieve user role types!`);
             }
-            ResponseHandler.success(request, response, 'User role types retrieved successfully!', 200, {
-                Types : types,
-            });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
-
-    getEventTypes = async (request: express.Request, response: express.Response): Promise<void> => {
-        try {
-            const types = await this._eventTypeService.getAll();
             ResponseHandler.success(request, response, 'User role types retrieved successfully!', 200, {
                 Types : types,
             });
@@ -140,7 +125,6 @@ export class TypesController {
         }
     };
 
-    
     getDataActionTypes = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             ResponseHandler.success(request, response, 'Data action types retrieved successfully!', 200, {
@@ -151,7 +135,6 @@ export class TypesController {
         }
     };
 
-    
     getInputSourceTypes = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             ResponseHandler.success(request, response, 'Input source types retrieved successfully!', 200, {
@@ -162,7 +145,6 @@ export class TypesController {
         }
     };
 
-    
     getOutputSourceTypes = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             ResponseHandler.success(request, response, 'Output source types retrieved successfully!', 200, {

@@ -2,13 +2,13 @@ import { SchemaInstance } from '../../models/engine/schema.instance.model';
 import {
     SchemaInstanceResponseDto
 } from '../../../domain.types/engine/schema.instance.types';
-import { IncomingEventType } from '../../models/engine/incoming.event.type.model';
+import { EventType } from '../../../domain.types/enums/event.type';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class SchemaInstanceMapper {
 
-    static toResponseDto = (instance: SchemaInstance, eventTypes?: IncomingEventType[]): SchemaInstanceResponseDto => {
+    static toResponseDto = (instance: SchemaInstance, eventTypes?: EventType[]): SchemaInstanceResponseDto => {
         if (instance == null) {
             return null;
         }
@@ -22,13 +22,7 @@ export class SchemaInstanceMapper {
                     id   : instance.Schema.Client.id,
                     Name : instance.Schema.Client.Name,
                 } : null,
-                EventTypes : eventTypes? eventTypes.map(x => {
-                    return {
-                        id: x.id,
-                        Name: x.Name,
-                        Description: x.Description
-                    }
-                }): [],
+                EventTypes : eventTypes ?? [],
             },
             Context : {
                 id          : instance.Context.id,
@@ -67,7 +61,7 @@ export class SchemaInstanceMapper {
                     Node : x.Node ? {
                         id   : x.Node.id,
                         Name : x.Node.Name,
-                    }: null
+                    } : null
                 };
             }) : [],
             CreatedAt : instance.CreatedAt,

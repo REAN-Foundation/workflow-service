@@ -1,66 +1,63 @@
-import { IncomingEvent } from '../../models/engine/incoming.event.model';
+import { Event } from '../../models/engine/event.model';
 import { Context } from '../../models/engine/context.model';
-import { IncomingEventType } from '../../models/engine/incoming.event.type.model';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { Source } from '../../../database/database.connector';
+import { Source } from '../../database.connector';
 import { FindManyOptions, Repository } from 'typeorm';
-import { IncomingEventMapper } from '../../mappers/engine/incoming.event.mapper';
+import { EventMapper } from '../../mappers/engine/event.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import {
-    IncomingEventCreateModel,
-    IncomingEventResponseDto,
-    IncomingEventSearchFilters,
-    IncomingEventSearchResults
-} from '../../../domain.types/engine/incoming.event.types';
+    EventCreateModel,
+    EventResponseDto,
+    EventSearchFilters,
+    EventSearchResults
+} from '../../../domain.types/engine/event.types';
 
 ///////////////////////////////////////////////////////////////////////
 
-export class IncomingEventService extends BaseService {
+export class EventService extends BaseService {
 
     //#region Repositories
 
-    _eventRepository: Repository<IncomingEvent> = Source.getRepository(IncomingEvent);
+    _eventRepository: Repository<Event> = Source.getRepository(Event);
 
     _contextRepository: Repository<Context> = Source.getRepository(Context);
 
-    _eventTypeRepository: Repository<IncomingEventType> = Source.getRepository(IncomingEventType);
-
     //#endregion
 
-    public create = async (createModel: IncomingEventCreateModel)
-        : Promise<IncomingEventResponseDto> => {
+    public create = async (createModel: EventCreateModel)
+        : Promise<EventResponseDto> => {
 
         const context = await this.getOrCreateContextByReferenceId(createModel.ReferenceId);
-        const eventType = await this.getIncomingEventType(createModel.TypeId);
+        const eventType = createModel.EventType;
 
         const event = this._eventRepository.create({
-            Context   : context,
-            EventType : eventType,
-            Payload   : createModel.Payload,
+            Context     : context,
+            EventType   : eventType,
+            Payload     : createModel.Payload,
             ReferenceId : createModel.ReferenceId,
         });
         var record = await this._eventRepository.save(event);
-        return IncomingEventMapper.toResponseDto(record);
+        return EventMapper.toResponseDto(record);
     };
 
-    public getById = async (id: uuid): Promise<IncomingEventResponseDto> => {
+    public getById = async (id: uuid): Promise<EventResponseDto> => {
         try {
             var event = await this._eventRepository.findOne({
                 where : {
                     id : id
                 }
             });
-            return IncomingEventMapper.toResponseDto(event);
+            return EventMapper.toResponseDto(event);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
         }
     };
 
-    public search = async (filters: IncomingEventSearchFilters)
-        : Promise<IncomingEventSearchResults> => {
+    public search = async (filters: EventSearchFilters)
+        : Promise<EventSearchResults> => {
         try {
             var search = this.getSearchModel(filters);
             var { search, pageIndex, limit, order, orderByColumn } = this.addSortingAndPagination(search, filters);
@@ -72,7 +69,7 @@ export class IncomingEventService extends BaseService {
                 ItemsPerPage   : limit,
                 Order          : order === 'DESC' ? 'descending' : 'ascending',
                 OrderedBy      : orderByColumn,
-                Items          : list.map(x => IncomingEventMapper.toResponseDto(x)),
+                Items          : list.map(x => EventMapper.toResponseDto(x)),
             };
             return searchResults;
         } catch (error) {
@@ -98,9 +95,9 @@ export class IncomingEventService extends BaseService {
 
     //#region Privates
 
-    private getSearchModel = (filters: IncomingEventSearchFilters) => {
+    private getSearchModel = (filters: EventSearchFilters) => {
 
-        var search : FindManyOptions<IncomingEvent> = {
+        var search : FindManyOptions<Event> = {
             relations : {
             },
             where : {
@@ -108,12 +105,8 @@ export class IncomingEventService extends BaseService {
             select : {
                 id        : true,
                 Payload   : true,
-                EventType : {
-                    id          : true,
-                    Name        : true,
-                    Description : true,
-                },
-                Context : {
+                EventType : true,
+                Context   : {
                     id          : true,
                     ReferenceId : true,
                     Type        : true,
@@ -163,21 +156,6 @@ export class IncomingEventService extends BaseService {
             context = await this._contextRepository.save(record);
         }
         return context;
-    }
-
-    private async getIncomingEventType(typeId: uuid) {
-        if (!typeId) {
-            return null;
-        }
-        const type = await this._eventTypeRepository.findOne({
-            where : {
-                id : typeId
-            }
-        });
-        if (!type) {
-            ErrorHandler.throwNotFoundError('Incoming event type cannot be found');
-        }
-        return type;
     }
 
 }

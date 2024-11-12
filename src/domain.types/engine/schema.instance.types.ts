@@ -1,3 +1,4 @@
+import { EventType } from "../enums/event.type";
 import {
     BaseSearchFilters,
     BaseSearchResults
@@ -29,11 +30,7 @@ export interface SchemaInstanceResponseDto {
             id  : uuid;
             Name: string;
         },
-        EventTypes : {
-            id: uuid;
-            Name: string;
-            Description: string;
-        }[],
+        EventTypes : EventType[],
     };
     Context     : {
         id          : uuid;

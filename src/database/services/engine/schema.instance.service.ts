@@ -16,7 +16,6 @@ import {
 import { Context } from '../../models/engine/context.model';
 import { NodeInstance } from '../../models/engine/node.instance.model';
 import { Node } from '../../models/engine/node.model';
-import { IncomingEventType } from '../../models/engine/incoming.event.type.model';
 import { CommonUtilsService } from './common.utils.service';
 
 ///////////////////////////////////////////////////////////////////////
@@ -52,9 +51,9 @@ export class SchemaInstanceService extends BaseService {
         });
         var record = await this._schemaInstanceRepository.save(schemaInstance);
         const rootNodeInstance = await this._nodeInstanceRepository.create({
-                Node: rootNode,
-                SchemaInstance: schemaInstance
-            }
+            Node           : rootNode,
+            SchemaInstance : schemaInstance
+        }
         );
         const rootNodeInstanceRecord = await this._nodeInstanceRepository.save(rootNodeInstance);
 
@@ -68,10 +67,11 @@ export class SchemaInstanceService extends BaseService {
             for await (var node of schema.Nodes) {
                 if (node.id !== rootNodeId) {
                     var nodeInstance = await this._nodeInstanceRepository.create({
-                        Node: node,
-                        SchemaInstance: schemaInstance
+                        Node           : node,
+                        SchemaInstance : schemaInstance
                     });
                     const nodeInstanceRecord = await this._nodeInstanceRepository.save(nodeInstance);
+                    logger.info(`Node Instance created: ${nodeInstanceRecord.id}`);
                 }
             }
         }
@@ -85,22 +85,22 @@ export class SchemaInstanceService extends BaseService {
                 where : {
                     id : id
                 },
-                relations: {
-                    Schema             : {
-                        Client: true,
-                        Nodes: true,
+                relations : {
+                    Schema : {
+                        Client : true,
+                        Nodes  : true,
                     },
-                    Context            : {
-                        Participant: true,
+                    Context : {
+                        Participant : true,
                     },
-                    CurrentNodeInstance: {
-                        Node: true,
+                    CurrentNodeInstance : {
+                        Node : true,
                     },
-                    RootNodeInstance   : {
-                        Node: true,
+                    RootNodeInstance : {
+                        Node : true,
                     },
-                    NodeInstances      : {
-                        Node: true,
+                    NodeInstances : {
+                        Node : true,
                     },
                 }
             });
@@ -119,22 +119,22 @@ export class SchemaInstanceService extends BaseService {
                         id : contextId
                     }
                 },
-                relations: {
-                    Schema             : {
-                        Client: true,
-                        Nodes: true,
+                relations : {
+                    Schema : {
+                        Client : true,
+                        Nodes  : true,
                     },
-                    Context            : {
-                        Participant: true,
+                    Context : {
+                        Participant : true,
                     },
-                    CurrentNodeInstance: {
-                        Node: true,
+                    CurrentNodeInstance : {
+                        Node : true,
                     },
-                    RootNodeInstance   : {
-                        Node: true,
+                    RootNodeInstance : {
+                        Node : true,
                     },
-                    NodeInstances      : {
-                        Node: true,
+                    NodeInstances : {
+                        Node : true,
                     },
                 }
             });
@@ -215,22 +215,22 @@ export class SchemaInstanceService extends BaseService {
     private getSearchModel = (filters: SchemaInstanceSearchFilters) => {
 
         var search : FindManyOptions<SchemaInstance> = {
-            relations: {
-                Schema             : {
-                    Client: true,
-                    Nodes: true,
+            relations : {
+                Schema : {
+                    Client : true,
+                    Nodes  : true,
                 },
-                Context            : {
-                    Participant: true,
+                Context : {
+                    Participant : true,
                 },
-                CurrentNodeInstance: {
-                    Node: true,
+                CurrentNodeInstance : {
+                    Node : true,
                 },
-                RootNodeInstance   : {
-                    Node: true,
+                RootNodeInstance : {
+                    Node : true,
                 },
-                NodeInstances      : {
-                    Node: true,
+                NodeInstances : {
+                    Node : true,
                 },
             },
             where : {
@@ -291,13 +291,13 @@ export class SchemaInstanceService extends BaseService {
 
         if (filters.SchemaId) {
             search.where['Schema'] = {
-                id: ''
+                id : ''
             };
             search.where['Schema'].id = filters.SchemaId;
         }
         if (filters.ContextId) {
             search.where['Context'] = {
-                id: ''
+                id : ''
             };
             search.where['Context'].id = filters.ContextId;
         }

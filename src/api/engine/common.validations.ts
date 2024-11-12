@@ -1,5 +1,11 @@
 import joi from 'joi';
-import { DataActionType, InputSourceType, LogicalOperator, OperandDataType, OutputDestinationType } from '../../domain.types/engine/engine.types';
+import {
+    DataActionType,
+    InputSourceType,
+    LogicalOperator,
+    OperandDataType,
+    OutputDestinationType
+} from '../../domain.types/engine/engine.types';
 
 /////////////////////////////////////////////////////////////////////////////
 

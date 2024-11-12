@@ -16,8 +16,6 @@ import { ParticipantBadge } from "./models/awards/participant.badge.model";
 import { Participant } from "./models/awards/participant.model";
 import { Condition } from './models/engine/condition.model';
 import { Context } from './models/engine/context.model';
-import { IncomingEvent } from './models/engine/incoming.event.model';
-import { IncomingEventType } from './models/engine/incoming.event.type.model';
 import { Node } from './models/engine/node.model';
 import { NodeInstance } from './models/engine/node.instance.model';
 import { NodeDefaultAction } from './models/engine/node.default.action.model';
@@ -30,7 +28,6 @@ import { Person } from './models/user/person.model';
 import { UserLoginSession } from "./models/user/user.login.session.model";
 import { Role } from "./models/user/role.model";
 import { Privilege } from "./models/user/privilege.model";
-import { SchemaEventType } from "./models/engine/schema.event.type.model";
 import { DBLogger } from "./database.logger";
 import { FileResourceVersion } from "./models/general/file.resource.version.model";
 import { BadgeStockImage } from "./models/awards/badge.stock.image.model";
@@ -46,19 +43,20 @@ logger.info(`db host     : ${Config.host}`);
 ///////////////////////////////////////////////////////////////////////////////////
 
 class DatabaseConnector {
+
     static _basePath = path.join(process.cwd(), 'src/database/models').replace(/\\/g, '/');
 
     static _source = new DataSource({
-        name: Config.dialect,
-        type: Config.dialect,
-        host: Config.host,
-        port: Config.port,
-        username: Config.username,
-        password: Config.password,
-        database: Config.database,
-        synchronize: true,
+        name        : Config.dialect,
+        type        : Config.dialect,
+        host        : Config.host,
+        port        : Config.port,
+        username    : Config.username,
+        password    : Config.password,
+        database    : Config.database,
+        synchronize : true,
         //entities    : [this._basePath + '/**/**{.model.ts}'],
-        entities: [
+        entities    : [
             Client,
             AwardPointRedemption,
             Badge,
@@ -69,8 +67,7 @@ class DatabaseConnector {
             Participant,
             Condition,
             Context,
-            IncomingEvent,
-            IncomingEventType,
+            Event,
             NodeDefaultAction,
             NodeInstance,
             Node,
@@ -84,17 +81,16 @@ class DatabaseConnector {
             UserLoginSession,
             Role,
             Privilege,
-            SchemaEventType,
             FileResourceVersion,
             BadgeStockImage,
         ],
-        migrations: [],
-        subscribers: [],
+        migrations  : [],
+        subscribers : [],
         //logger      : 'advanced-console', //Use console for the typeorm logging
-        logger: new DBLogger(),
-        logging: true,
-        poolSize: Config.pool.max,
-        cache: true,
+        logger      : new DBLogger(),
+        logging     : true,
+        poolSize    : Config.pool.max,
+        cache       : true,
     });
 
     private static initialize = (): Promise<boolean> => {
@@ -137,30 +133,31 @@ class DatabaseConnector {
                 });
         });
     };
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-    // function getFoldersRecursively(location: string) {
-    //     const items = fs.readdirSync(location, { withFileTypes: true });
-    //     let paths = [];
-    //     for (const item of items) {
-    //         if (item.isDirectory()) {
-    //             const fullPath = path.join(location, item.name);
-    //             const childrenPaths = this.getFoldersRecursively(fullPath);
-    //             paths = [
-    //                 ...paths,
-    //                 fullPath,
-    //                 ...childrenPaths,
-    //             ];
-    //         }
-    //     }
-    //     return paths;
-    // }
-    //Usage
-    // static _folders = this.getFoldersRecursively(this._basePath)
-    //     .map(y => y.replace(/\\/g, '/'))
-    //     .map(x => '"' + x + '/*.js"');
+// function getFoldersRecursively(location: string) {
+//     const items = fs.readdirSync(location, { withFileTypes: true });
+//     let paths = [];
+//     for (const item of items) {
+//         if (item.isDirectory()) {
+//             const fullPath = path.join(location, item.name);
+//             const childrenPaths = this.getFoldersRecursively(fullPath);
+//             paths = [
+//                 ...paths,
+//                 fullPath,
+//                 ...childrenPaths,
+//             ];
+//         }
+//     }
+//     return paths;
+// }
+//Usage
+// static _folders = this.getFoldersRecursively(this._basePath)
+//     .map(y => y.replace(/\\/g, '/'))
+//     .map(x => '"' + x + '/*.js"');
 
 ///////////////////////////////////////////////////////////////////////////////////
 

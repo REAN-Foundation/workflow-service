@@ -1,5 +1,5 @@
 import { logger } from "../../logger/logger";
-import { IncomingEventResponseDto } from "../../domain.types/engine/incoming.event.types";
+import { EventResponseDto } from "../../domain.types/engine/event.types";
 import * as asyncLib from 'async';
 import { ContextService } from "../../database/services/engine/context.service";
 import { ContextType } from "../../domain.types/engine/engine.types";
@@ -14,14 +14,14 @@ const ASYNC_TASK_COUNT = 4;
 
 export default class EventHandler {
 
-    private static _q = asyncLib.queue((event: IncomingEventResponseDto, onCompleted) => {
+    private static _q = asyncLib.queue((event: EventResponseDto, onCompleted) => {
         (async () => {
             await EventHandler.processEvent(event);
             onCompleted(event);
         })();
     }, ASYNC_TASK_COUNT);
 
-    private static enqueue = (model: IncomingEventResponseDto) => {
+    private static enqueue = (model: EventResponseDto) => {
         EventHandler._q.push(model, (model, error) => {
             if (error) {
                 logger.error(`Error handling incoming event: ${JSON.stringify(error)}`);
@@ -33,7 +33,7 @@ export default class EventHandler {
         });
     };
 
-    static handle = async (event: IncomingEventResponseDto) => {
+    static handle = async (event: EventResponseDto) => {
         return new Promise((resolve, reject) => {
             try {
                 EventHandler.enqueue(event);
@@ -45,7 +45,7 @@ export default class EventHandler {
         });
     };
 
-    private static processEvent = async (event: IncomingEventResponseDto) => {
+    private static processEvent = async (event: EventResponseDto) => {
 
         try {
             logger.info(JSON.stringify(event, null, 2));
@@ -64,34 +64,34 @@ export default class EventHandler {
             }
 
             const eventType = event.EventType;
-            const schemaForEventType = await schemaService.getByEventType(eventType.id);
-            const filtered: SchemaInstanceResponseDto[] = [];
-            for await (var s of schemaForEventType) {
-                const schemaId = s.id;
-                const filters: SchemaInstanceSearchFilters = {
-                    ContextId : context.id,
-                    SchemaId  : schemaId
-                };
-                const searchResults = await schemaInstanceService.search(filters);
-                const schemaInstances = searchResults.Items;
-                if (schemaInstances.length === 0) {
-                    const schemaInstance = await schemaInstanceService.create({
-                        SchemaId  : schemaId,
-                        ContextId : context.id
-                    });
-                    if (schemaInstance) {
-                        logger.info(`Schema instance created successfully!`);
-                    }
-                    filtered.push(schemaInstance);
-                }
-                else {
-                    filtered.push(...schemaInstances);
-                }
-            }
+            // const schemaForEventType = await schemaService.getByEventType(eventType.id);
+            // const filtered: SchemaInstanceResponseDto[] = [];
+            // for await (var s of schemaForEventType) {
+            //     const schemaId = s.id;
+            //     const filters: SchemaInstanceSearchFilters = {
+            //         ContextId : context.id,
+            //         SchemaId  : schemaId
+            //     };
+            //     const searchResults = await schemaInstanceService.search(filters);
+            //     const schemaInstances = searchResults.Items;
+            //     if (schemaInstances.length === 0) {
+            //         const schemaInstance = await schemaInstanceService.create({
+            //             SchemaId  : schemaId,
+            //             ContextId : context.id
+            //         });
+            //         if (schemaInstance) {
+            //             logger.info(`Schema instance created successfully!`);
+            //         }
+            //         filtered.push(schemaInstance);
+            //     }
+            //     else {
+            //         filtered.push(...schemaInstances);
+            //     }
+            // }
 
-            for await (var instance of filtered) {
-                await SchemaEngine.execute(instance);
-            }
+            // for await (var instance of filtered) {
+            //     await SchemaEngine.execute(instance);
+            // }
         }
         catch (error) {
             logger.error(`Error: ${error.message}`);

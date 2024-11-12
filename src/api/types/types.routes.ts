@@ -13,7 +13,6 @@ export const register = (app: express.Application): void => {
     const contextBase = 'Types';
 
     router.get('/role-types', Auth.handle(`${contextBase}.GetRoleTypes`, false, false, false), controller.getRoleTypes);
-    router.get('/event-types', Auth.handle(`${contextBase}.GetEventTypes`, false, false, false), controller.getEventTypes);
     router.get('/event-action-types', Auth.handle(`${contextBase}.GetEventActionTypes`, false, false, false), controller.getEventActionTypes);
     router.get('/context-types', Auth.handle(`${contextBase}.GetContextTypes`, false, false, false), controller.getContextTypes);
     router.get('/condition-operator-types', Auth.handle(`${contextBase}.GetConditionOperatorTypes`, false, false, false), controller.getConditionOperatorTypes);

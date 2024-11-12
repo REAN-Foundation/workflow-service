@@ -1,3 +1,4 @@
+import { EventType } from "../enums/event.type";
 import {
     BaseSearchFilters,
     BaseSearchResults
@@ -7,24 +8,20 @@ import { ContextType } from "./engine.types";
 
 ////////////////////////////////////////////////////////////
 
-export interface IncomingEventCreateModel {
-    TypeId     : uuid;
-    ReferenceId: uuid;
-    Payload    : any;
+export interface EventCreateModel {
+    EventType   : EventType;
+    ReferenceId : uuid;
+    Payload     : any;
 }
 
-export interface IncomingEventUpdateModel {
+export interface EventUpdateModel {
     TypeId     ?: uuid;
     ReferenceId?: uuid;
 }
 
-export interface IncomingEventResponseDto {
+export interface EventResponseDto {
     id: uuid;
-    EventType: {
-        id         : uuid;
-        Name       : string;
-        Description: string;
-    };
+    EventType: EventType;
     Context : {
         id          : uuid;
         ReferenceId : uuid;
@@ -48,11 +45,11 @@ export interface IncomingEventResponseDto {
     UpdatedAt  : Date;
 }
 
-export interface IncomingEventSearchFilters extends BaseSearchFilters {
+export interface EventSearchFilters extends BaseSearchFilters {
     TypeId     ?: uuid;
     ReferenceId?: uuid;
 }
 
-export interface IncomingEventSearchResults extends BaseSearchResults {
-    Items: IncomingEventResponseDto[];
+export interface EventSearchResults extends BaseSearchResults {
+    Items: EventResponseDto[];
 }

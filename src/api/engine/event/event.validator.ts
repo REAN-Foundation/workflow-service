@@ -1,15 +1,15 @@
 import joi from 'joi';
 import express from 'express';
-import { IncomingEventCreateModel, IncomingEventSearchFilters } from '../../../domain.types/engine/incoming.event.types';
+import { EventCreateModel, EventSearchFilters } from '../../../domain.types/engine/event.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-export class IncomingEventValidator extends BaseValidator {
+export class EventValidator extends BaseValidator {
 
     public validateCreateRequest = async (request: express.Request)
-        : Promise<IncomingEventCreateModel> => {
+        : Promise<EventCreateModel> => {
         try {
             const event = joi.object({
                 TypeId      : joi.string().uuid().required(),
@@ -17,8 +17,8 @@ export class IncomingEventValidator extends BaseValidator {
                 Payload     : joi.any().required(),
             });
             await event.validateAsync(request.body);
-            const model: IncomingEventCreateModel = {
-                TypeId      : request.body.TypeId,
+            const model: EventCreateModel = {
+                EventType   : request.body.EventType,
                 ReferenceId : request.body.ReferenceId,
                 Payload     : request.body.Payload,
             };
@@ -29,7 +29,7 @@ export class IncomingEventValidator extends BaseValidator {
     };
 
     public validateSearchRequest = async (request: express.Request)
-        : Promise<IncomingEventSearchFilters> => {
+        : Promise<EventSearchFilters> => {
         try {
             const condition = joi.object({
                 typeId      : joi.string().uuid().optional(),
@@ -47,7 +47,7 @@ export class IncomingEventValidator extends BaseValidator {
         }
     };
 
-    private getSearchFilters = (query): IncomingEventSearchFilters => {
+    private getSearchFilters = (query): EventSearchFilters => {
 
         var filters = {};
 

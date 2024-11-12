@@ -1,3 +1,4 @@
+import { EventType } from "../enums/event.type";
 import {
     BaseSearchFilters,
     BaseSearchResults
@@ -6,7 +7,6 @@ import {
     uuid
 } from "../miscellaneous/system.types";
 import { EventActionType, InputParams, NodeType, OutputParams, SchemaType } from "./engine.types";
-import { IncomingEventTypeResponseDto } from "./incoming.event.type.types";
 import { NodeCreateModel } from "./node.domain.types";
 
 //////////////////////////////////////////////////////////////
@@ -21,6 +21,7 @@ export interface SchemaCreateModel {
     IsValid     ?: boolean;
     EventTypeIds?: uuid[];
     RootNode    ?: NodeCreateModel;
+    IdentificationParams?: Map<string, any>;
 }
 
 export interface SchemaUpdateModel {
@@ -32,6 +33,7 @@ export interface SchemaUpdateModel {
     ValidTill   ?: Date;
     IsValid     ?: boolean;
     EventTypeIds?: uuid[];
+    IdentificationParams?: Map<string, any>;
 }
 
 export interface SchemaResponseDto {
@@ -60,7 +62,8 @@ export interface SchemaResponseDto {
         Name: string;
         Code: string;
     };
-    EventTypes ?: IncomingEventTypeResponseDto[];
+    EventTypes ?: EventType[];
+    IdentificationParams?: Map<string, any>;
     CreatedAt: Date;
     UpdatedAt: Date;
 }

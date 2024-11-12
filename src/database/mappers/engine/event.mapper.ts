@@ -1,23 +1,19 @@
-import { IncomingEvent } from "../../models/engine/incoming.event.model";
-import { IncomingEventResponseDto } from "../../../domain.types/engine/incoming.event.types";
+import { Event } from "../../models/engine/event.model";
+import { EventResponseDto } from "../../../domain.types/engine/event.types";
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-export class IncomingEventMapper {
+export class EventMapper {
 
-    static toResponseDto = (event: IncomingEvent): IncomingEventResponseDto => {
+    static toResponseDto = (event: Event): EventResponseDto => {
         if (event == null) {
             return null;
         }
-        const dto: IncomingEventResponseDto = {
+        const dto: EventResponseDto = {
             id          : event.id,
             ReferenceId : event.ReferenceId,
-            EventType   : {
-                id          : event.EventType.id,
-                Name        : event.EventType.Name,
-                Description : event.EventType.Description,
-            },
-            Context : {
+            EventType   : event.EventType,
+            Context     : {
                 id          : event.Context.id,
                 ReferenceId : event.Context.ReferenceId,
                 Type        : event.Context.Type,

@@ -60,6 +60,7 @@ export const OperatorList: OperatorType[] = [
 export enum CompositionOperator {
     And  = 'And',
     Or   = 'Or',
+    Xor  = 'Xor',
     None = 'None'
 }
 

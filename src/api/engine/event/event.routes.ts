@@ -10,7 +10,11 @@ export const register = (app: express.Application): void => {
     const controller = new EventController();
     const contextBase = 'Event';
 
-    router.post('/', Auth.handle(`${contextBase}.Create`, true, false, false), controller.create);
+    router.post('/user-message', Auth.handle(`${contextBase}.Create`, true, false, false), controller.createUserMessageEvent);
+
+    // router.post('/user-message', Auth.handle(`${contextBase}.Create`, true, false, false),
+    //  controller.createUserMessageEvent);
+
     router.get('/search', Auth.handle(`${contextBase}.Search`, true, false, false), controller.search);
     router.get('/:id', Auth.handle(`${contextBase}.GetById`, true, false, false), controller.getById);
 

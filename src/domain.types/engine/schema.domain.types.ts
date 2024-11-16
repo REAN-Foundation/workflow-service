@@ -6,7 +6,7 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { EventActionType, InputParams, NodeType, OutputParams, SchemaType } from "./engine.types";
+import { EventActionType, InputParams, NodeType, OutputParams } from "./engine.types";
 import { NodeCreateModel } from "./node.domain.types";
 
 //////////////////////////////////////////////////////////////
@@ -15,7 +15,6 @@ export interface SchemaCreateModel {
     ClientId     : uuid;
     Name         : string;
     Description? : string;
-    Type         : SchemaType;
     ValidFrom   ?: Date;
     ValidTill   ?: Date;
     IsValid     ?: boolean;
@@ -28,7 +27,6 @@ export interface SchemaUpdateModel {
     ClientId?    : uuid;
     Name?        : string;
     Description? : string;
-    Type        ?: SchemaType;
     ValidFrom   ?: Date;
     ValidTill   ?: Date;
     IsValid     ?: boolean;
@@ -40,7 +38,6 @@ export interface SchemaResponseDto {
     id         : uuid;
     Name       : string;
     Description: string;
-    Type       : SchemaType;
     ValidFrom  : Date;
     ValidTill  : Date;
     IsValid    : boolean;

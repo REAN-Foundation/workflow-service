@@ -1,46 +1,61 @@
-
 import { uuid } from "../miscellaneous/system.types";
 
-export enum ContextType {
-    Person  = 'Person',
-    Group   = 'Group',
-}
-
-export const ContextTypeList: ContextType[] = [
-    ContextType.Person,
-    ContextType.Group,
-];
-
-export enum SchemaType {
-    //These kind of schemas are for cases where they get executed only once for a given context.
-    //For example, awarding some promotion coupons on a given occasion.
-    ExecuteOnce = 'Execute-Once',
-
-    //On every incoming event, reuse the same instance. This is suitable for usecases,
-    //where on every event we want to check some light weight logic execution.
-    ReuseExistingInstance = 'Reuse-Existing-Instance',
-
-    //Recreate new instance after the execution of the previous one.
-    RecreateNewAfterExecution = 'Recreate-New-After-Execution'
-}
-
 export enum NodeType {
-    //This node type has set of rules to be executed.
-    //Based on rule execution results, an action is taken at the end.
-    RuleNode = 'Rule-Node',
-
-    //This node type contains some execution steps and once processed,
-    //the control moves to next node defined or schema exits.
-    ExecutionNode = 'Execution-Node',
-
-    //This node type is meant to send messages to the listening parties.
-    MessageNode = 'Message-Node'
+    QuestionNode      = 'QuestionNode',
+    MessageNode       = 'MessageNode',
+    ExecutionNode     = 'ExecutionNode',
+    DelayedActionNode = 'DelayedActionNode',
+    WaitNode          = 'WaitNode',
 }
 
-export const SchemaTypeList: SchemaType[] = [
-    SchemaType.ExecuteOnce,
-    SchemaType.ReuseExistingInstance,
-    SchemaType.RecreateNewAfterExecution,
+//#region Operators and Condition
+
+export enum QuestionResponseType {
+    Text                  = 'Text',
+    Float                 = 'Float',
+    Integer               = 'Integer',
+    Boolean               = 'Boolean',
+    Object                = 'Object',
+    TextArray             = 'Text Array',
+    FloatArray            = 'Float Array',
+    IntegerArray          = 'Integer Array',
+    BooleanArray          = 'Boolean Array',
+    ObjectArray           = 'Object Array',
+    Biometrics            = 'Biometrics',
+    SingleChoiceSelection = 'Single Choice Selection',
+    MultiChoiceSelection  = 'Multi Choice Selection',
+    File                  = 'File',
+    Date                  = 'Date',
+    DateTime              = 'DateTime',
+    Rating                = 'Rating',
+    Location              = 'Location',
+    Range                 = 'Range',
+    Ok                    = 'Ok', //Acknowledgement
+    None                  = 'None', //Not expecting response
+}
+
+export const QuestionResponseTypeList: QuestionResponseType[] = [
+    QuestionResponseType.Text,
+    QuestionResponseType.Float,
+    QuestionResponseType.Integer,
+    QuestionResponseType.Boolean,
+    QuestionResponseType.Object,
+    QuestionResponseType.TextArray,
+    QuestionResponseType.FloatArray,
+    QuestionResponseType.IntegerArray,
+    QuestionResponseType.BooleanArray,
+    QuestionResponseType.ObjectArray,
+    QuestionResponseType.Biometrics,
+    QuestionResponseType.SingleChoiceSelection,
+    QuestionResponseType.MultiChoiceSelection,
+    QuestionResponseType.File,
+    QuestionResponseType.Date,
+    QuestionResponseType.DateTime,
+    QuestionResponseType.Rating,
+    QuestionResponseType.Location,
+    QuestionResponseType.Range,
+    QuestionResponseType.Ok,
+    QuestionResponseType.None,
 ];
 
 export enum OperatorType {
@@ -148,47 +163,245 @@ export const ConditionOperandDataTypeList: OperandDataType[] = [
     OperandDataType.Date,
 ];
 
-export enum EventActionType {
-    ExecuteNext        = "Execute-Next",
-    WaitForInputEvents = "Wait-For-Input-Events",
-    Exit               = "Exit",
-    AwardBadge         = "Award-Badge",
-    AwardPoints        = "Award-Points",
-    ProcessData        = "Process-Data",
-    ExtractData        = "Extract-Data",
-    CompareData        = "Compare-Data",
-    StoreData          = "Store-Data",
-    Custom             = "Custom",
+export enum ActionType {
+    SendMessage    = 'SendMessage',
+    SendEmail      = 'SendEmail',
+    SendSms        = 'SendSms',
+    RestApiCall    = 'RestApiCall',
+    PythonFunCall  = 'PythonFunCall',
+    LambdaFunCall  = 'LambdaFunCall',
+    StoreDataSqlDb = 'StoreDataSqlDb',
 }
 
-export const EventActionTypeList: EventActionType[] = [
-    EventActionType.ExecuteNext,
-    EventActionType.WaitForInputEvents,
-    EventActionType.Exit,
-    EventActionType.AwardBadge,
-    EventActionType.AwardPoints,
-    EventActionType.ProcessData,
-    EventActionType.ExtractData,
-    EventActionType.CompareData,
-    EventActionType.StoreData,
-    EventActionType.Custom,
-];
+//#endregion
 
-export enum DataActionType {
-    CalculateContinuity = "Calculate-Continuity",
-    FindRangeDifference = "Find-Range-Difference",
-    MaximumInRange      = "Maximum-In-Range",
-    MinimumInRange      = "Minimum-In-Range",
-    CalculatePercentile = "Calculate-Percentile",
+////////////////////////////////////////////////////////////////
+
+export class XConditionOperand {
+
+    DataType?: OperandDataType;
+
+    Name ?   : string | null;
+
+    Value?   : string | number | boolean | any[] | null;
+
+    constructor(
+        dataType: OperandDataType,
+        name: string | null,
+        value: string | number | boolean | any[] | null) {
+        this.DataType = dataType;
+        this.Name = name;
+        this.Value = value;
+
+        if (Helper.isStr(this.Value) && this.DataType !== OperandDataType.Text) {
+            if (this.DataType === OperandDataType.Integer) {
+                this.Value = parseInt(this.Value as string);
+            }
+            if (this.DataType === OperandDataType.Float) {
+                this.Value = parseFloat(this.Value as string);
+            }
+            if (this.DataType === OperandDataType.Boolean) {
+                this.Value = parseInt(this.Value as string);
+                if (this.Value === 0) {
+                    this.Value = false;
+                }
+                else {
+                    this.Value = true;
+                }
+            }
+            if (this.DataType === OperandDataType.Array) {
+                this.Value = JSON.parse(this.Value as string);
+            }
+        }
+    }
+
 }
 
-export const DataActionTypeList: DataActionType[] = [
-    DataActionType.CalculateContinuity,
-    DataActionType.FindRangeDifference,
-    DataActionType.MaximumInRange,
-    DataActionType.MinimumInRange,
-    DataActionType.CalculatePercentile,
-];
+export interface XAction {
+    Type       : ActionType;
+    Name       : string;
+    Description: string;
+    RawInput   : any | undefined;
+    RawOutput  : any | undefined;
+    Input      : Map<string, any> | undefined | null;
+    Output     : Map<string, any> | undefined | null;
+}
+
+export interface XPathCondition {
+    id            : uuid;
+    Name          : string;
+    Code          : string;
+    PathId        : uuid;
+    ParentNodeId  : uuid;
+    ParentNodeCode: string;
+
+    IsCompositeCondition?: boolean;
+    CompositionType ?    : CompositionOperator;
+    ParentConditionId?   : uuid;
+    OperatorType ?       : OperatorType;
+
+    FirstOperand?: ConditionOperand;
+    SecondOperand?: ConditionOperand;
+    ThirdOperand?: ConditionOperand;
+
+    Children?: CAssessmentPathCondition[];
+}
+
+export interface XQuestionOption {
+    id?               : uuid;
+    Code              : string;
+    ProviderGivenCode?: string;
+    NodeId?           : uuid;
+    Text              : string;
+    ImageUrl?         : string;
+    Sequence          : number;
+    MetaData          : Map<string, any>;
+}
+
+export interface XNodePath {
+    id            : uuid;
+    Name          : string;
+    Code          : string;
+    ParentNodeId  : NodeType;
+    ParentNodeCode: string;
+    NextNodeId    : uuid;
+    NextNodeCode  : string;
+    Condition     : string;
+    Actions       : XAction[];
+}
+
+export interface XNode
+{
+    id              : uuid;
+    Name            : string;
+    Code            : string;
+    Description     : string;
+    SchemaId        : uuid;
+    Type            : NodeType;
+    ParentNodeId   ?: uuid;
+    ParentNodeCode ?: string;
+    RawData         : any;
+    ChildrenNodeIds : uuid[];
+    Actions        ?: XAction[];
+}
+
+export interface XQuestionNode extends XNode {
+    QuestionText    : string;
+    ResponseType    : QuestionResponseType;
+    Options        ?: XQuestionOption[];
+    DefaultPathId  ?: uuid;
+    DefaultOptionId?: uuid;
+    Paths          ?: XNodePath[];
+}
+
+export interface XQuestionNodeResponse {
+    id              : uuid;
+    NodeId          : uuid;
+    Node            : XQuestionNode;
+    SchemaId        : uuid;
+    SchemaInstanceId: uuid;
+    ResponseType    : QuestionResponseType;
+    SatisfiedConditionId: uuid;
+    ChosenOptionId  : uuid;
+    ChosenOptionSequence: number;
+    ChosenPathId    : uuid;
+    Response        : {
+        IntegerValue?        : number;
+        FloatValue?          : number;
+        TextValue?           : string;
+        BooleanValue?        : boolean;
+        DateValue?           : Date;
+        Url?                 : string;
+        ResourceId?          : uuid;
+        ArrayValue?          : number[];
+        ObjectValue?         : any;
+    };
+    CreatedAt       : Date;
+}
+
+export interface XSchema {
+
+    id         : uuid;
+
+    Name       : string;
+
+    Description: string;
+
+    ValidFrom  : Date;
+
+    ValidTill  : Date;
+
+    IsValid    : boolean;
+
+    RootNode  ?: {
+       id         : uuid,
+       Name       : string;
+       Description: string;
+       Type       : NodeType;
+        Actions ?  : {
+            ActionType  : EventActionType;
+            Name        : string;
+            Description : string;
+            InputParams : InputParams;
+            OutputParams: OutputParams;
+        }
+    };
+
+    Tenant     : {
+        id  : uuid;
+        Name: string;
+        Code: string;
+    };
+
+    IdentificationParams?: Map<string, any>;
+
+    CreatedAt: Date;
+
+    UpdatedAt: Date;
+
+}
+
+// export enum EventActionType {
+//     ExecuteNext        = "Execute-Next",
+//     WaitForInputEvents = "Wait-For-Input-Events",
+//     Exit               = "Exit",
+//     AwardBadge         = "Award-Badge",
+//     AwardPoints        = "Award-Points",
+//     ProcessData        = "Process-Data",
+//     ExtractData        = "Extract-Data",
+//     CompareData        = "Compare-Data",
+//     StoreData          = "Store-Data",
+//     Custom             = "Custom",
+// }
+
+// export const EventActionTypeList: EventActionType[] = [
+//     EventActionType.ExecuteNext,
+//     EventActionType.WaitForInputEvents,
+//     EventActionType.Exit,
+//     EventActionType.AwardBadge,
+//     EventActionType.AwardPoints,
+//     EventActionType.ProcessData,
+//     EventActionType.ExtractData,
+//     EventActionType.CompareData,
+//     EventActionType.StoreData,
+//     EventActionType.Custom,
+// ];
+
+// export enum DataActionType {
+//     CalculateContinuity = "Calculate-Continuity",
+//     FindRangeDifference = "Find-Range-Difference",
+//     MaximumInRange      = "Maximum-In-Range",
+//     MinimumInRange      = "Minimum-In-Range",
+//     CalculatePercentile = "Calculate-Percentile",
+// }
+
+// export const DataActionTypeList: DataActionType[] = [
+//     DataActionType.CalculateContinuity,
+//     DataActionType.FindRangeDifference,
+//     DataActionType.MaximumInRange,
+//     DataActionType.MinimumInRange,
+//     DataActionType.CalculatePercentile,
+// ];
 
 export enum ExecutionStatus {
     Pending  = "Pending",

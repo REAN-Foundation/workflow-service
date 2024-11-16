@@ -7,13 +7,6 @@ import { uuid } from "../miscellaneous/system.types";
 
 ////////////////////////////////////////////////////////////
 
-export enum NodeType {
-    QuestionNode      = 'QuestionNode',
-    MessageNode       = 'MessageNode',
-    DelayedActionNode = 'DelayedActionNode',
-    WaitNode          = 'WaitNode',
-}
-
 export interface EventCreateModel {
     TenantId         : uuid;
     EventType        : EventType;

@@ -5,11 +5,8 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { 
-    EventActionType, 
-    InputParams, 
-    NodeType, 
-    OutputParams } from "./engine.types";
+import { XAction } from "./action.types";
+import { NodeType } from "./engine.enums";
 
 //////////////////////////////////////////////////////////////
 
@@ -19,28 +16,16 @@ export interface NodeCreateModel {
     Description? : string;
     ParentNodeId : uuid;
     SchemaId     : uuid;
-    Action: {
-        ActionType    : EventActionType;
-        Name          : string;
-        Description  ?: string;
-        InputParams  ?: InputParams;
-        OutputParams  : OutputParams;
-    };
+    Actions     ?: XAction[];
 }
 
 export interface NodeUpdateModel {
-    Type            ?: NodeType;
-    Name            ?: string;
-    Description     ?: string;
-    ParentNodeId    ?: uuid;
-    SchemaId        ?: uuid;
-    Action       ?: {
-        ActionType  ?: EventActionType;
-        Name        ?: string;
-        Description ?: string;
-        InputParams ?: InputParams;
-        OutputParams?: OutputParams;
-    };
+    Type        ?: NodeType;
+    Name        ?: string;
+    Description ?: string;
+    ParentNodeId?: uuid;
+    SchemaId    ?: uuid;
+    Actions     ?: XAction[];
 }
 
 export interface NodeResponseDto {
@@ -68,14 +53,7 @@ export interface NodeResponseDto {
         Name: string;
         Description: string;
     }[];
-    Action: {
-        id           : uuid;
-        Name         : string;
-        Description  : string;
-        ActionType   : EventActionType;
-        InputParams  : InputParams;
-        OutputParams : OutputParams;
-    } | null,
+
     CreatedAt: Date;
     UpdatedAt: Date;
 }

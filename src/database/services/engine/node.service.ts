@@ -9,12 +9,12 @@ import { FindManyOptions, Like, Repository } from 'typeorm';
 import { NodeMapper } from '../../mappers/engine/node.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { 
-    NodeCreateModel, 
-    NodeResponseDto, 
-    NodeSearchFilters, 
-    NodeSearchResults, 
-    NodeUpdateModel } from '../../../domain.types/engine/node.domain.types';
+import {
+    NodeCreateModel,
+    NodeResponseDto,
+    NodeSearchFilters,
+    NodeSearchResults,
+    NodeUpdateModel } from '../../../domain.types/engine/node.types';
 import { CommonUtilsService } from './common.utils.service';
 
 ///////////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ export class NodeService extends BaseService {
                 Action   : {
                     id          : true,
                     Name        : true,
-                    Description : true,   
+                    Description : true,
                 },
                 CreatedAt  : true,
                 UpdatedAt  : true,

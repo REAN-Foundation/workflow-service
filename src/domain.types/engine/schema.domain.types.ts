@@ -7,7 +7,7 @@ import {
     uuid
 } from "../miscellaneous/system.types";
 import { EventActionType, InputParams, NodeType, OutputParams } from "./engine.types";
-import { NodeCreateModel } from "./node.domain.types";
+import { NodeCreateModel } from "./node.types";
 
 //////////////////////////////////////////////////////////////
 

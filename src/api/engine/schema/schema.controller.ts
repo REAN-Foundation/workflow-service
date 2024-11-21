@@ -5,6 +5,7 @@ import { SchemaService } from '../../../database/services/engine/schema.service'
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { SchemaCreateModel, SchemaSearchFilters, SchemaUpdateModel } from '../../../domain.types/engine/schema.domain.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
+import { XSchema } from '../../../domain.types/engine/engine.types';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -15,7 +16,6 @@ export class SchemaController {
     _service: SchemaService = new SchemaService();
 
     _validator: SchemaValidator = new SchemaValidator();
-
 
     //#endregion
 
@@ -77,5 +77,7 @@ export class SchemaController {
             ResponseHandler.handleError(request, response, error);
         }
     };
+
+    //#endregion
 
 }

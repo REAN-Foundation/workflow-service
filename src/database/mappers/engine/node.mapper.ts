@@ -1,7 +1,7 @@
 import { Node } from '../../models/engine/node.model';
 import {
     NodeResponseDto
-} from '../../../domain.types/engine/node.domain.types';
+} from '../../../domain.types/engine/node.types';
 
 ///////////////////////////////////////////////////////////////////////////////////
 

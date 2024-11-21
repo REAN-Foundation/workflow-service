@@ -1,10 +1,10 @@
 import joi from 'joi';
 import express from 'express';
 import {
-    NodeCreateModel,
-    NodeUpdateModel,
-    NodeSearchFilters
-} from '../../../domain.types/engine/node.types';
+    NodePathCreateModel,
+    NodePathUpdateModel,
+    NodePathSearchFilters
+} from '../../../domain.types/engine/node.path.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
 import { ActionType } from '../../../domain.types/engine/action.types';
@@ -12,10 +12,10 @@ import { NodeType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-export class NodeValidator extends BaseValidator {
+export class NodePathValidator extends BaseValidator {
 
     public validateCreateRequest = async (request: express.Request)
-        : Promise<NodeCreateModel> => {
+        : Promise<NodePathCreateModel> => {
         try {
             const node = joi.object({
                 Type         : joi.string().valid(...Object.values(NodeType)).required(),
@@ -45,7 +45,7 @@ export class NodeValidator extends BaseValidator {
         }
     };
 
-    public validateUpdateRequest = async (request: express.Request): Promise<NodeUpdateModel|undefined> => {
+    public validateUpdateRequest = async (request: express.Request): Promise<NodePathUpdateModel|undefined> => {
         try {
             const node = joi.object({
                 Type         : joi.string().valid(...Object.values(NodeType)).optional(),
@@ -68,7 +68,7 @@ export class NodeValidator extends BaseValidator {
     };
 
     public validateSearchRequest = async (request: express.Request)
-        : Promise<NodeSearchFilters> => {
+        : Promise<NodePathSearchFilters> => {
         try {
             const node = joi.object({
                 type         : joi.string().valid(...Object.values(NodeType)).optional(),
@@ -88,7 +88,7 @@ export class NodeValidator extends BaseValidator {
         }
     };
 
-    private getSearchFilters = (query): NodeSearchFilters => {
+    private getSearchFilters = (query): NodePathSearchFilters => {
 
         var filters = {};
 

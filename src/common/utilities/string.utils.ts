@@ -146,4 +146,86 @@ export class StringUtils {
         return decrypted.toString();
     };
 
+    static isUrl = (str) => {
+        if (!str) {
+            return false;
+        }
+        try {
+            new URL(str);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    };
+
+    static isAlpha = (c) => {
+        const alphas = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        return alphas.indexOf(c) !== -1;
+    };
+
+    static isAlphaVowel = (c) => {
+        const alphas = 'aeiouAEIOU';
+        return alphas.indexOf(c) !== -1;
+    };
+
+    static isDigit = (c) => {
+        const digits = '0123456789';
+        return digits.indexOf(c) !== -1;
+    };
+
+    static isAlphaNum = (c) => {
+        return StringUtils.isAlpha(c) || StringUtils.isDigit(c);
+    };
+
+    static hasAlpha = (str: string) => {
+        for (const c of str) {
+            if (StringUtils.isAlpha(c)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    static getDigitsOnly = (str: string): string => {
+        let temp = '';
+        if (!str) {
+            return temp;
+        }
+        for (let x = 0; x < str.length; x++) {
+            const c = str.charAt(x);
+            if (StringUtils.isDigit(c)) {
+                temp += c;
+            }
+        }
+        return temp;
+    };
+
+    static checkStr(val: any) {
+        if (val === null || val === undefined || typeof val !== 'string') {
+            return null;
+        }
+        return val;
+    }
+
+    static isStr(val: any): boolean {
+        if (val === null || val === undefined || typeof val !== 'string') {
+            return false;
+        }
+        return true;
+    }
+
+    static checkNum(val: any): number {
+        if (val === null || val === undefined || typeof val !== 'number') {
+            return null;
+        }
+        return val;
+    }
+
+    static isNum(val: any): boolean {
+        if (val === null || val === undefined || typeof val !== 'number') {
+            return false;
+        }
+        return true;
+    }
+
 }

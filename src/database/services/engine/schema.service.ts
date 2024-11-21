@@ -18,7 +18,10 @@ import { Node } from '../../models/engine/node.model';
 import { Condition } from '../../models/engine/condition.model';
 import { CommonUtilsService } from './common.utils.service';
 import { NodeDefaultAction } from '../../../database/models/engine/node.default.action.model';
-import { NodeResponseDto } from '../../../domain.types/engine/node.domain.types';
+import { NodeResponseDto, NodeSearchFilters, NodeSearchResults } from '../../../domain.types/engine/node.types';
+import { XNodePath } from 'src/domain.types/engine/engine.types';
+import { XPathCondition } from 'src/domain.types/engine/engine.types';
+import { XSchema } from 'src/domain.types/engine/engine.types';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -225,5 +228,120 @@ export class SchemaService extends BaseService {
     };
 
     //#endregion
+
+    public readTemplateObjToExport = async (templateId: uuid): Promise<XSchema> => {
+        var template = await this._assessmentHelperRepo.readTemplateAsObj(templateId);
+        template = this.sanitizeTemplateForExport(template);
+        return template;
+    };
+
+    public import = async (model: any): Promise<SchemaResponseDto> => {
+        var template: XSchema = model as XSchema;
+        return await this.addTemplate(template);
+    };
+
+    public addTemplate = async (template: CAssessmentTemplate): Promise<AssessmentTemplateDto> => {
+        const resource = await AssessmentTemplateFileConverter.storeAssessmentTemplate(template);
+        template.FileResourceId = resource.id;
+        return await this._assessmentHelperRepo.addTemplate(template);
+    };
+
+    getNode = async (nodeId: string): Promise<any> => {
+        return await this._assessmentHelperRepo.getNodeById(nodeId);
+    };
+
+    deleteNode = async (nodeId: string): Promise<boolean> => {
+        return await this._assessmentHelperRepo.deleteNode(nodeId);
+    };
+
+    addNode = async (
+        model: CAssessmentNode | CAssessmentListNode | CAssessmentQuestionNode | CAssessmentMessageNode) => {
+        return await this._assessmentHelperRepo.createNode(model.TemplateId, model.ParentNodeId, model);
+    };
+
+    updateNode = async(nodeId: uuid, updates: any) => {
+        return await this._assessmentHelperRepo.updateNode(nodeId, updates);
+    };
+
+    sanitizeTemplateForExport = (template: CAssessmentTemplate): CAssessmentTemplate => {
+
+        delete template.TemplateId;
+
+        for (var node of template.Nodes) {
+            delete node.id;
+            delete node.TemplateId;
+            delete node.ParentNodeId;
+
+            if (node.NodeType === AssessmentNodeType.NodeList) {
+                delete (node as CAssessmentListNode).ChildrenNodeIds;
+                delete (node as CAssessmentListNode).Children;
+            }
+            else if (node.NodeType === AssessmentNodeType.Question) {
+                for (var option of (node as CAssessmentQuestionNode).Options) {
+                    delete option.id;
+                    delete option.NodeId;
+                }
+                for (var path of (node as CAssessmentQuestionNode).Paths) {
+                    delete path.id;
+                    delete path.ParentNodeId;
+                    delete path.ConditionId;
+                    delete path.NextNodeId;
+                }
+            }
+            else if (node.NodeType === AssessmentNodeType.Message) {
+                delete (node as CAssessmentMessageNode).Acknowledged;
+            }
+        }
+
+        return template;
+    };
+
+    public searchNodes = async (filters: NodeSearchFilters): Promise<NodeSearchResults> => {
+        return await this._assessmentHelperRepo.searchNodes(filters);
+    };
+
+    addPath = async (nodeId: uuid, path: XNodePath): Promise<XNodePath> => {
+        return await this._assessmentHelperRepo.addPath(nodeId, path);
+    };
+
+    updatePath = async (pathId: uuid, updates: XNodePath): Promise<XNodePath> => {
+        return await this._assessmentHelperRepo.updatePath(pathId, updates);
+    };
+
+    getPath = async (pathId: uuid): Promise<XNodePath> => {
+        return await this._assessmentHelperRepo.getPath(pathId);
+    };
+
+    deletePath = async (pathId: uuid): Promise<boolean> => {
+        return await this._assessmentHelperRepo.deletePath(pathId);
+    };
+
+    addPathCondition = async (pathId: uuid, condition: XPathCondition): Promise<XPathCondition> => {
+        return await this._assessmentHelperRepo.addPathCondition(pathId, condition);
+    };
+
+    updatePathCondition = async (conditionId: uuid, updates: XPathCondition): Promise<XPathCondition> => {
+        return await this._assessmentHelperRepo.updatePathCondition(conditionId, updates);
+    };
+
+    getPathCondition = async (conditionId: uuid, nodeId: uuid, pathId: uuid): Promise<XPathCondition> => {
+        return await this._assessmentHelperRepo.getPathCondition(conditionId, nodeId, pathId);
+    };
+
+    deletePathCondition = async (conditionId: uuid): Promise<boolean> => {
+        return await this._assessmentHelperRepo.deletePathCondition(conditionId);
+    };
+
+    getPathConditionForPath = async (pathId: uuid): Promise<XPathCondition> => {
+        return await this._assessmentHelperRepo.getPathConditionForPath(pathId);
+    };
+
+    getNodePaths = async (nodeId: uuid): Promise<XNodePath[]> => {
+        return await this._assessmentHelperRepo.getNodePaths(nodeId);
+    };
+
+    setNextNodeToPath = async (parentNodeId: uuid, pathId: uuid, nextNodeId: uuid): Promise<XNodePath> => {
+        return await this._assessmentHelperRepo.setNextNodeToPath(parentNodeId, pathId, nextNodeId);
+    };
 
 }

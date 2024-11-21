@@ -3,7 +3,7 @@ import { ResponseHandler } from '../../../common/handlers/response.handler';
 import { NodeValidator } from './node.validator';
 import { NodeService } from '../../../database/services/engine/node.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { NodeCreateModel, NodeSearchFilters, NodeUpdateModel } from '../../../domain.types/engine/node.domain.types';
+import { NodeCreateModel, NodeSearchFilters, NodeUpdateModel } from '../../../domain.types/engine/node.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -15,7 +15,6 @@ export class NodeController {
     _service: NodeService = new NodeService();
 
     _validator: NodeValidator = new NodeValidator();
-
 
     //#endregion
 

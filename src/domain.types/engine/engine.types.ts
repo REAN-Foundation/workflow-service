@@ -1,179 +1,8 @@
+/* eslint-disable lines-between-class-members */
+import { StringUtils } from "../../common/utilities/string.utils";
 import { uuid } from "../miscellaneous/system.types";
-
-export enum NodeType {
-    QuestionNode      = 'QuestionNode',
-    MessageNode       = 'MessageNode',
-    ExecutionNode     = 'ExecutionNode',
-    DelayedActionNode = 'DelayedActionNode',
-    WaitNode          = 'WaitNode',
-}
-
-//#region Operators and Condition
-
-export enum QuestionResponseType {
-    Text                  = 'Text',
-    Float                 = 'Float',
-    Integer               = 'Integer',
-    Boolean               = 'Boolean',
-    Object                = 'Object',
-    TextArray             = 'Text Array',
-    FloatArray            = 'Float Array',
-    IntegerArray          = 'Integer Array',
-    BooleanArray          = 'Boolean Array',
-    ObjectArray           = 'Object Array',
-    Biometrics            = 'Biometrics',
-    SingleChoiceSelection = 'Single Choice Selection',
-    MultiChoiceSelection  = 'Multi Choice Selection',
-    File                  = 'File',
-    Date                  = 'Date',
-    DateTime              = 'DateTime',
-    Rating                = 'Rating',
-    Location              = 'Location',
-    Range                 = 'Range',
-    Ok                    = 'Ok', //Acknowledgement
-    None                  = 'None', //Not expecting response
-}
-
-export const QuestionResponseTypeList: QuestionResponseType[] = [
-    QuestionResponseType.Text,
-    QuestionResponseType.Float,
-    QuestionResponseType.Integer,
-    QuestionResponseType.Boolean,
-    QuestionResponseType.Object,
-    QuestionResponseType.TextArray,
-    QuestionResponseType.FloatArray,
-    QuestionResponseType.IntegerArray,
-    QuestionResponseType.BooleanArray,
-    QuestionResponseType.ObjectArray,
-    QuestionResponseType.Biometrics,
-    QuestionResponseType.SingleChoiceSelection,
-    QuestionResponseType.MultiChoiceSelection,
-    QuestionResponseType.File,
-    QuestionResponseType.Date,
-    QuestionResponseType.DateTime,
-    QuestionResponseType.Rating,
-    QuestionResponseType.Location,
-    QuestionResponseType.Range,
-    QuestionResponseType.Ok,
-    QuestionResponseType.None,
-];
-
-export enum OperatorType {
-    Logical      = 'Logical',
-    Mathematical = 'Mathematical',
-    Composition  = 'Composition',
-    Iterate      = 'Iterate'
-}
-
-export const OperatorList: OperatorType[] = [
-    OperatorType.Logical,
-    OperatorType.Mathematical,
-    OperatorType.Composition,
-    OperatorType.Iterate,
-];
-
-export enum CompositionOperator {
-    And  = 'And',
-    Or   = 'Or',
-    Xor  = 'Xor',
-    None = 'None'
-}
-
-export const CompositionOperatorList: CompositionOperator[] = [
-    CompositionOperator.And,
-    CompositionOperator.Or,
-    CompositionOperator.None,
-];
-
-export enum LogicalOperator {
-    Equal                     = 'Equal',
-    NotEqual                  = 'NotEqual',
-    GreaterThan               = 'GreaterThan',
-    GreaterThanOrEqual        = 'GreaterThanOrEqual',
-    LessThan                  = 'LessThan',
-    LessThanOrEqual           = 'LessThanOrEqual',
-    In                        = 'In',
-    NotIn                     = 'NotIn',
-    Contains                  = 'Contains',
-    DoesNotContain            = 'DoesNotContain',
-    Between                   = 'Between',
-    IsTrue                    = 'IsTrue',
-    IsFalse                   = 'IsFalse',
-    Exists                    = 'Exists',
-    HasConsecutiveOccurrences = 'HasConsecutiveOccurrences', //array, checkFor, numTimes
-    RangesOverlap             = 'RangesOverlap',
-    None                      = 'None',
-}
-
-export const LogicalOperatorList: LogicalOperator[] = [
-    LogicalOperator.Equal,
-    LogicalOperator.NotEqual,
-    LogicalOperator.GreaterThan,
-    LogicalOperator.GreaterThanOrEqual,
-    LogicalOperator.LessThan,
-    LogicalOperator.LessThanOrEqual,
-    LogicalOperator.In,
-    LogicalOperator.NotIn,
-    LogicalOperator.Contains,
-    LogicalOperator.DoesNotContain,
-    LogicalOperator.Between,
-    LogicalOperator.IsTrue,
-    LogicalOperator.IsFalse,
-    LogicalOperator.Exists,
-    LogicalOperator.HasConsecutiveOccurrences,
-    LogicalOperator.RangesOverlap,
-    LogicalOperator.None,
-];
-
-export enum MathematicalOperator {
-    Add        = 'Add',
-    Subtract   = 'Subtract',
-    Divide     = 'Divide',
-    Multiply   = 'Multiply',
-    Percentage = 'Percentage',
-    None       = 'None',
-}
-
-export const MathematicalOperatorList: MathematicalOperator[] = [
-    MathematicalOperator.Add,
-    MathematicalOperator.Subtract,
-    MathematicalOperator.Divide,
-    MathematicalOperator.Multiply,
-    MathematicalOperator.Percentage,
-    MathematicalOperator.None,
-];
-
-export enum OperandDataType {
-    Float   = 'Float',
-    Integer = 'Integer',
-    Boolean = 'Boolean',
-    Text    = 'Text',
-    Array   = 'Array',
-    Object  = 'Object',
-    Date    = 'Date',
-}
-
-export const ConditionOperandDataTypeList: OperandDataType[] = [
-    OperandDataType.Float,
-    OperandDataType.Integer,
-    OperandDataType.Boolean,
-    OperandDataType.Text,
-    OperandDataType.Array,
-    OperandDataType.Object,
-    OperandDataType.Date,
-];
-
-export enum ActionType {
-    SendMessage    = 'SendMessage',
-    SendEmail      = 'SendEmail',
-    SendSms        = 'SendSms',
-    RestApiCall    = 'RestApiCall',
-    PythonFunCall  = 'PythonFunCall',
-    LambdaFunCall  = 'LambdaFunCall',
-    StoreDataSqlDb = 'StoreDataSqlDb',
-}
-
-//#endregion
+import { XAction } from "./action.types";
+import { CompositionOperator, NodeType, OperandDataType, OperatorType, QuestionResponseType } from "./engine.enums";
 
 ////////////////////////////////////////////////////////////////
 
@@ -193,7 +22,7 @@ export class XConditionOperand {
         this.Name = name;
         this.Value = value;
 
-        if (Helper.isStr(this.Value) && this.DataType !== OperandDataType.Text) {
+        if (StringUtils.isStr(this.Value) && this.DataType !== OperandDataType.Text) {
             if (this.DataType === OperandDataType.Integer) {
                 this.Value = parseInt(this.Value as string);
             }
@@ -217,16 +46,6 @@ export class XConditionOperand {
 
 }
 
-export interface XAction {
-    Type       : ActionType;
-    Name       : string;
-    Description: string;
-    RawInput   : any | undefined;
-    RawOutput  : any | undefined;
-    Input      : Map<string, any> | undefined | null;
-    Output     : Map<string, any> | undefined | null;
-}
-
 export interface XPathCondition {
     id            : uuid;
     Name          : string;
@@ -236,15 +55,15 @@ export interface XPathCondition {
     ParentNodeCode: string;
 
     IsCompositeCondition?: boolean;
-    CompositionType ?    : CompositionOperator;
+    CompositionType?     : CompositionOperator;
     ParentConditionId?   : uuid;
-    OperatorType ?       : OperatorType;
+    OperatorType?        : OperatorType;
 
-    FirstOperand?: ConditionOperand;
-    SecondOperand?: ConditionOperand;
-    ThirdOperand?: ConditionOperand;
+    FirstOperand ?: XConditionOperand;
+    SecondOperand?: XConditionOperand;
+    ThirdOperand ?: XConditionOperand;
 
-    Children?: CAssessmentPathCondition[];
+    Children?     : XPathCondition[];
 }
 
 export interface XQuestionOption {
@@ -266,8 +85,7 @@ export interface XNodePath {
     ParentNodeCode: string;
     NextNodeId    : uuid;
     NextNodeCode  : string;
-    Condition     : string;
-    Actions       : XAction[];
+    Condition     : XPathCondition;
 }
 
 export interface XNode
@@ -320,88 +138,22 @@ export interface XQuestionNodeResponse {
 }
 
 export interface XSchema {
-
-    id         : uuid;
-
-    Name       : string;
-
-    Description: string;
-
-    ValidFrom  : Date;
-
-    ValidTill  : Date;
-
-    IsValid    : boolean;
-
-    RootNode  ?: {
-       id         : uuid,
-       Name       : string;
-       Description: string;
-       Type       : NodeType;
-        Actions ?  : {
-            ActionType  : EventActionType;
-            Name        : string;
-            Description : string;
-            InputParams : InputParams;
-            OutputParams: OutputParams;
-        }
-    };
-
-    Tenant     : {
+    id          : uuid;
+    Name        : string;
+    Description : string;
+    ValidFrom   : Date;
+    ValidTill   : Date;
+    IsValid     : boolean;
+    RootNode   ?: XNode;
+    Tenant      : {
         id  : uuid;
         Name: string;
         Code: string;
     };
-
     IdentificationParams?: Map<string, any>;
-
-    CreatedAt: Date;
-
-    UpdatedAt: Date;
-
+    CreatedAt            : Date;
+    UpdatedAt            : Date;
 }
-
-// export enum EventActionType {
-//     ExecuteNext        = "Execute-Next",
-//     WaitForInputEvents = "Wait-For-Input-Events",
-//     Exit               = "Exit",
-//     AwardBadge         = "Award-Badge",
-//     AwardPoints        = "Award-Points",
-//     ProcessData        = "Process-Data",
-//     ExtractData        = "Extract-Data",
-//     CompareData        = "Compare-Data",
-//     StoreData          = "Store-Data",
-//     Custom             = "Custom",
-// }
-
-// export const EventActionTypeList: EventActionType[] = [
-//     EventActionType.ExecuteNext,
-//     EventActionType.WaitForInputEvents,
-//     EventActionType.Exit,
-//     EventActionType.AwardBadge,
-//     EventActionType.AwardPoints,
-//     EventActionType.ProcessData,
-//     EventActionType.ExtractData,
-//     EventActionType.CompareData,
-//     EventActionType.StoreData,
-//     EventActionType.Custom,
-// ];
-
-// export enum DataActionType {
-//     CalculateContinuity = "Calculate-Continuity",
-//     FindRangeDifference = "Find-Range-Difference",
-//     MaximumInRange      = "Maximum-In-Range",
-//     MinimumInRange      = "Minimum-In-Range",
-//     CalculatePercentile = "Calculate-Percentile",
-// }
-
-// export const DataActionTypeList: DataActionType[] = [
-//     DataActionType.CalculateContinuity,
-//     DataActionType.FindRangeDifference,
-//     DataActionType.MaximumInRange,
-//     DataActionType.MinimumInRange,
-//     DataActionType.CalculatePercentile,
-// ];
 
 export enum ExecutionStatus {
     Pending  = "Pending",
@@ -418,21 +170,31 @@ export const ExecutionStatusList: ExecutionStatus[] = [
 ];
 
 export enum InputSourceType {
-    Database    = "Database",
-    Almanac     = "Almanac",
-    ApiEndpoint = "ApiEndpoint",
+    Database     = "Database",
+    Almanac      = "Almanac",
+    ApiEndpoint  = "ApiEndpoint",
+    CsvDocument  = "CsvDocument",
+    ExcelSheet   = "ExcelSheet",
+    JSON         = "JSON",
+    JSONFile     = "JSONFile",
+    CustomObject = "CustomObject",
 }
 
 export const InputSourceTypeList: InputSourceType[] = [
     InputSourceType.Database,
     InputSourceType.Almanac,
     InputSourceType.ApiEndpoint,
+    InputSourceType.CsvDocument,
+    InputSourceType.ExcelSheet,
+    InputSourceType.JSON,
+    InputSourceType.JSONFile,
+    InputSourceType.CustomObject,
+
 ];
 
 export interface ActionInputParams {
-    RecordType        : string;
     SourceType        : InputSourceType;
-    InputTag         ?: string;
+    Name              : string;
     SecondaryInputTag?: string;
 }
 
@@ -443,34 +205,6 @@ export interface DataExtractionInputParams extends ActionInputParams {
     }[];
     RecordDateFrom?: Date;
     RecordDateTo  ?: Date;
-}
-
-export interface ContinuityInputParams extends ActionInputParams {
-    DataActionType ?: DataActionType;
-    KeyDataType    ?: OperandDataType;
-    KeyName        ?: string;
-    ValueDataType  ?: OperandDataType;
-    ValueName      ?: string;
-    Value          ?: any;
-    SecondaryValue ?: any;
-    Operator        : LogicalOperator;
-    ContinuityCount : number;
-}
-
-export interface ValueComparisonInputParams extends ActionInputParams {
-    DataActionType ?: DataActionType;
-    Filters ?: {
-        Key  : string;
-        Value: string;
-    }[];
-}
-
-export interface RangeComparisonInputParams extends ActionInputParams {
-    DataActionType ?: DataActionType;
-    Filters ?: {
-        Key  : string;
-        Value: string;
-    }[];
 }
 
 export interface DataStorageInputParams extends ActionInputParams {
@@ -508,9 +242,6 @@ export interface ProcessorResult {
 
 export type InputParams = DataExtractionInputParams |
                           DataStorageInputParams |
-                          ContinuityInputParams |
-                          ValueComparisonInputParams |
-                          RangeComparisonInputParams |
                           ActionInputParams;
 
 export type OutputParams = ActionOutputParams;

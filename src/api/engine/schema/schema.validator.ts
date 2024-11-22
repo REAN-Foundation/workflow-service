@@ -3,15 +3,7 @@ import express from 'express';
 import { SchemaCreateModel, SchemaUpdateModel, SchemaSearchFilters } from '../../../domain.types/engine/schema.domain.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
-import { EventActionType, NodeType, SchemaType } from '../../../domain.types/engine/intermediate.types';
-import {
-    ActionInputParamsObj_Create,
-    ActionOutputParamsObj_Create,
-    ContinuityInputParamsObj_Create,
-    DataExtractionInputParamsObj_Create,
-    DataStorageInputParamsObj_Create,
-    RangeComparisonInputParamsObj_Create,
-    ValueComparisonInputParamsObj_Create } from '../common.validations';
+import { NodeType, SchemaType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -22,8 +14,8 @@ export class SchemaValidator extends BaseValidator {
             const schema = joi.object({
                 ClientId     : joi.string().uuid().required(),
                 Name         : joi.string().max(32).required(),
-                Description  : joi.string().max(256).optional(),
                 Type         : joi.string().valid(...Object.values(SchemaType)).required(),
+                Description  : joi.string().max(256).optional(),
                 ValidFrom    : joi.date().iso().greater('now').optional(),
                 ValidTill    : joi.date().iso().greater(joi.ref('ValidFrom')).optional(),
                 IsValid      : joi.boolean().optional(),
@@ -32,19 +24,6 @@ export class SchemaValidator extends BaseValidator {
                     Type        : joi.string().valid(...Object.values(NodeType)).required(),
                     Name        : joi.string().max(32).required(),
                     Description : joi.string().max(256).optional(),
-                    Action      : {
-                        ActionType  : joi.string().valid(...Object.values(EventActionType)).required(),
-                        Name        : joi.string().max(32).required(),
-                        Description : joi.string().max(256).optional(),
-                        InputParams : joi.alternatives().try(
-                            ActionInputParamsObj_Create,
-                            ContinuityInputParamsObj_Create,
-                            DataExtractionInputParamsObj_Create,
-                            DataStorageInputParamsObj_Create,
-                            RangeComparisonInputParamsObj_Create,
-                            ValueComparisonInputParamsObj_Create).optional(),
-                        OutputParams : joi.alternatives().try(ActionOutputParamsObj_Create).optional(),
-                    }
                 }).optional()
             });
 

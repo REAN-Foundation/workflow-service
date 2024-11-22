@@ -1,4 +1,14 @@
 
+export enum SchemaType {
+    ChatBot = 'ChatBot',
+    Application = 'Application',
+}
+
+export const SchemaTypeList: SchemaType[] = [
+    SchemaType.ChatBot,
+    SchemaType.Application,
+];
+
 export enum NodeType {
     QuestionNode      = 'QuestionNode',
     MessageNode       = 'MessageNode',

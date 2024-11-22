@@ -80,12 +80,12 @@ export class DataStore implements IDataStore {
             throw new Error(`Invalid badge Id!`);
         }
         const participant = await this._participantRepository.findOne({
-            where: {
+            where : {
                 ReferenceId : context.ReferenceId
             }
         });
         const badge = await this._badgeRepository.findOne({
-            where: {
+            where : {
                 id : badgeId
             }
         });
@@ -96,25 +96,25 @@ export class DataStore implements IDataStore {
             const end = (new Date(r.end)).toISOString().split('T')[0];
             const metadata = {
                 start : start,
-                end : end,
-                key : `(${start})-(${end})`,
+                end   : end,
+                key   : `(${start})-(${end})`,
             };
             const str = JSON.stringify(metadata);
             const record = await this._participantBadgeRepository.create({
-                Participant: participant,
-                Badge: badge,
-                Reason: badge.Description,
-                AcquiredDate: new Date(end),
-                Metadata: str
+                Participant  : participant,
+                Badge        : badge,
+                Reason       : badge.Description,
+                AcquiredDate : new Date(end),
+                Metadata     : str
             });
             const record_ = await this._participantBadgeRepository.save(record);
             addedBadges.push(record_);
         }
 
         const result: ProcessorResult = {
-            Success: true,
-            Tag    : tag,
-            Data   : addedBadges
+            Success : true,
+            Tag     : tag,
+            Data    : addedBadges
         };
 
         return result;
@@ -133,9 +133,9 @@ export class DataStore implements IDataStore {
         }
 
         const result: ProcessorResult = {
-            Success: true,
-            Tag    : tag,
-            Data   : deleted
+            Success : true,
+            Tag     : tag,
+            Data    : deleted
         };
 
         return result;
@@ -147,9 +147,9 @@ export class DataStore implements IDataStore {
                 where : {
                     id : id
                 },
-                relations: {
-                    Participant: true,
-                    Group: true,
+                relations : {
+                    Participant : true,
+                    Group       : true,
                 }
             });
             return context;

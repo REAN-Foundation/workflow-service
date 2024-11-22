@@ -2,10 +2,6 @@ import express from "express";
 import { logger } from "../logger/logger";
 import { register as registerUserRoutes } from "../api/user/user.routes";
 import { register as registerClientRoutes } from "../api/client/client.routes";
-import { register as registerBadgeRoutes } from "../api/awards/badge/badge.routes";
-import { register as registerBadgeCategoryRoutes } from "../api/awards/badge.category/badge.category.routes";
-import { register as registerParticipantRoutes } from "../api/awards/participant/participant.routes";
-import { register as registerParticipantGroupRoutes } from "../api/awards/participant.group/participant.group.routes";
 import { register as registerSchemaRoutes } from '../api/engine/schema/schema.routes';
 import { register as registerNodeRoutes } from '../api/engine/node/node.routes';
 import { register as registerRuleRoutes } from '../api/engine/rule/rule.routes';
@@ -35,10 +31,6 @@ export class RouteHandler {
 
                 registerUserRoutes(expressApp);
                 registerClientRoutes(expressApp);
-                registerBadgeRoutes(expressApp);
-                registerBadgeCategoryRoutes(expressApp);
-                registerParticipantRoutes(expressApp);
-                registerParticipantGroupRoutes(expressApp);
                 registerSchemaRoutes(expressApp);
                 registerNodeRoutes(expressApp);
                 registerRuleRoutes(expressApp);

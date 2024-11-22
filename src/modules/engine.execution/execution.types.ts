@@ -2,15 +2,13 @@ import { ActionOutputParams, InputParams, OutputParams } from '../../domain.type
 import { uuid } from '../../domain.types/miscellaneous/system.types';
 import {
     CompositionOperator,
-    ContextType,
-    EventActionType,
     ExecutionStatus,
     LogicalOperator,
     MathematicalOperator,
     NodeType,
     OperandDataType,
     OperatorType
-} from '../../domain.types/engine/intermediate.types';
+} from '../../domain.types/engine/engine.enums';
 import { v4 as uuidv4 } from 'uuid';
 
 ///////////////////////////////////////////////////////////////////////////
@@ -55,46 +53,6 @@ export class CCondition {
         }
         return facts;
     };
-
-}
-
-export class CContext {
-
-    id          : uuid;
-
-    ReferenceId : uuid;
-
-    Type        : ContextType;
-
-    Participant?: {
-        id       : uuid;
-        FirstName: string;
-        LastName : string;
-    };
-
-    ParticipantGroup ?: {
-        id         : uuid;
-        Name       : string;
-        Description: string;
-    };
-
-}
-
-export class CAction {
-
-    id          : uuid;
-
-    ActionType  : EventActionType;
-
-    Name        : string | undefined;
-
-    Description : string | undefined;
-
-    ParentNodeId: uuid | undefined;
-
-    InputParams : any;
-
-    OutputParams: ActionOutputParams;
 
 }
 

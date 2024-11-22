@@ -6,7 +6,6 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { ContextType } from "./intermediate.types";
 
 //////////////////////////////////////////////////////////////
 
@@ -31,23 +30,6 @@ export interface SchemaInstanceResponseDto {
             Name: string;
         },
         EventTypes : EventType[],
-    };
-    Context     : {
-        id          : uuid;
-        ReferenceId : uuid;
-        Type        : ContextType;
-        Participant?: {
-            id         : uuid;
-            ReferenceId: uuid;
-            Prefix     : string;
-            FirstName  : string;
-            LastName   : string;
-        };
-        ParticipantGroup ?: {
-            id         : uuid;
-            Name       : string;
-            Description: string;
-        };
     };
     RootNodeInstance : {
         id: uuid;

@@ -7,7 +7,6 @@ import { RuleService } from '../../database/services/engine/rule.service';
 import { SchemaInstanceService } from '../../database/services/engine/schema.instance.service';
 import { SchemaService } from '../../database/services/engine/schema.service';
 import { ConditionService } from '../../database/services/engine/condition.service';
-import { OperatorType } from '../../domain.types/engine/intermediate.types';
 import { CSchemaInstance, CNodeInstance, CRule, CCondition, CAction } from './execution.types';
 import { logger } from '../../logger/logger';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
@@ -40,28 +39,13 @@ export class ExecutionTypesGenerator {
             instance.FactNames = [];
             instance.Almanac = [];
 
-            instance.Context = {
-                id         : dto.Context.id,
-                ReferenceId: dto.Context.ReferenceId,
-                Type       : dto.Context.Type,
-                Participant: dto.Context.Participant ? {
-                    id : dto.Context.Participant.id,
-                    FirstName: dto.Context.Participant.FirstName,
-                    LastName: dto.Context.Participant.LastName,
-                }: null,
-                ParticipantGroup : dto.Context.ParticipantGroup ? {
-                    id         : dto.Context.ParticipantGroup.id,
-                    Name       : dto.Context.ParticipantGroup.Name,
-                    Description: dto.Context.ParticipantGroup.Description,
-                } : null
-            };
-
             for await (var ni of dto.NodeInstances) {
                 const nodeInstance = await this.createNodeInstance(ni.id);
                 instance.NodeInstances.push(nodeInstance);
             }
             instance.RootNodeInstance = instance.NodeInstances.find(x => x.NodeId === dto.RootNodeInstance?.Node?.id);
-            instance.CurrentNodeInstance = instance.NodeInstances.find(x => x.NodeId === dto.CurrentNodeInstance?.Node?.id);
+            instance.CurrentNodeInstance =
+                instance.NodeInstances.find(x => x.NodeId === dto.CurrentNodeInstance?.Node?.id);
 
             for (var nodeInstance of instance.NodeInstances) {
                 var facts = nodeInstance.extractFacts();
@@ -129,11 +113,11 @@ export class ExecutionTypesGenerator {
         instance.NodeId = rule.ParentNode.id;
         instance.Name = rule.Name;
         instance.Action = {
-            ActionType  : rule.Action.ActionType,
-            Name        : rule.Action.Name,
-            Description : rule.Description,
+            ActionType   : rule.Action.ActionType,
+            Name         : rule.Action.Name,
+            Description  : rule.Description,
             InputParams  : rule.Action.InputParams,
-            OutputParams      : rule.Action.OutputParams
+            OutputParams : rule.Action.OutputParams
         };
 
         const conds = await this.getConditionsForRule(rule.id);

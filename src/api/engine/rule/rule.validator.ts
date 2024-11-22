@@ -3,22 +3,6 @@ import express from 'express';
 import { RuleCreateModel, RuleUpdateModel, RuleSearchFilters } from '../../../domain.types/engine/rule.domain.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
-import { EventActionType } from '../../../domain.types/engine/intermediate.types';
-import {
-    ActionInputParamsObj_Create,
-    ActionInputParamsObj_Update,
-    ActionOutputParamsObj_Create,
-    ActionOutputParamsObj_Update,
-    ContinuityInputParamsObj_Create,
-    ContinuityInputParamsObj_Update,
-    DataExtractionInputParamsObj_Create,
-    DataExtractionInputParamsObj_Update,
-    DataStorageInputParamsObj_Create,
-    DataStorageInputParamsObj_Update,
-    RangeComparisonInputParamsObj_Create,
-    RangeComparisonInputParamsObj_Update,
-    ValueComparisonInputParamsObj_Create,
-    ValueComparisonInputParamsObj_Update } from '../common.validations';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,19 +16,7 @@ export class RuleValidator extends BaseValidator {
                 Description  : joi.string().max(256).optional(),
                 ParentNodeId : joi.string().uuid().required(),
                 SchemaId     : joi.string().uuid().required(),
-                Action       : {
-                    ActionType  : joi.string().valid(...Object.values(EventActionType)).required(),
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
-                    InputParams : joi.alternatives().try(
-                        ActionInputParamsObj_Create,
-                        ContinuityInputParamsObj_Create,
-                        DataExtractionInputParamsObj_Create,
-                        DataStorageInputParamsObj_Create,
-                        RangeComparisonInputParamsObj_Create,
-                        ValueComparisonInputParamsObj_Create).optional(),
-                    OutputParams : joi.alternatives().try(ActionOutputParamsObj_Create).optional(),
-                }
+                ConditionId  : joi.string().uuid().required(),
             });
             await rule.validateAsync(request.body);
             return {
@@ -52,13 +24,7 @@ export class RuleValidator extends BaseValidator {
                 Description  : request.body.Description ?? null,
                 ParentNodeId : request.body.ParentNodeId,
                 SchemaId     : request.body.SchemaId,
-                Action       : {
-                    ActionType   : request.body.Action.ActionType,
-                    Name         : request.body.Action.Name,
-                    Description  : request.body.Action.Description ?? null,
-                    InputParams  : request.body.Action.InputParams ?? null,
-                    OutputParams : request.body.Action.OutputParams ?? null,
-                },
+                ConditionId  : request.body.ConditionId,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -72,19 +38,7 @@ export class RuleValidator extends BaseValidator {
                 Description  : joi.string().max(256).optional(),
                 ParentNodeId : joi.string().uuid().optional(),
                 SchemaId     : joi.string().uuid().optional(),
-                Action       : {
-                    ActionType  : joi.string().valid(...Object.values(EventActionType)).optional(),
-                    Name        : joi.string().max(32).optional(),
-                    Description : joi.string().max(256).optional(),
-                    InputParams : joi.alternatives().try(
-                        ActionInputParamsObj_Update,
-                        ContinuityInputParamsObj_Update,
-                        DataExtractionInputParamsObj_Update,
-                        DataStorageInputParamsObj_Update,
-                        RangeComparisonInputParamsObj_Update,
-                        ValueComparisonInputParamsObj_Update).optional(),
-                    OutputParams : joi.alternatives().try(ActionOutputParamsObj_Update).optional(),
-                }
+                ConditionId  : joi.string().uuid().optional(),
             });
             await rule.validateAsync(request.body);
             return {
@@ -92,17 +46,7 @@ export class RuleValidator extends BaseValidator {
                 Description  : request.body.Description ?? null,
                 ParentNodeId : request.body.ParentNodeId ?? null,
                 SchemaId     : request.body.SchemaId ?? null,
-                Action       : request.body.Action ? {
-                    Name        : request.body.Action.Name ?? null,
-                    Description : request.body.Action.Description ?? null,
-                    ActionType  : request.body.Action.ActionType ?? null,
-                    InputParams : request.body.Action &&
-                                  request.body.Action?.InputParams ?
-                        request.body.Action?.InputParams : null,
-                    OutputParams : request.body.Action &&
-                                  request.body.Action?.OutputParams ?
-                        request.body.Action?.OutputParams : null,
-                } : null,
+                ConditionId  : request.body.ConditionId ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

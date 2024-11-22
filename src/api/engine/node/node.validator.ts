@@ -7,8 +7,7 @@ import {
 } from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
-import { ActionType } from '../../../domain.types/engine/action.types';
-import { NodeType } from '../../../domain.types/engine/engine.enums';
+import { NodeType, ActionType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 

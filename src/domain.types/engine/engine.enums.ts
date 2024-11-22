@@ -7,6 +7,14 @@ export enum NodeType {
     WaitNode          = 'WaitNode',
 }
 
+export const NodeTypeList: NodeType[] = [
+    NodeType.QuestionNode,
+    NodeType.MessageNode,
+    NodeType.ExecutionNode,
+    NodeType.DelayedActionNode,
+    NodeType.WaitNode,
+];
+
 export enum ActionType {
     SendMessage    = 'SendMessage',
     SendEmail      = 'SendEmail',
@@ -18,6 +26,18 @@ export enum ActionType {
     Exit           = 'Exit',
     Continue       = 'Continue',
 }
+
+export const ActionTypeList: ActionType[] = [
+    ActionType.SendMessage,
+    ActionType.SendEmail,
+    ActionType.SendSms,
+    ActionType.RestApiCall,
+    ActionType.PythonFunCall,
+    ActionType.LambdaFunCall,
+    ActionType.StoreDataSqlDb,
+    ActionType.Exit,
+    ActionType.Continue,
+];
 
 export enum QuestionResponseType {
     Text                  = 'Text',

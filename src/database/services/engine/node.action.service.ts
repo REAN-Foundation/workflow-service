@@ -143,6 +143,25 @@ export class NodeActionService extends BaseService {
         }
     };
 
+    public getNodeActions = async (nodeId: uuid): Promise<NodeActionResponseDto[]> => {
+        try {
+            const actions = await this._actionRepository.find({
+                where : {
+                    ParentNode : {
+                        id : nodeId
+                    }
+                },
+                relations : {
+                    ParentNode : true,
+                }
+            });
+            return actions.map(x => NodeActionMapper.toResponseDto(x));
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     //#region Privates
 
     private getSearchModel = (filters: NodeActionSearchFilters) => {

@@ -80,6 +80,18 @@ export class NodePathController {
         }
     };
 
+    search = async (request: express.Request, response: express.Response) => {
+        try {
+            const filters = await this._validator.validateSearchRequest(request);
+            const paths = await this._service.search(filters);
+            ResponseHandler.success(request, response, 'Paths retrieved successfully!', 200, {
+                NodePaths : paths,
+            });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
     getNodePaths = async (request: express.Request, response: express.Response) => {
         try {
             const nodeId: uuid = await this._validator.requestParamAsUUID(request, 'nodeId');

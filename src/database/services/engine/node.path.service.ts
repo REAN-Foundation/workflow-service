@@ -4,26 +4,24 @@ import { Rule } from '../../models/engine/rule.model';
 import { NodeAction } from '../../models/engine/node.action.model';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { Source } from '../../../database/database.connector';
+import { Source } from '../../database.connector';
 import { FindManyOptions, Like, Repository } from 'typeorm';
-import { NodeMapper } from '../../mappers/engine/node.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import {
-    NodeCreateModel,
-    NodeResponseDto,
-    NodeSearchFilters,
-    NodeSearchResults,
-    NodeUpdateModel } from '../../../domain.types/engine/node.types';
 import { CommonUtilsService } from './common.utils.service';
+import { NodePath } from '../../../database/models/engine/node.path.model';
+import { NodePathCreateModel, NodePathResponseDto, NodePathSearchFilters, NodePathSearchResults, NodePathUpdateModel } from '../../../domain.types/engine/node.path.types';
+import { NodePathMapper } from '../../../database/mappers/engine/node.path.mapper';
 
 ///////////////////////////////////////////////////////////////////////
 
-export class NodeService extends BaseService {
+export class NodePathService extends BaseService {
 
     //#region Repositories
 
     _nodeRepository: Repository<Node> = Source.getRepository(Node);
+
+    _pathRepository: Repository<NodePath> = Source.getRepository(NodePath);
 
     _schemaRepository: Repository<Schema> = Source.getRepository(Schema);
 
@@ -35,47 +33,43 @@ export class NodeService extends BaseService {
 
     //#endregion
 
-    public create = async (createModel: NodeCreateModel)
-        : Promise<NodeResponseDto> => {
-        const schema = await this._commonUtils.getSchema(createModel.SchemaId);
+    public create = async (createModel: NodePathCreateModel)
+        : Promise<NodePathResponseDto> => {
         const parentNode = await this.getNode(createModel.ParentNodeId);
-        const node = this._nodeRepository.create({
-            Schema      : schema,
+
+        const path = this._pathRepository.create({
             ParentNode  : parentNode,
             Name        : createModel.Name,
             Description : createModel.Description,
         });
-        var record = await this._nodeRepository.save(node);
-        return NodeMapper.toResponseDto(record);
+        var record = await this._pathRepository.save(path);
+        return NodePathMapper.toResponseDto(record);
     };
 
-    public getById = async (id: uuid): Promise<NodeResponseDto> => {
+    public getById = async (id: uuid): Promise<NodePathResponseDto> => {
         try {
-            var node = await this._nodeRepository.findOne({
+            var path = await this._pathRepository.findOne({
                 where : {
                     id : id
                 },
                 relations : {
-                    Action     : true,
                     ParentNode : true,
-                    Schema     : true,
-                    Rules      : true,
-                    Children   : true,
+                    Rule       : true,
                 }
             });
-            return NodeMapper.toResponseDto(node);
+            return NodePathMapper.toResponseDto(path);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
         }
     };
 
-    public search = async (filters: NodeSearchFilters)
-        : Promise<NodeSearchResults> => {
+    public search = async (filters: NodePathSearchFilters)
+        : Promise<NodePathSearchResults> => {
         try {
             var search = this.getSearchModel(filters);
             var { search, pageIndex, limit, order, orderByColumn } = this.addSortingAndPagination(search, filters);
-            const [list, count] = await this._nodeRepository.findAndCount(search);
+            const [list, count] = await this._pathRepository.findAndCount(search);
             const searchResults = {
                 TotalCount     : count,
                 RetrievedCount : list.length,
@@ -83,7 +77,7 @@ export class NodeService extends BaseService {
                 ItemsPerPage   : limit,
                 Order          : order === 'DESC' ? 'descending' : 'ascending',
                 OrderedBy      : orderByColumn,
-                Items          : list.map(x => NodeMapper.toResponseDto(x)),
+                Items          : list.map(x => NodePathMapper.toResponseDto(x)),
             };
             return searchResults;
         } catch (error) {
@@ -92,26 +86,16 @@ export class NodeService extends BaseService {
         }
     };
 
-    public update = async (id: uuid, model: NodeUpdateModel)
-        : Promise<NodeResponseDto> => {
+    public update = async (id: uuid, model: NodePathUpdateModel)
+        : Promise<NodePathResponseDto> => {
         try {
-            const node = await this._nodeRepository.findOne({
+            const node = await this._pathRepository.findOne({
                 where : {
                     id : id
-                },
-                relations : {
-                    Action     : true,
-                    Children   : true,
-                    ParentNode : true,
-                    Schema     : true,
                 }
             });
             if (!node) {
-                ErrorHandler.throwNotFoundError('Node not found!');
-            }
-            if (model.SchemaId != null) {
-                const schema = await this._commonUtils.getSchema(model.SchemaId);
-                node.Schema = schema;
+                ErrorHandler.throwNotFoundError('Node path not found!');
             }
             if (model.ParentNodeId != null) {
                 const parentNode = await this.getNode(model.ParentNodeId);
@@ -123,8 +107,9 @@ export class NodeService extends BaseService {
             if (model.Description != null) {
                 node.Description = model.Description;
             }
-            var record = await this._nodeRepository.save(node);
-            return NodeMapper.toResponseDto(record);
+
+            var record = await this._pathRepository.save(node);
+            return NodePathMapper.toResponseDto(record);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
@@ -133,13 +118,53 @@ export class NodeService extends BaseService {
 
     public delete = async (id: string): Promise<boolean> => {
         try {
-            var record = await this._nodeRepository.findOne({
+            var record = await this._pathRepository.findOne({
                 where : {
                     id : id
                 }
             });
-            var result = await this._nodeRepository.remove(record);
+            var result = await this._pathRepository.remove(record);
             return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getNodePaths = async (nodeId: uuid): Promise<NodePathResponseDto[]> => {
+        try {
+            const paths = await this._pathRepository.find({
+                where : {
+                    ParentNode : {
+                        id : nodeId
+                    }
+                },
+                relations : {
+                    ParentNode : true,
+                    Rule       : true,
+                }
+            });
+            return paths.map(x => NodePathMapper.toResponseDto(x));
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public setNextNodeToPath = async (pathId: uuid, nextNodeId: uuid): Promise<NodePathResponseDto> => {
+        try {
+            const path = await this._pathRepository.findOne({
+                where : {
+                    id : pathId
+                }
+            });
+            if (!path) {
+                ErrorHandler.throwNotFoundError('Node path not found!');
+            }
+            const nextNode = await this.getNode(nextNodeId);
+            path.NextNode = nextNode;
+            var record = await this._pathRepository.save(path);
+            return NodePathMapper.toResponseDto(record);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
@@ -148,9 +173,9 @@ export class NodeService extends BaseService {
 
     //#region Privates
 
-    private getSearchModel = (filters: NodeSearchFilters) => {
+    private getSearchModel = (filters: NodePathSearchFilters) => {
 
-        var search : FindManyOptions<Node> = {
+        var search : FindManyOptions<NodePath> = {
             relations : {
             },
             where : {
@@ -159,24 +184,24 @@ export class NodeService extends BaseService {
                 id          : true,
                 Name        : true,
                 Description : true,
-                Schema      : {
+                ParentNode  : {
                     id          : true,
                     Name        : true,
                     Description : true,
                 },
-                ParentNode : {
+                Rule : {
                     id          : true,
                     Name        : true,
                     Description : true,
+                    Condition   : {
+                        id : true,
+                    }
                 },
                 CreatedAt : true,
                 UpdatedAt : true,
             }
         };
 
-        if (filters.SchemaId) {
-            search.where['Schema'].id = filters.SchemaId;
-        }
         if (filters.ParentNodeId) {
             search.where['ParentNode'].id = filters.ParentNodeId;
         }

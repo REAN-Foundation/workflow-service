@@ -1,7 +1,7 @@
 import { Repository } from "typeorm";
 import { FactsSource } from '../../../../fact.extractors/facts.db.connector';
 import { Context } from "../../../../../database/models/engine/context.model";
-import { DataExtractionInputParams, DataSamplingMethod, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/engine.types';
+import { DataExtractionInputParams, DataSamplingMethod, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/intermediate.types';
 import { IExtractor } from "./extractor.interface";
 import { MentalHealthFact } from "../../../../../modules/fact.extractors/models/mental.health.fact.model";
 
@@ -14,7 +14,7 @@ export class MentalHealthDataExtractor  implements IExtractor {
     _mentalHealthRepository: Repository<MentalHealthFact> = FactsSource.getRepository(MentalHealthFact);
 
     //#endregion
-    
+
     public extract = async (
         context: Context,
         inputParams: DataExtractionInputParams,
@@ -25,13 +25,13 @@ export class MentalHealthDataExtractor  implements IExtractor {
         if (!samplingMethod) {
             samplingMethod = DataSamplingMethod.Any;
         }
-    
+
         const records = await this._mentalHealthRepository.find({
             where : {
                 ContextReferenceId : context.ReferenceId
             },
         });
-    
+
         const groupedRecords = records.reduce((acc, obj) => {
             const key = obj.RecordDateStr;
             if (!acc[key]) {
@@ -40,7 +40,7 @@ export class MentalHealthDataExtractor  implements IExtractor {
             acc[key].push(obj);
             return acc;
         }, {});
-    
+
         const dayStats: { Day: string; Passed: boolean;}[] = [];
         if (samplingMethod === DataSamplingMethod.Any) {
             for (var grKey of Object.keys(groupedRecords)) {
@@ -62,7 +62,7 @@ export class MentalHealthDataExtractor  implements IExtractor {
                 });
             }
         }
-    
+
         const sorted = dayStats.sort((a, b) => Date.parse(a.Day) - Date.parse(b.Day));
         const transformed = sorted.map(x => {
             return {
@@ -70,7 +70,7 @@ export class MentalHealthDataExtractor  implements IExtractor {
                 value : x.Passed,
             };
         });
-            
+
         const result: ProcessorResult = {
             Success : true,
             Tag     : outputParams.OutputTag,

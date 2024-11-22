@@ -14,6 +14,7 @@ import { Condition } from "./condition.model";
 import { RuleAction } from "./rule.action.model";
 import { Node } from "./node.model";
 import { Schema } from "./schema.model";
+import { NodePath } from "./node.path.model";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -36,9 +37,9 @@ export class Rule {
     @ManyToOne(() => Schema, (schema) => schema.Nodes)
     Schema: Schema;
 
-    @OneToOne(() => RuleAction, (action) => action.ParentRule, { cascade: true })
+    @OneToOne(() => NodePath, (path) => path.Rule, { nullable: true, cascade: true })
     @JoinColumn()
-    Action: RuleAction;
+    NodePath: NodePath;
 
     @OneToOne(() => Condition, (condition) => condition.Rule, { nullable: true, cascade: true })
     @JoinColumn()

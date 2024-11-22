@@ -1,7 +1,7 @@
-import { ContinuityInputParams, LogicalOperator, OutputParams } from "../../../../domain.types/engine/engine.types";
+import { ContinuityInputParams, LogicalOperator, OutputParams } from "../../../../domain.types/engine/intermediate.types";
 import { IDataProcessor } from "../../interfaces/data.processor.interface";
 import { TypeUtils } from "../../../../common/utilities/type.utils";
-import { ProcessorResult } from '../../../../domain.types/engine/engine.types';
+import { ProcessorResult } from '../../../../domain.types/engine/intermediate.types';
 
 //////////////////////////////////////////////////////////////////////
 
@@ -141,13 +141,13 @@ export class DataProcessorr implements IDataProcessor {
         });
 
     };
-    
+
     //#region Private methods
 
     getConsecutiveOccurrences = (
-        records: any[], 
-        predicate: PredicateType, 
-        options: ContinuityInputParams, 
+        records: any[],
+        predicate: PredicateType,
+        options: ContinuityInputParams,
         uniqueKeys = true) => {
 
         const foundBundles = [];
@@ -157,7 +157,7 @@ export class DataProcessorr implements IDataProcessor {
 
         //Sort records in ascending order of the key
         var sortedRecords = records.sort((a, b) => { return a.key - b.key; });
-            
+
         if (!uniqueKeys) {
 
             let count = 0;
@@ -191,7 +191,7 @@ export class DataProcessorr implements IDataProcessor {
             var bundleKeySet = new Set();
 
             for (let i = 0; i < sortedRecords.length; i++) {
-                
+
                 const record = sortedRecords[i];
                 const recordKey = record.key;
 
@@ -214,7 +214,7 @@ export class DataProcessorr implements IDataProcessor {
                         bundle = [];
                         bundleKeySet = new Set();
                     }
-                } 
+                }
                 else {
                     bundle = [];
                     bundleKeySet = new Set();

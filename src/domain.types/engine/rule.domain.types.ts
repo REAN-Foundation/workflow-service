@@ -5,13 +5,13 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { 
-    ActionInputParams, 
+import {
+    ActionInputParams,
     ActionOutputParams,
-    EventActionType, 
-    InputParams, 
-    OperatorType, 
-    OutputParams } from "./engine.types";
+    EventActionType,
+    InputParams,
+    OperatorType,
+    OutputParams } from "./intermediate.types";
 
 //////////////////////////////////////////////////////////////
 

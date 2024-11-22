@@ -5,7 +5,7 @@ import {
     LogicalOperator,
     OperandDataType,
     OutputDestinationType
-} from '../../domain.types/engine/engine.types';
+} from '../../domain.types/engine/intermediate.types';
 
 /////////////////////////////////////////////////////////////////////////////
 

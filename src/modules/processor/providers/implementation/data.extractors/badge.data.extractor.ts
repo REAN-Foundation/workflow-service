@@ -5,7 +5,7 @@ import { MedicationFact } from '../../../../fact.extractors/models/medication.fa
 import { BadgeFact } from '../../../../fact.extractors/models/bedge.facts.model';
 import { Context } from "../../../../../database/models/engine/context.model";
 import { ParticipantBadge } from "../../../../../database/models/awards/participant.badge.model";
-import { DataExtractionInputParams, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/engine.types';
+import { DataExtractionInputParams, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/intermediate.types';
 import { IExtractor } from "./extractor.interface";
 
 //////////////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@ export class BadgeDataExtractor  implements IExtractor {
     _contextRepository: Repository<Context> = Source.getRepository(Context);
 
     //#endregion
-    
+
     public extract = async (
         context: Context,
         inputParams: DataExtractionInputParams,
@@ -86,7 +86,7 @@ export class BadgeDataExtractor  implements IExtractor {
             var key = `(${start})-(${end})`; //-(${r.Badge.Name})
             refined.push({ id, start, end, key });
         }
-        
+
         const result: ProcessorResult = {
             Success : true,
             Tag     : outputParams.OutputTag,

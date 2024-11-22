@@ -5,7 +5,7 @@ import { Source } from '../../../../../database/database.connector';
 import { Context } from "../../../../../database/models/engine/context.model";
 import { logger } from "../../../../../logger/logger";
 import { ErrorHandler } from "../../../../../common/handlers/error.handler";
-import { DataExtractionInputParams, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/engine.types';
+import { DataExtractionInputParams, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/intermediate.types';
 import { MedicationDataExtractor } from './medication.data.extractor';
 import { BadgeDataExtractor } from "./badge.data.extractor";
 import { NutritionDataExtractor } from "./nutrition.data.extractor";
@@ -27,7 +27,7 @@ export class DataExtractor implements IDataExtractor {
         contextId: uuid,
         inputParams: DataExtractionInputParams,
         outputParams: OutputParams): Promise<ProcessorResult> => {
-            
+
         const context = await this.getContextById(contextId);
         const recordType = inputParams.RecordType;
 

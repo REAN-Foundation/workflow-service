@@ -1,4 +1,4 @@
-import { OutputParams, ProcessorResult, RangeComparisonInputParams } from '../../../domain.types/engine/engine.types';
+import { OutputParams, ProcessorResult, RangeComparisonInputParams } from '../../../domain.types/engine/intermediate.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 
 export interface IDataComparator {

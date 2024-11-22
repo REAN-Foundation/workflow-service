@@ -1,4 +1,4 @@
-import { OutputParams, ProcessorResult, RangeComparisonInputParams } from "../../../../domain.types/engine/engine.types";
+import { OutputParams, ProcessorResult, RangeComparisonInputParams } from "../../../../domain.types/engine/intermediate.types";
 import { uuid } from "../../../../domain.types/miscellaneous/system.types";
 import { IDataComparator } from "../../interfaces/data.comparator.interface";
 
@@ -13,5 +13,5 @@ export class MockDataComparator implements IDataComparator {
         outputParams: OutputParams): Promise<ProcessorResult> => {
         throw new Error("Method not implemented.");
     };
-    
+
 }

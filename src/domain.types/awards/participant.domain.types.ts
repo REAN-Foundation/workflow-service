@@ -1,4 +1,4 @@
-import { ContextType } from "../engine/engine.types";
+import { ContextType } from "../engine/intermediate.types";
 import {
     BaseSearchResults
 } from "../miscellaneous/base.search.types";

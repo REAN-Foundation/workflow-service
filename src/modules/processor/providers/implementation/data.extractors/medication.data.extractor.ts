@@ -2,7 +2,7 @@ import { Repository } from "typeorm";
 import { FactsSource } from '../../../../fact.extractors/facts.db.connector';
 import { MedicationFact } from '../../../../fact.extractors/models/medication.fact.model';
 import { Context } from "../../../../../database/models/engine/context.model";
-import { DataExtractionInputParams, DataSamplingMethod, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/engine.types';
+import { DataExtractionInputParams, DataSamplingMethod, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/intermediate.types';
 import { IExtractor } from "./extractor.interface";
 
 //////////////////////////////////////////////////////////////////////

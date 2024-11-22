@@ -7,7 +7,7 @@ import { RuleService } from '../../database/services/engine/rule.service';
 import { SchemaInstanceService } from '../../database/services/engine/schema.instance.service';
 import { SchemaService } from '../../database/services/engine/schema.service';
 import { ConditionService } from '../../database/services/engine/condition.service';
-import { OperatorType } from '../../domain.types/engine/engine.types';
+import { OperatorType } from '../../domain.types/engine/intermediate.types';
 import { CSchemaInstance, CNodeInstance, CRule, CCondition, CAction } from './execution.types';
 import { logger } from '../../logger/logger';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
@@ -32,7 +32,7 @@ export class ExecutionTypesGenerator {
 
         try {
             const instance = new CSchemaInstance();
-        
+
             instance.id = dto.id;
             instance.Name = dto.Schema.Name;
             instance.SchemaId = dto.Schema.id;
@@ -55,7 +55,7 @@ export class ExecutionTypesGenerator {
                     Description: dto.Context.ParticipantGroup.Description,
                 } : null
             };
-        
+
             for await (var ni of dto.NodeInstances) {
                 const nodeInstance = await this.createNodeInstance(ni.id);
                 instance.NodeInstances.push(nodeInstance);

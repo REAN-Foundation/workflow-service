@@ -5,8 +5,6 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { XAction } from "./action.types";
-import { NodeType } from "./engine.enums";
 
 //////////////////////////////////////////////////////////////
 
@@ -23,7 +21,6 @@ import { NodeType } from "./engine.enums";
 
 export interface NodePathCreateModel {
     Name         : string;
-    Code         : string;
     Description? : string;
     ParentNodeId : uuid;
     SchemaId     : uuid;
@@ -31,7 +28,6 @@ export interface NodePathCreateModel {
 
 export interface NodePathUpdateModel {
     Name        ?: string;
-    Code        ?: string;
     Description ?: string;
     ParentNodeId?: uuid;
     SchemaId    ?: uuid;
@@ -39,27 +35,28 @@ export interface NodePathUpdateModel {
 
 export interface NodePathResponseDto {
     id         : uuid;
-    Type       : NodeType;
     Name       : string;
-    Code       : string;
     Description: string;
     ParentNode : {
         id: uuid;
         Name: string;
         Description: string;
     }
-    Schema     : {
+    Rule  : {
+        id: uuid;
+        Name: string;
+        Description: string;
+    };
+    NextNode   : {
         id  : uuid;
         Name: string;
         Description: string;
     };
-    
     CreatedAt: Date;
     UpdatedAt: Date;
 }
 
 export interface NodePathSearchFilters extends BaseSearchFilters {
-    Type         ?: NodeType;
     Name         ?: string;
     ParentNodeId ?: uuid;
     SchemaId     ?: uuid;

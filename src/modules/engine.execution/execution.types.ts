@@ -1,4 +1,4 @@
-import { ActionOutputParams, InputParams, OutputParams } from '../../domain.types/engine/engine.types';
+import { ActionOutputParams, InputParams, OutputParams } from '../../domain.types/engine/intermediate.types';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
 import {
     CompositionOperator,
@@ -10,7 +10,7 @@ import {
     NodeType,
     OperandDataType,
     OperatorType
-} from '../../domain.types/engine/engine.types';
+} from '../../domain.types/engine/intermediate.types';
 import { v4 as uuidv4 } from 'uuid';
 
 ///////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ export class CCondition {
 export class CContext {
 
     id          : uuid;
-    
+
     ReferenceId : uuid;
 
     Type        : ContextType;

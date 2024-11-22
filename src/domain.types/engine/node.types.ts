@@ -5,8 +5,8 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { XAction } from "./action.types";
 import { NodeType } from "./engine.enums";
+import { XAction } from "./intermediate.types";
 
 //////////////////////////////////////////////////////////////
 
@@ -48,11 +48,6 @@ export interface NodeResponseDto {
         Name: string;
         Description: string;
     };
-    Rules : {
-        id: uuid;
-        Name: string;
-        Description: string;
-    }[];
 
     CreatedAt: Date;
     UpdatedAt: Date;

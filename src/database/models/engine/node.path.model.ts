@@ -1,30 +1,28 @@
-import { IsUrl } from "class-validator";
 import "reflect-metadata";
 import {
     Column,
-    CreateDateColumn,
-    DeleteDateColumn,
     Entity,
-    JoinColumn,
-    ManyToOne,
-    OneToMany,
+    OneToOne,
     PrimaryGeneratedColumn,
+    CreateDateColumn,
     UpdateDateColumn,
+    DeleteDateColumn,
+    ManyToOne,
+    JoinColumn,
 } from 'typeorm';
-import { Client } from "../client/client.model";
-import { Badge } from "./badge.model";
+import { Node } from "./node.model";
+import { Rule } from "./rule.model";
 
 ////////////////////////////////////////////////////////////////////////
 
-@Entity({ name: 'badge_categories' })
-export class BadgeCategory {
+@Entity({ name: 'node_paths' })
+export class NodePath {
 
     @PrimaryGeneratedColumn('uuid')
     id : string;
 
-    @ManyToOne(() => Client, { nullable: true })
-    @JoinColumn()
-    Client : Client;
+    @ManyToOne(() => Node, (node) => node.Paths)
+    ParentNode: Node;
 
     @Column({ type: 'varchar', length: 256, nullable: false })
     Name : string;
@@ -32,12 +30,12 @@ export class BadgeCategory {
     @Column({ type: 'varchar', length: 512, nullable: true })
     Description : string;
 
-    @Column({ type: 'varchar', length: 1024, nullable: true })
-    @IsUrl()
-    ImageUrl : string;
+    @OneToOne(() => Rule, (rule) => rule.NodePath, { nullable: true })
+    Rule: Rule;
 
-    @OneToMany(() => Badge, (badge)=> badge.Category)
-    Badges: Badge[];
+    @OneToOne(() => Node, { nullable: true })
+    @JoinColumn()
+    NextNode: Node;
 
     @CreateDateColumn()
     CreatedAt : Date;

@@ -2,7 +2,7 @@ import { Node } from '../../models/engine/node.model';
 import { Schema } from '../../models/engine/schema.model';
 import { Rule } from '../../models/engine/rule.model';
 import { Client } from '../../../database/models/client/client.model';
-import { NodeDefaultAction } from '../../models/engine/node.default.action.model';
+import { NodeAction } from '../../models/engine/node.action.model';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { Source } from '../../database.connector';
 import { Repository } from 'typeorm';
@@ -23,12 +23,12 @@ export class CommonUtilsService {
 
     _contextRepository: Repository<Context> = Source.getRepository(Context);
 
-    _actionRepository: Repository<NodeDefaultAction> = Source.getRepository(NodeDefaultAction);
+    _actionRepository: Repository<NodeAction> = Source.getRepository(NodeAction);
 
     _clientRepository: Repository<Client> = Source.getRepository(Client);
 
     //#endregion
-    
+
     public getSchema = async (schemaId: uuid) => {
         const schema = await this._schemaRepository.findOne({
             where : {
@@ -83,7 +83,7 @@ export class CommonUtilsService {
         return client;
     };
 
-    
+
     public getContext = async (contextId: uuid) => {
         const context = await this._contextRepository.findOne({
             where : {

@@ -11,10 +11,11 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
 } from 'typeorm';
-import { NodeDefaultAction } from "./node.default.action.model";
+import { NodeAction } from "./node.action.model";
 import { Rule } from "./rule.model";
 import { Schema } from "./schema.model";
-import { NodeType } from "../../../domain.types/engine/engine.types";
+import { NodePath } from "./node.path.model";
+import { NodeType } from "../../../domain.types/engine/engine.enums";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +40,9 @@ export class Node {
     @OneToMany(() => Node, (node) => node.ParentNode)
     Children: Node[];
 
+    @OneToMany(() => NodePath, (path) => path.ParentNode, { cascade: true })
+    Paths: NodePath[];
+
     @ManyToOne(() => Schema, (schema) => schema.Nodes, { onDelete: 'CASCADE' })
     @JoinColumn()
     Schema: Schema;
@@ -49,9 +53,9 @@ export class Node {
     })
     Rules: Rule[];
 
-    @OneToOne(() => NodeDefaultAction, (action) => action.ParentNode, { onDelete: 'CASCADE' })
+    @OneToOne(() => NodeAction, (action) => action.ParentNode, { onDelete: 'CASCADE' })
     @JoinColumn()
-    Action: NodeDefaultAction;
+    Action: NodeAction;
 
     @CreateDateColumn()
     CreatedAt : Date;

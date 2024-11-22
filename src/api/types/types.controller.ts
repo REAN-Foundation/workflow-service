@@ -13,7 +13,7 @@ import {
     LogicalOperatorList,
     MathematicalOperatorList,
     OperatorList,
-    OutputSourceTypeList } from '../../domain.types/engine/engine.types';
+    OutputSourceTypeList } from '../../domain.types/engine/intermediate.types';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

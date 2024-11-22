@@ -9,13 +9,13 @@ import { FindManyOptions, Like, Repository } from 'typeorm';
 import { RuleMapper } from '../../mappers/engine/rule.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { 
-    RuleCreateModel, 
-    RuleResponseDto, 
-    RuleSearchFilters, 
-    RuleSearchResults, 
+import {
+    RuleCreateModel,
+    RuleResponseDto,
+    RuleSearchFilters,
+    RuleSearchResults,
     RuleUpdateModel } from '../../../domain.types/engine/rule.domain.types';
-import { CompositionOperator, OperatorType } from '../../../domain.types/engine/engine.types';
+import { CompositionOperator, OperatorType } from '../../../domain.types/engine/intermediate.types';
 
 ///////////////////////////////////////////////////////////////////////
 

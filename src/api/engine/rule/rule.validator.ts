@@ -3,7 +3,7 @@ import express from 'express';
 import { RuleCreateModel, RuleUpdateModel, RuleSearchFilters } from '../../../domain.types/engine/rule.domain.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
-import { EventActionType } from '../../../domain.types/engine/engine.types';
+import { EventActionType } from '../../../domain.types/engine/intermediate.types';
 import {
     ActionInputParamsObj_Create,
     ActionInputParamsObj_Update,

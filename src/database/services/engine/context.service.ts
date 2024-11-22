@@ -14,7 +14,7 @@ import {
     ContextSearchFilters,
     ContextSearchResults
 } from '../../../domain.types/engine/context.types';
-import { ContextType } from '../../../domain.types/engine/engine.types';
+import { ContextType } from '../../../domain.types/engine/intermediate.types';
 
 ///////////////////////////////////////////////////////////////////////
 

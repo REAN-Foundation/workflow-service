@@ -1,10 +1,10 @@
 import express from 'express';
 import { ResponseHandler } from '../../../common/handlers/response.handler';
 import { NodePathValidator } from './node.path.validator';
-import { NodePathService } from '../../../database/services/engine/node.path.service';
 import { ApiError } from '../../../common/handlers/error.handler';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { NodePathCreateModel } from '../../../domain.types/engine/node.path.types';
+import { NodePathService } from '../../../database/services/engine/node.path.service';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -20,7 +20,7 @@ export class NodePathController {
 
     create = async (request: express.Request, response: express.Response) => {
         try {
-            const model: NodePathCreateModel = await this._validator.create(request);
+            const model: NodePathCreateModel = await this._validator.validateCreateRequest(request);
 
             const path = await this._service.create(model);
             if (path == null) {
@@ -36,8 +36,8 @@ export class NodePathController {
 
     update = async (request: express.Request, response: express.Response) => {
         try {
-            const pathId: uuid = await this._validator.getParamUuid(request, 'id');
-            const updates = await this._validator.update(request);
+            const pathId: uuid = await this._validator.requestParamAsUUID(request, 'id');
+            const updates = await this._validator.validateUpdateRequest(request);
             const path = await this._service.update(pathId, updates);
             if (path == null) {
                 throw new ApiError(400, 'Cannot update record for path!');
@@ -50,9 +50,9 @@ export class NodePathController {
         }
     };
 
-    deletePath = async (request: express.Request, response: express.Response) => {
+    delete = async (request: express.Request, response: express.Response) => {
         try {
-            const id: uuid = await this._validator.getParamUuid(request, 'id');
+            const id: uuid = await this._validator.requestParamAsUUID(request, 'id');
             const deleted = await this._service.delete(id);
             if (!deleted) {
                 throw new ApiError(400, 'Cannot remove record for path!');
@@ -67,8 +67,8 @@ export class NodePathController {
 
     getById = async (request: express.Request, response: express.Response) => {
         try {
-            const id: uuid = await this._validator.getParamUuid(request, 'id');
-            const path = await this._service.getPath(id);
+            const id: uuid = await this._validator.requestParamAsUUID(request, 'id');
+            const path = await this._service.getById(id);
             if (path == null) {
                 throw new ApiError(404, 'Cannot retrieve record for path!');
             }
@@ -82,7 +82,7 @@ export class NodePathController {
 
     getNodePaths = async (request: express.Request, response: express.Response) => {
         try {
-            const nodeId: uuid = await this._validator.getParamUuid(request, 'nodeId');
+            const nodeId: uuid = await this._validator.requestParamAsUUID(request, 'nodeId');
             const paths = await this._service.getNodePaths(nodeId);
             ResponseHandler.success(request, response, 'Node paths retrieved successfully!', 200, {
                 NodePaths : paths,
@@ -94,12 +94,9 @@ export class NodePathController {
 
     setNextNodeToPath = async (request: express.Request, response: express.Response) => {
         try {
-            const nodeId: uuid = await this._validator.getParamUuid(request, 'nodeId');
-            const pathId: uuid = await this._validator.getParamUuid(request, 'pathId');
-            const templateId: uuid = await this._validator.getParamUuid(request, 'id');
-            await this.checkNodeAndTemplate(nodeId, templateId);
-            const nextNodeId: uuid = await this._validator.getParamUuid(request, 'nextNodeId');
-            const updatedPath = await this._service.setNextNodeToPath(nodeId, pathId, nextNodeId);
+            const pathId: uuid = await this._validator.requestParamAsUUID(request, 'id');
+            const nextNodeId: uuid = await this._validator.requestParamAsUUID(request, 'nextNodeId');
+            const updatedPath = await this._service.setNextNodeToPath(pathId, nextNodeId);
             if (updatedPath == null) {
                 throw new ApiError(400, 'Cannot update record for path!');
             }
@@ -111,93 +108,93 @@ export class NodePathController {
         }
     };
 
-    addPathCondition = async (request: express.Request, response: express.Response) => {
-        try {
-            const pathId: uuid = await this._validator.getParamUuid(request, 'pathId');
-            const model = await this._validator.addPathCondition(request);
-            const condition = await this._service.addPathCondition(pathId, model);
-            if (condition == null) {
-                throw new ApiError(400, 'Cannot create record for path condition!');
-            }
-            ResponseHandler.success(request, response, 'Path condition record created successfully!', 201, {
-                PathCondition : condition,
-            });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
+    // addPathCondition = async (request: express.Request, response: express.Response) => {
+    //     try {
+    //         const pathId: uuid = await this._validator.requestParamAsUUID(request, 'pathId');
+    //         const model = await this._validator.addPathCondition(request);
+    //         const condition = await this._service.addPathCondition(pathId, model);
+    //         if (condition == null) {
+    //             throw new ApiError(400, 'Cannot create record for path condition!');
+    //         }
+    //         ResponseHandler.success(request, response, 'Path condition record created successfully!', 201, {
+    //             PathCondition : condition,
+    //         });
+    //     } catch (error) {
+    //         ResponseHandler.handleError(request, response, error);
+    //     }
+    // };
 
-    updatePathCondition = async (request: express.Request, response: express.Response) => {
-        try {
-            const nodeId: uuid = await this._validator.getParamUuid(request, 'nodeId');
-            // const pathId: uuid = await this._validator.getParamUuid(request, 'pathId');
-            const conditionId: uuid = await this._validator.getParamUuid(request, 'conditionId');
-            const templateId: uuid = await this._validator.getParamUuid(request, 'id');
-            await this.checkNodeAndTemplate(nodeId, templateId);
-            const updates = await this._validator.updatePathCondition(request);
-            const condition = await this._service.updatePathCondition(conditionId, updates);
-            if (condition == null) {
-                throw new ApiError(400, 'Cannot update record for path condition!');
-            }
-            ResponseHandler.success(request, response, 'Path condition record updated successfully!', 200, {
-                PathCondition : condition,
-            });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
+    // updatePathCondition = async (request: express.Request, response: express.Response) => {
+    //     try {
+    //         const nodeId: uuid = await this._validator.getParamUuid(request, 'nodeId');
+    //         // const pathId: uuid = await this._validator.getParamUuid(request, 'pathId');
+    //         const conditionId: uuid = await this._validator.getParamUuid(request, 'conditionId');
+    //         const templateId: uuid = await this._validator.getParamUuid(request, 'id');
+    //         await this.checkNodeAndTemplate(nodeId, templateId);
+    //         const updates = await this._validator.updatePathCondition(request);
+    //         const condition = await this._service.updatePathCondition(conditionId, updates);
+    //         if (condition == null) {
+    //             throw new ApiError(400, 'Cannot update record for path condition!');
+    //         }
+    //         ResponseHandler.success(request, response, 'Path condition record updated successfully!', 200, {
+    //             PathCondition : condition,
+    //         });
+    //     } catch (error) {
+    //         ResponseHandler.handleError(request, response, error);
+    //     }
+    // };
 
-    deletePathCondition = async (request: express.Request, response: express.Response) => {
-        try {
-            const nodeId: uuid = await this._validator.getParamUuid(request, 'nodeId');
-            // const pathId: uuid = await this._validator.getParamUuid(request, 'pathId');
-            const conditionId: uuid = await this._validator.getParamUuid(request, 'conditionId');
-            const templateId: uuid = await this._validator.getParamUuid(request, 'id');
-            await this.checkNodeAndTemplate(nodeId, templateId);
-            const deleted = await this._service.deletePathCondition(conditionId);
-            if (!deleted) {
-                throw new ApiError(400, 'Cannot remove record for path condition!');
-            }
-            ResponseHandler.success(request, response, 'Path condition record removed successfully!', 200, {
-                Deleted : deleted,
-            });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
+    // deletePathCondition = async (request: express.Request, response: express.Response) => {
+    //     try {
+    //         const nodeId: uuid = await this._validator.getParamUuid(request, 'nodeId');
+    //         // const pathId: uuid = await this._validator.getParamUuid(request, 'pathId');
+    //         const conditionId: uuid = await this._validator.getParamUuid(request, 'conditionId');
+    //         const templateId: uuid = await this._validator.getParamUuid(request, 'id');
+    //         await this.checkNodeAndTemplate(nodeId, templateId);
+    //         const deleted = await this._service.deletePathCondition(conditionId);
+    //         if (!deleted) {
+    //             throw new ApiError(400, 'Cannot remove record for path condition!');
+    //         }
+    //         ResponseHandler.success(request, response, 'Path condition record removed successfully!', 200, {
+    //             Deleted : deleted,
+    //         });
+    //     } catch (error) {
+    //         ResponseHandler.handleError(request, response, error);
+    //     }
+    // };
 
-    getPathCondition = async (request: express.Request, response: express.Response) => {
-        try {
-            const nodeId: uuid = await this._validator.getParamUuid(request, 'nodeId');
-            const pathId: uuid = await this._validator.getParamUuid(request, 'pathId');
-            const conditionId: uuid = await this._validator.getParamUuid(request, 'conditionId');
-            const templateId: uuid = await this._validator.getParamUuid(request, 'id');
-            await this.checkNodeAndTemplate(nodeId, templateId);
-            const condition = await this._service.getPathCondition(conditionId, nodeId, pathId);
-            if (condition == null) {
-                throw new ApiError(404, 'Cannot retrieve record for path condition!');
-            }
-            ResponseHandler.success(request, response, 'Path condition record retrieved successfully!', 200, {
-                PathCondition : condition,
-            });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
+    // getPathCondition = async (request: express.Request, response: express.Response) => {
+    //     try {
+    //         const nodeId: uuid = await this._validator.getParamUuid(request, 'nodeId');
+    //         const pathId: uuid = await this._validator.getParamUuid(request, 'pathId');
+    //         const conditionId: uuid = await this._validator.getParamUuid(request, 'conditionId');
+    //         const templateId: uuid = await this._validator.getParamUuid(request, 'id');
+    //         await this.checkNodeAndTemplate(nodeId, templateId);
+    //         const condition = await this._service.getPathCondition(conditionId, nodeId, pathId);
+    //         if (condition == null) {
+    //             throw new ApiError(404, 'Cannot retrieve record for path condition!');
+    //         }
+    //         ResponseHandler.success(request, response, 'Path condition record retrieved successfully!', 200, {
+    //             PathCondition : condition,
+    //         });
+    //     } catch (error) {
+    //         ResponseHandler.handleError(request, response, error);
+    //     }
+    // };
 
-    getPathConditionsForPath = async (request: express.Request, response: express.Response) => {
-        try {
-            const nodeId: uuid = await this._validator.getParamUuid(request, 'nodeId');
-            const pathId: uuid = await this._validator.getParamUuid(request, 'pathId');
-            const templateId: uuid = await this._validator.getParamUuid(request, 'id');
-            await this.checkNodeAndTemplate(nodeId, templateId);
-            const conditions = await this._service.getPathConditionForPath(pathId);
-            ResponseHandler.success(request, response, 'Path conditions retrieved successfully!', 200, {
-                PathConditions : conditions,
-            });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
+    // getPathConditionsForPath = async (request: express.Request, response: express.Response) => {
+    //     try {
+    //         const nodeId: uuid = await this._validator.getParamUuid(request, 'nodeId');
+    //         const pathId: uuid = await this._validator.getParamUuid(request, 'pathId');
+    //         const templateId: uuid = await this._validator.getParamUuid(request, 'id');
+    //         await this.checkNodeAndTemplate(nodeId, templateId);
+    //         const conditions = await this._service.getPathConditionForPath(pathId);
+    //         ResponseHandler.success(request, response, 'Path conditions retrieved successfully!', 200, {
+    //             PathConditions : conditions,
+    //         });
+    //     } catch (error) {
+    //         ResponseHandler.handleError(request, response, error);
+    //     }
+    // };
 
 }

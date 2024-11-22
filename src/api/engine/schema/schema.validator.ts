@@ -3,7 +3,7 @@ import express from 'express';
 import { SchemaCreateModel, SchemaUpdateModel, SchemaSearchFilters } from '../../../domain.types/engine/schema.domain.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
-import { EventActionType, NodeType, SchemaType } from '../../../domain.types/engine/engine.types';
+import { EventActionType, NodeType, SchemaType } from '../../../domain.types/engine/intermediate.types';
 import {
     ActionInputParamsObj_Create,
     ActionOutputParamsObj_Create,

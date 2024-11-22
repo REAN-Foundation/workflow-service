@@ -4,7 +4,7 @@ import {
     DataStorageInputParams,
     RangeComparisonInputParams,
     OutputParams,
-    ProcessorResult } from '../../domain.types/engine/engine.types';
+    ProcessorResult } from '../../domain.types/engine/intermediate.types';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
 import { IDataComparator } from './interfaces/data.comparator.interface';
 import { IDataExtractor } from './interfaces/data.extractor.interface';
@@ -32,14 +32,14 @@ export class ProcessorService {
         outputParams: OutputParams): Promise<ProcessorResult> => {
         return await this._comparator.compareRanges(firstRange, secondRange, inputParams, outputParams);
     };
-    
+
     extractData = async (
         contextId: uuid,
         inputParams: DataExtractionInputParams,
         outputParams: OutputParams): Promise<ProcessorResult> => {
         return await this._extractor.extractData(contextId, inputParams, outputParams);
     };
-    
+
     storeData = async (
         contextId: uuid,
         records: any[],
@@ -47,7 +47,7 @@ export class ProcessorService {
         outputParams: OutputParams): Promise<ProcessorResult> => {
         return await this._store.storeData(contextId, records, inputParams, outputParams);
     };
-    
+
     removeData = async (
         contextId: uuid,
         records: any[],
@@ -55,7 +55,7 @@ export class ProcessorService {
         outputParams: OutputParams): Promise<ProcessorResult> => {
         return await this._store.removeData(contextId, records, inputParams, outputParams);
     };
-    
+
     calculateContinuity = async (
         records: any[],
         inputParams: ContinuityInputParams,

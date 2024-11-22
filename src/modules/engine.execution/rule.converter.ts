@@ -1,4 +1,4 @@
-import { CompositionOperator, LogicalOperator, OperatorType } from '../../domain.types/engine/engine.types';
+import { CompositionOperator, LogicalOperator, OperatorType } from '../../domain.types/engine/intermediate.types';
 import {
     CCondition,
     CRule } from './execution.types';

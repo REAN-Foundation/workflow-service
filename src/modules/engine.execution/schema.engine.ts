@@ -4,7 +4,7 @@ import {
     CContext,
     CNodeInstance,
     CSchemaInstance } from './execution.types';
-import { ContinuityInputParams, DataActionType, EventActionType, ExecutionStatus, OutputParams, RangeComparisonInputParams } from '../../domain.types/engine/engine.types';
+import { ContinuityInputParams, DataActionType, EventActionType, ExecutionStatus, OutputParams, RangeComparisonInputParams } from '../../domain.types/engine/intermediate.types';
 import { logger } from '../../logger/logger';
 import { SchemaInstanceResponseDto } from '../../domain.types/engine/schema.instance.types';
 import { ExecutionTypesGenerator } from './execution.types.generator';
@@ -17,7 +17,7 @@ import { Injector } from '../../startup/injector';
 export class SchemaEngine {
 
     public static execute = async (dbSchemaInstance: SchemaInstanceResponseDto) =>{
-        
+
         const generator = new ExecutionTypesGenerator();
         var schemaInstance = await generator.createSchemaInstance(dbSchemaInstance);
 
@@ -55,7 +55,7 @@ export class SchemaEngine {
         if (rules.length > 0) {
             var facts: any = SchemaEngine.extractFactsForNode(facts, currentNodeInstance);
             var successEvent: any = undefined;
-    
+
             for (var r of rules) {
                 const engine = new Engine();
                 var rule = RuleConverter.convertRule(r);

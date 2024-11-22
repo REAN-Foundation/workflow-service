@@ -3,7 +3,7 @@ import express from 'express';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
 import { ConditionCreateModel, ConditionUpdateModel, ConditionSearchFilters } from '../../../domain.types/engine/condition.types';
-import { CompositionOperator, LogicalOperator, MathematicalOperator, OperandDataType, OperatorType } from '../../../domain.types/engine/engine.types';
+import { CompositionOperator, LogicalOperator, MathematicalOperator, OperandDataType, OperatorType } from '../../../domain.types/engine/intermediate.types';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -6,7 +6,7 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { ContextType } from "./engine.types";
+import { ContextType } from "./intermediate.types";
 
 //////////////////////////////////////////////////////////////
 

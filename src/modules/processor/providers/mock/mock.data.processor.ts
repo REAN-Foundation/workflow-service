@@ -1,8 +1,8 @@
-import { ContinuityInputParams, LogicalOperator, OutputParams } from "../../../../domain.types/engine/engine.types";
+import { ContinuityInputParams, LogicalOperator, OutputParams } from "../../../../domain.types/engine/intermediate.types";
 import { IDataProcessor } from "../../interfaces/data.processor.interface";
-import { OperandDataType } from "../../../../domain.types/engine/engine.types";
+import { OperandDataType } from "../../../../domain.types/engine/intermediate.types";
 import { TypeUtils } from "../../../../common/utilities/type.utils";
-import { ProcessorResult } from "../../../../domain.types/engine/engine.types";
+import { ProcessorResult } from "../../../../domain.types/engine/intermediate.types";
 import { uuid } from "../../../../domain.types/miscellaneous/system.types";
 
 //////////////////////////////////////////////////////////////////////
@@ -10,12 +10,12 @@ import { uuid } from "../../../../domain.types/miscellaneous/system.types";
 export class MockDataProcessorr implements IDataProcessor {
 
     calculateContinuity = async (
-        records: any[], 
-        inputParams: ContinuityInputParams, 
+        records: any[],
+        inputParams: ContinuityInputParams,
         outputParams: OutputParams): Promise<ProcessorResult> => {
-        throw new Error("Method not implemented.");    
+        throw new Error("Method not implemented.");
     };
-    
+
     //#region Private methods
 
     // getConsecutiveOccurrences = (records: any[], predicate, numOccurrences: number) => {

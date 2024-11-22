@@ -1,5 +1,5 @@
 import { Context } from "../../../../../database/models/engine/context.model";
-import { DataExtractionInputParams, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/engine.types';
+import { DataExtractionInputParams, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/intermediate.types';
 
 export interface IExtractor {
 

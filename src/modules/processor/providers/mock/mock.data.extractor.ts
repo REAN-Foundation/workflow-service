@@ -9,15 +9,15 @@ import { Context } from "../../../../database/models/engine/context.model";
 import { logger } from "../../../../logger/logger";
 import { ErrorHandler } from "../../../../common/handlers/error.handler";
 import { ParticipantBadge } from "../../../../database/models/awards/participant.badge.model";
-import { DataExtractionInputParams, OutputParams, ProcessorResult } from "../../../../domain.types/engine/engine.types";
+import { DataExtractionInputParams, OutputParams, ProcessorResult } from "../../../../domain.types/engine/intermediate.types";
 
 //////////////////////////////////////////////////////////////////////
 
 export class MockDataExtractor implements IDataExtractor {
 
 
-    extractData = async (contextId: uuid, 
-        inputParams: DataExtractionInputParams, 
+    extractData = async (contextId: uuid,
+        inputParams: DataExtractionInputParams,
         outputParams: OutputParams): Promise<ProcessorResult> => {
         throw new Error("Method not implemented.");
     };

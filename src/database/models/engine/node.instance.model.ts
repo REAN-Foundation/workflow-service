@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { ExecutionStatus } from "../../../domain.types/engine/engine.types";
+import { ExecutionStatus } from "../../../domain.types/engine/intermediate.types";
 import {
     Column,
     Entity,
@@ -14,7 +14,6 @@ import {
 } from 'typeorm';
 import { Rule } from "./rule.model";
 import { Node } from './node.model';
-import { Context } from "./context.model";
 import { SchemaInstance } from "./schema.instance.model";
 
 ////////////////////////////////////////////////////////////////////////

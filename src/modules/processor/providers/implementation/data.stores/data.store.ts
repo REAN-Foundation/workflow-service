@@ -9,7 +9,7 @@ import { Context } from "../../../../../database/models/engine/context.model";
 import { logger } from "../../../../../logger/logger";
 import { ErrorHandler } from "../../../../../common/handlers/error.handler";
 import { ParticipantBadge } from "../../../../../database/models/awards/participant.badge.model";
-import { DataStorageInputParams, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/engine.types';
+import { DataStorageInputParams, OutputParams, ProcessorResult } from '../../../../../domain.types/engine/intermediate.types';
 import { Badge } from "../../../../../database/models/awards/badge.model";
 import { Participant } from "../../../../../database/models/awards/participant.model";
 
@@ -34,37 +34,37 @@ export class DataStore implements IDataStore {
     //#endregion
 
     storeData = async (
-        contextId: uuid, 
-        records:any[], 
-        inputParams: DataStorageInputParams, 
+        contextId: uuid,
+        records:any[],
+        inputParams: DataStorageInputParams,
         outputParams: OutputParams): Promise<ProcessorResult> => {
 
         const context = await this.getContextById(contextId);
         const recordType = inputParams.RecordType;
         if (recordType === 'Badge') {
-            return await this.storeBadgeData(context, records, inputParams, outputParams.OutputTag);   
+            return await this.storeBadgeData(context, records, inputParams, outputParams.OutputTag);
         }
         ErrorHandler.throwNotFoundError(`Data store not found for record type.`);
     };
 
     removeData = async (
-        contextId: uuid, 
-        records:any[], 
-        inputParams: DataStorageInputParams, 
+        contextId: uuid,
+        records:any[],
+        inputParams: DataStorageInputParams,
         outputParams: OutputParams): Promise<ProcessorResult> => {
 
         const context = await this.getContextById(contextId);
         const recordType = inputParams.RecordType;
         if (recordType === 'Badge') {
-            return await this.removeBadgeData(context, records, inputParams, outputParams.OutputTag);   
+            return await this.removeBadgeData(context, records, inputParams, outputParams.OutputTag);
         }
         ErrorHandler.throwNotFoundError(`Data store not found for record type.`);
     };
 
     private storeBadgeData = async (
-        context: Context, 
-        records: any[], 
-        inputParams: DataStorageInputParams, 
+        context: Context,
+        records: any[],
+        inputParams: DataStorageInputParams,
         tag: string) => {
 
         const storageKeys = inputParams.StorageKeys;
@@ -110,7 +110,7 @@ export class DataStore implements IDataStore {
             const record_ = await this._participantBadgeRepository.save(record);
             addedBadges.push(record_);
         }
-        
+
         const result: ProcessorResult = {
             Success: true,
             Tag    : tag,
@@ -121,9 +121,9 @@ export class DataStore implements IDataStore {
     };
 
     private removeBadgeData = async (
-        context: Context, 
-        records: any[], 
-        inputParams: DataStorageInputParams, 
+        context: Context,
+        records: any[],
+        inputParams: DataStorageInputParams,
         tag: string) => {
 
         const recordIds = records.map(x => x.id);

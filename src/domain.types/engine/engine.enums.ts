@@ -7,7 +7,17 @@ export enum NodeType {
     WaitNode          = 'WaitNode',
 }
 
-//#region Operators and Condition
+export enum ActionType {
+    SendMessage    = 'SendMessage',
+    SendEmail      = 'SendEmail',
+    SendSms        = 'SendSms',
+    RestApiCall    = 'RestApiCall',
+    PythonFunCall  = 'PythonFunCall',
+    LambdaFunCall  = 'LambdaFunCall',
+    StoreDataSqlDb = 'StoreDataSqlDb',
+    Exit           = 'Exit',
+    Continue       = 'Continue',
+}
 
 export enum QuestionResponseType {
     Text                  = 'Text',
@@ -162,4 +172,39 @@ export const ConditionOperandDataTypeList: OperandDataType[] = [
     OperandDataType.Date,
 ];
 
-//#endregion
+export enum ExecutionStatus {
+    Pending  = "Pending",
+    Executed = "Executed",
+    Waiting  = "Waiting",
+    Exited   = "Exited",
+}
+
+export const ExecutionStatusList: ExecutionStatus[] = [
+    ExecutionStatus.Pending,
+    ExecutionStatus.Executed,
+    ExecutionStatus.Waiting,
+    ExecutionStatus.Exited,
+];
+
+export enum InputSourceType {
+    Database     = "Database",
+    Almanac      = "Almanac",
+    ApiEndpoint  = "ApiEndpoint",
+    CsvDocument  = "CsvDocument",
+    ExcelSheet   = "ExcelSheet",
+    JSON         = "JSON",
+    JSONFile     = "JSONFile",
+    CustomObject = "CustomObject",
+}
+
+export const InputSourceTypeList: InputSourceType[] = [
+    InputSourceType.Database,
+    InputSourceType.Almanac,
+    InputSourceType.ApiEndpoint,
+    InputSourceType.CsvDocument,
+    InputSourceType.ExcelSheet,
+    InputSourceType.JSON,
+    InputSourceType.JSONFile,
+    InputSourceType.CustomObject,
+
+];

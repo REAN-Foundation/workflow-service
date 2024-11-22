@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { Client } from "../client/client.model";
 import { Node } from "../engine/node.model";
-import { SchemaType } from "../../../domain.types/engine/engine.types";
+import { SchemaType } from "../../../domain.types/engine/intermediate.types";
 
 ////////////////////////////////////////////////////////////////////////
 

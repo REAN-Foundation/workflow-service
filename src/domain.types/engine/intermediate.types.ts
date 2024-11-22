@@ -1,8 +1,14 @@
 /* eslint-disable lines-between-class-members */
 import { StringUtils } from "../../common/utilities/string.utils";
 import { uuid } from "../miscellaneous/system.types";
-import { XAction } from "./action.types";
-import { CompositionOperator, NodeType, OperandDataType, OperatorType, QuestionResponseType } from "./engine.enums";
+import {
+    ActionType,
+    CompositionOperator,
+    NodeType,
+    OperandDataType,
+    OperatorType,
+    QuestionResponseType
+} from "./engine.enums";
 
 ////////////////////////////////////////////////////////////////
 
@@ -155,47 +161,174 @@ export interface XSchema {
     UpdatedAt            : Date;
 }
 
-export enum ExecutionStatus {
-    Pending  = "Pending",
-    Executed = "Executed",
-    Waiting  = "Waiting",
-    Exited   = "Exited",
+export class XAction {
+
+    Type       : ActionType;
+    Name       : string;
+    Description: string;
+    RawInput   : any | undefined;
+    RawOutput  : any | undefined;
+    Input      : Map<string, any> | undefined | null;
+    Output     : Map<string, any> | undefined | null;
+
+    public constructor(
+        type       : ActionType,
+        name       : string,
+        description: string,
+        input      : Map<string, any> | undefined | null,
+        output     : Map<string, any> | undefined | null,
+        rawInput   : any | undefined,
+        rawOutput  : any | undefined) {
+        this.Type = type;
+        this.Name = name;
+        this.Description = description;
+        this.RawInput = rawInput;
+        this.RawOutput = rawOutput;
+        this.Input = input;
+        this.Output = output;
+    }
+
 }
 
-export const ExecutionStatusList: ExecutionStatus[] = [
-    ExecutionStatus.Pending,
-    ExecutionStatus.Executed,
-    ExecutionStatus.Waiting,
-    ExecutionStatus.Exited,
-];
+export class XSendMessageAction extends XAction {
 
-export enum InputSourceType {
-    Database     = "Database",
-    Almanac      = "Almanac",
-    ApiEndpoint  = "ApiEndpoint",
-    CsvDocument  = "CsvDocument",
-    ExcelSheet   = "ExcelSheet",
-    JSON         = "JSON",
-    JSONFile     = "JSONFile",
-    CustomObject = "CustomObject",
+    public constructor(
+        name       : string,
+        description: string,
+        input      : Map<string, any> | undefined | null,
+        output     : Map<string, any> | undefined | null,
+        rawInput   : any | undefined | null = undefined,
+        rawOutput  : any | undefined | null = undefined) {
+        super(ActionType.SendMessage, name, description, input, output, rawInput, rawOutput);
+    }
+
 }
 
-export const InputSourceTypeList: InputSourceType[] = [
-    InputSourceType.Database,
-    InputSourceType.Almanac,
-    InputSourceType.ApiEndpoint,
-    InputSourceType.CsvDocument,
-    InputSourceType.ExcelSheet,
-    InputSourceType.JSON,
-    InputSourceType.JSONFile,
-    InputSourceType.CustomObject,
+export class XSendEmailAction extends XAction {
 
-];
+    public constructor(
+        name       : string,
+        description: string,
+        input      : Map<string, any> | undefined | null,
+        output     : Map<string, any> | undefined | null,
+        rawInput   : any | undefined | null = undefined,
+        rawOutput  : any | undefined | null = undefined) {
+        super(ActionType.SendEmail, name, description, input, output, rawInput, rawOutput);
+    }
+
+}
+
+export class XSendSmsAction extends XAction {
+
+    public constructor(
+        name       : string,
+        description: string,
+        input      : Map<string, any> | undefined | null,
+        output     : Map<string, any> | undefined | null,
+        rawInput   : any | undefined | null = undefined,
+        rawOutput  : any | undefined | null = undefined) {
+        super(ActionType.SendSms, name, description, input, output, rawInput, rawOutput);
+    }
+
+}
+
+export class XRestApiCallAction extends XAction {
+
+    public constructor(
+        name       : string,
+        description: string,
+        input      : Map<string, any> | undefined | null,
+        output     : Map<string, any> | undefined | null,
+        rawInput   : any | undefined | null = undefined,
+        rawOutput  : any | undefined | null = undefined) {
+        super(ActionType.RestApiCall, name, description, input, output, rawInput, rawOutput);
+    }
+
+}
+
+export class XPythonFunCallAction extends XAction {
+
+    public constructor(
+        name       : string,
+        description: string,
+        input      : Map<string, any> | undefined | null,
+        output     : Map<string, any> | undefined | null,
+        rawInput   : any | undefined | null = undefined,
+        rawOutput  : any | undefined | null = undefined) {
+        super(ActionType.PythonFunCall, name, description, input, output, rawInput, rawOutput);
+    }
+
+}
+
+export class XLambdaFunCallAction extends XAction {
+
+    public constructor(
+        name       : string,
+        description: string,
+        input      : Map<string, any> | undefined | null,
+        output     : Map<string, any> | undefined | null,
+        rawInput   : any | undefined | null = undefined,
+        rawOutput  : any | undefined | null = undefined) {
+        super(ActionType.LambdaFunCall, name, description, input, output, rawInput, rawOutput);
+    }
+
+}
+
+export class XStoreDataSqlDbAction extends XAction {
+
+    public constructor(
+        name       : string,
+        description: string,
+        input      : Map<string, any> | undefined | null,
+        output     : Map<string, any> | undefined | null,
+        rawInput   : any | undefined | null = undefined,
+        rawOutput  : any | undefined | null = undefined) {
+        super(ActionType.StoreDataSqlDb, name, description, input, output, rawInput, rawOutput);
+    }
+
+}
+
+export class XExitAction extends XAction {
+
+    public constructor(
+        name       : string,
+        description: string,
+        input      : Map<string, any> | undefined | null,
+        output     : Map<string, any> | undefined | null,
+        rawInput   : any | undefined | null = undefined,
+        rawOutput  : any | undefined | null = undefined) {
+        super(ActionType.Exit, name, description, input, output, rawInput, rawOutput);
+    }
+
+}
+
+export class XContinueAction extends XAction {
+
+    public constructor(
+        name       : string,
+        description: string,
+        input      : Map<string, any> | undefined | null,
+        output     : Map<string, any> | undefined | null,
+        rawInput   : any | undefined | null = undefined,
+        rawOutput  : any | undefined | null = undefined) {
+        super(ActionType.Continue, name, description, input, output, rawInput, rawOutput);
+    }
+
+}
+
+export interface ActionParams {
+    ActionType  : string;
+    Name        : string;
+    Description?: string;
+    Value       : any;
+}
 
 export interface ActionInputParams {
-    SourceType        : InputSourceType;
-    Name              : string;
-    SecondaryInputTag?: string;
+    Params: ActionParams[];
+}
+
+export interface ActionOutputParams {
+    Params: ActionParams[];
 }
 
 export interface DataExtractionInputParams extends ActionInputParams {

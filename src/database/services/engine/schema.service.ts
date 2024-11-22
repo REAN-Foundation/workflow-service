@@ -17,7 +17,7 @@ import { Rule } from '../../models/engine/rule.model';
 import { Node } from '../../models/engine/node.model';
 import { Condition } from '../../models/engine/condition.model';
 import { CommonUtilsService } from './common.utils.service';
-import { NodeDefaultAction } from '../../../database/models/engine/node.default.action.model';
+import { NodeAction } from '../../models/engine/node.action.model';
 import { NodeResponseDto, NodeSearchFilters, NodeSearchResults } from '../../../domain.types/engine/node.types';
 import { XNodePath } from 'src/domain.types/engine/engine.types';
 import { XPathCondition } from 'src/domain.types/engine/engine.types';
@@ -31,7 +31,7 @@ export class SchemaService extends BaseService {
 
     _schemaRepository: Repository<Schema> = Source.getRepository(Schema);
 
-    _actionRepository: Repository<NodeDefaultAction> = Source.getRepository(NodeDefaultAction);
+    _actionRepository: Repository<NodeAction> = Source.getRepository(NodeAction);
 
     _clientRepository: Repository<Client> = Source.getRepository(Client);
 

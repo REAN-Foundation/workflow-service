@@ -8,10 +8,10 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
 } from 'typeorm';
-import { 
-    ActionInputParams, 
-    EventActionType, 
-    ActionOutputParams } from "../../../domain.types/engine/engine.types";
+import {
+    ActionInputParams,
+    EventActionType,
+    ActionOutputParams } from "../../../domain.types/engine/intermediate.types";
 import { Rule } from "./rule.model";
 
 ////////////////////////////////////////////////////////////////////////

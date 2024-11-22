@@ -18,7 +18,7 @@ import { Condition } from './models/engine/condition.model';
 import { Context } from './models/engine/context.model';
 import { Node } from './models/engine/node.model';
 import { NodeInstance } from './models/engine/node.instance.model';
-import { NodeDefaultAction } from './models/engine/node.default.action.model';
+import { NodeAction } from './models/engine/node.action.model';
 import { RuleAction } from './models/engine/rule.action.model';
 import { Rule } from './models/engine/rule.model';
 import { SchemaInstance } from './models/engine/schema.instance.model';
@@ -68,7 +68,7 @@ class DatabaseConnector {
             Condition,
             Context,
             Event,
-            NodeDefaultAction,
+            NodeAction,
             NodeInstance,
             Node,
             Rule,

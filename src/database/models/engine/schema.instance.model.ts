@@ -12,7 +12,6 @@ import {
 } from 'typeorm';
 import { Schema } from "./schema.model";
 import { NodeInstance } from "./node.instance.model";
-import { Context } from "./context.model";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -25,10 +24,6 @@ export class SchemaInstance {
     @ManyToOne(() => Schema)
     @JoinColumn()
     Schema: Schema;
-
-    @ManyToOne(() => Context)
-    @JoinColumn()
-    Context: Context;
 
     @OneToMany(() => NodeInstance, (nodeInstance) => nodeInstance.SchemaInstance)
     NodeInstances : NodeInstance[];

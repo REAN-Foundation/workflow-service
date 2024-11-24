@@ -6,10 +6,8 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     DeleteDateColumn,
-    ManyToOne,
 } from 'typeorm';
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
-import { Context } from "./context.model";
 import { EventType } from "../../../domain.types/enums/event.type";
 
 ////////////////////////////////////////////////////////////////////////
@@ -22,9 +20,6 @@ export class Event {
 
     @Column({ type: 'enum', enum: EventType, nullable: false })
     EventType: EventType;
-
-    @ManyToOne(() => Context)
-    Context: Context;
 
     @Column({ type: 'uuid', nullable: true })
     ReferenceId: uuid;

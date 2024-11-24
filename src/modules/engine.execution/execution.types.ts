@@ -1,235 +1,235 @@
-import { ActionOutputParams, InputParams, OutputParams } from '../../domain.types/engine/intermediate.types';
-import { uuid } from '../../domain.types/miscellaneous/system.types';
-import {
-    CompositionOperator,
-    ExecutionStatus,
-    LogicalOperator,
-    MathematicalOperator,
-    NodeType,
-    OperandDataType,
-    OperatorType
-} from '../../domain.types/engine/engine.enums';
-import { v4 as uuidv4 } from 'uuid';
+// import { ActionOutputParams, InputParams, OutputParams } from '../../domain.types/engine/intermediate.types';
+// import { uuid } from '../../domain.types/miscellaneous/system.types';
+// import {
+//     CompositionOperator,
+//     ExecutionStatus,
+//     LogicalOperator,
+//     MathematicalOperator,
+//     NodeType,
+//     OperandDataType,
+//     OperatorType
+// } from '../../domain.types/engine/engine.enums';
+// import { v4 as uuidv4 } from 'uuid';
 
-///////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
-export interface AlmanacObject {
-    Name: string;
-    Data: any[] | any;
-}
+// export interface AlmanacObject {
+//     Name: string;
+//     Data: any[] | any;
+// }
 
-export class CCondition {
+// export class CCondition {
 
-    id               : uuid;
+//     id               : uuid;
 
-    ParentConditionId: uuid | undefined;
+//     ParentConditionId: uuid | undefined;
 
-    RuleId           : uuid | undefined;
+//     RuleId           : uuid | undefined;
 
-    Children         : CCondition[] = [];
+//     Children         : CCondition[] = [];
 
-    Fact             : string | undefined;
+//     Fact             : string | undefined;
 
-    OperatorType     : OperatorType;
+//     OperatorType     : OperatorType;
 
-    Operator         : LogicalOperator | MathematicalOperator | CompositionOperator | undefined;
+//     Operator         : LogicalOperator | MathematicalOperator | CompositionOperator | undefined;
 
-    DataType         : OperandDataType | undefined = OperandDataType.Text;
+//     DataType         : OperandDataType | undefined = OperandDataType.Text;
 
-    Value            : string | number | boolean | [] | undefined;
+//     Value            : string | number | boolean | [] | undefined;
 
-    getFacts = (): string[] => {
-        var facts: string[] = [];
-        if (this.OperatorType === OperatorType.Composition) {
-            for (var c of this.Children) {
-                var f = c.getFacts();
-                facts.push(...f);
-            }
-        }
-        else {
-            if (this.Fact) {
-                facts.push(this.Fact);
-            }
-        }
-        return facts;
-    };
+//     getFacts = (): string[] => {
+//         var facts: string[] = [];
+//         if (this.OperatorType === OperatorType.Composition) {
+//             for (var c of this.Children) {
+//                 var f = c.getFacts();
+//                 facts.push(...f);
+//             }
+//         }
+//         else {
+//             if (this.Fact) {
+//                 facts.push(this.Fact);
+//             }
+//         }
+//         return facts;
+//     };
 
-}
+// }
 
-export class CNode {
+// export class CNode {
 
-    id          : uuid;
+//     id          : uuid;
 
-    Type        : NodeType;
+//     Type        : NodeType;
 
-    SchemaId    : uuid;
+//     SchemaId    : uuid;
 
-    ParentNodeId: uuid | undefined;
+//     ParentNodeId: uuid | undefined;
 
-    Name        : string | undefined;
+//     Name        : string | undefined;
 
-    Description : string | undefined;
+//     Description : string | undefined;
 
-    Rules       : CRule[] = [];
+//     Rules       : CRule[] = [];
 
-    Action : CAction = undefined;
+//     Action : CAction = undefined;
 
-    constructor(
-        id: uuid,
-        schemaId: uuid,
-        parentNodeId: uuid,
-        type: NodeType,
-        name:string,
-        description: string) {
-        this.id = id;
-        this.Type = type;
-        this.SchemaId = schemaId;
-        this.ParentNodeId = parentNodeId;
-        this.Name = name;
-        this.Description = description;
-        this.Rules = [];
-    }
+//     constructor(
+//         id: uuid,
+//         schemaId: uuid,
+//         parentNodeId: uuid,
+//         type: NodeType,
+//         name:string,
+//         description: string) {
+//         this.id = id;
+//         this.Type = type;
+//         this.SchemaId = schemaId;
+//         this.ParentNodeId = parentNodeId;
+//         this.Name = name;
+//         this.Description = description;
+//         this.Rules = [];
+//     }
 
-    public extractFacts = () => {
-        if (this.Rules.length > 0) {
-            var facts: string[] = [];
-            for (var r of this.Rules) {
-                var f = r.RootCondition?.getFacts();
-                if (Array.isArray(f)) {
-                    facts.push(...f);
-                }
-            }
-            var s = new Set(facts);
-            return Array.from(s);
-        }
-        return [];
-    };
+//     public extractFacts = () => {
+//         if (this.Rules.length > 0) {
+//             var facts: string[] = [];
+//             for (var r of this.Rules) {
+//                 var f = r.RootCondition?.getFacts();
+//                 if (Array.isArray(f)) {
+//                     facts.push(...f);
+//                 }
+//             }
+//             var s = new Set(facts);
+//             return Array.from(s);
+//         }
+//         return [];
+//     };
 
-}
+// }
 
-export class CRule {
+// export class CRule {
 
-    id : uuid = uuidv4();
+//     id : uuid = uuidv4();
 
-    Name: string | undefined;
+//     Name: string | undefined;
 
-    NodeId: uuid | undefined;
+//     NodeId: uuid | undefined;
 
-    ParentRuleId: uuid | undefined;
+//     ParentRuleId: uuid | undefined;
 
-    RootCondition: CCondition | undefined;
+//     RootCondition: CCondition | undefined;
 
-    AllConditions: CCondition[];
+//     AllConditions: CCondition[];
 
-    Action      : {
-        ActionType   : EventActionType;
-        InputParams ?: InputParams;
-        Name         : string;
-        Description ?: string;
-        OutputParams : OutputParams;
-    };
+//     Action      : {
+//         ActionType   : EventActionType;
+//         InputParams ?: InputParams;
+//         Name         : string;
+//         Description ?: string;
+//         OutputParams : OutputParams;
+//     };
 
-}
+// }
 
-export class CNodeInstance {
+// export class CNodeInstance {
 
-    id                  : uuid;
+//     id                  : uuid;
 
-    Type                : NodeType;
+//     Type                : NodeType;
 
-    SchemaId            : uuid;
+//     SchemaId            : uuid;
 
-    SchemaInstanceId    : uuid;
+//     SchemaInstanceId    : uuid;
 
-    ParentNodeInstanceId: uuid | undefined;
+//     ParentNodeInstanceId: uuid | undefined;
 
-    ParentNodeId        : uuid | undefined;
+//     ParentNodeId        : uuid | undefined;
 
-    NodeId              : uuid | undefined;
+//     NodeId              : uuid | undefined;
 
-    Name                : string | undefined;
+//     Name                : string | undefined;
 
-    Description         : string | undefined;
+//     Description         : string | undefined;
 
-    ExecutionStatus     : ExecutionStatus = ExecutionStatus.Pending;
+//     ExecutionStatus     : ExecutionStatus = ExecutionStatus.Pending;
 
-    UpdatedAt           : Date;
+//     UpdatedAt           : Date;
 
-    ApplicableRule      : CRule | undefined;
+//     ApplicableRule      : CRule | undefined;
 
-    AvailableFacts      : any[] | undefined;
+//     AvailableFacts      : any[] | undefined;
 
-    UserId              : uuid | undefined;
+//     UserId              : uuid | undefined;
 
-    Rules               : CRule[] = [];
+//     Rules               : CRule[] = [];
 
-    Action              : CAction = undefined;
+//     Action              : CAction = undefined;
 
-    public extractFacts = () => {
-        if (this.Rules.length > 0) {
-            var facts: string[] = [];
-            for (var r of this.Rules) {
-                var f = r.RootCondition?.getFacts();
-                if (Array.isArray(f)) {
-                    facts.push(...f);
-                }
-            }
-            var s = new Set(facts);
-            return Array.from(s);
-        }
-        return [];
-    };
+//     public extractFacts = () => {
+//         if (this.Rules.length > 0) {
+//             var facts: string[] = [];
+//             for (var r of this.Rules) {
+//                 var f = r.RootCondition?.getFacts();
+//                 if (Array.isArray(f)) {
+//                     facts.push(...f);
+//                 }
+//             }
+//             var s = new Set(facts);
+//             return Array.from(s);
+//         }
+//         return [];
+//     };
 
-}
+// }
 
-export class CSchema {
+// export class CSchema {
 
-    id          : uuid = uuidv4();
+//     id          : uuid = uuidv4();
 
-    Name        : string | undefined;
+//     Name        : string | undefined;
 
-    Nodes       : CNode[];
+//     Nodes       : CNode[];
 
-    RootNode    : CNode | undefined;
+//     RootNode    : CNode | undefined;
 
-    constructor(name: string) {
-        this.id = uuidv4();
-        this.Nodes = [];
-        this.Name = name;
-    }
+//     constructor(name: string) {
+//         this.id = uuidv4();
+//         this.Nodes = [];
+//         this.Name = name;
+//     }
 
-}
+// }
 
-export class CSchemaInstance {
+// export class CSchemaInstance {
 
-    id                 : uuid;
+//     id                 : uuid;
 
-    Name               : string;
+//     Name               : string;
 
-    SchemaId           : uuid;
+//     SchemaId           : uuid;
 
-    Context            : CContext;
+//     Context            : CContext;
 
-    NodeInstances      : CNodeInstance[];
+//     NodeInstances      : CNodeInstance[];
 
-    FactNames          : string[];
+//     FactNames          : string[];
 
-    CurrentNodeInstance: CNodeInstance | undefined;
+//     CurrentNodeInstance: CNodeInstance | undefined;
 
-    RootNodeInstance   : CNodeInstance | undefined;
+//     RootNodeInstance   : CNodeInstance | undefined;
 
-    Almanac            : AlmanacObject[];
+//     Almanac            : AlmanacObject[];
 
-    CSchemaInstance() {
-        //
-    }
+//     CSchemaInstance() {
+//         //
+//     }
 
-    public setCurrent = (instance: CNodeInstance) => {
-        this.CurrentNodeInstance = instance;
-    };
+//     public setCurrent = (instance: CNodeInstance) => {
+//         this.CurrentNodeInstance = instance;
+//     };
 
-    public fetchAlmanacData = (tag: string) => {
-        return this.Almanac.find(x => x.Name === tag);
-    };
+//     public fetchAlmanacData = (tag: string) => {
+//         return this.Almanac.find(x => x.Name === tag);
+//     };
 
-}
+// }

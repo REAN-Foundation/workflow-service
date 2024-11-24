@@ -12,10 +12,9 @@ import {
     DeleteDateColumn,
 } from 'typeorm';
 import { NodeAction } from "./node.action.model";
-import { Rule } from "./rule.model";
 import { Schema } from "./schema.model";
 import { NodePath } from "./node.path.model";
-import { NodeType } from "../../../domain.types/engine/engine.enums";
+import { NodeType, QuestionResponseType } from "../../../domain.types/engine/engine.enums";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +30,9 @@ export class Node {
     @Column({ type: 'varchar', length: 256, nullable: false })
     Name : string;
 
+    @Column({ type: 'varchar', length: 256, nullable: false })
+    Code : string;
+
     @Column({ type: 'varchar', length: 512, nullable: true })
     Description : string;
 
@@ -40,22 +42,27 @@ export class Node {
     @OneToMany(() => Node, (node) => node.ParentNode)
     Children: Node[];
 
-    @OneToMany(() => NodePath, (path) => path.ParentNode, { cascade: true })
-    Paths: NodePath[];
-
     @ManyToOne(() => Schema, (schema) => schema.Nodes, { onDelete: 'CASCADE' })
     @JoinColumn()
     Schema: Schema;
 
-    @OneToMany(() => Rule, (rule) => rule.ParentNode, {
-        cascade  : true,
-        nullable : true,
-    })
-    Rules: Rule[];
+    @OneToMany(() => NodePath, (path) => path.ParentNode, { cascade: true })
+    Paths: NodePath[];
 
-    @OneToOne(() => NodeAction, (action) => action.ParentNode, { onDelete: 'CASCADE' })
-    @JoinColumn()
-    Action: NodeAction;
+    @OneToMany(() => NodeAction, (path) => path.ParentNode, { cascade: true })
+    Actions: NodeAction[];
+
+    @Column({ type: 'simple-json', nullable: true })
+    RawData : any;
+
+    @Column({ type: 'enum', enum: QuestionResponseType, nullable: false, default: QuestionResponseType.SingleChoiceSelection })
+    QuestionResponseType : QuestionResponseType;
+
+    @Column({ type: 'text', nullable: true })
+    Message : string;
+
+    @OneToOne(() => NodePath, (path) => path.ParentNode, { nullable: true })
+    DefaultNodePath: NodePath;
 
     @CreateDateColumn()
     CreatedAt : Date;

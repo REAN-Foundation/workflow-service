@@ -11,7 +11,6 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { Condition } from "./condition.model";
-import { RuleAction } from "./rule.action.model";
 import { Node } from "./node.model";
 import { Schema } from "./schema.model";
 import { NodePath } from "./node.path.model";
@@ -30,7 +29,7 @@ export class Rule {
     @Column({ type: 'varchar', length: 512, nullable: true })
     Description : string;
 
-    @ManyToOne(() => Node, (node) => node.Rules, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Node, (node) => node.ParentNode)
     @JoinColumn()
     ParentNode: Node;
 

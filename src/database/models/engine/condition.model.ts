@@ -27,8 +27,6 @@ export class Condition {
     @Column({ type: 'varchar', length: 512, nullable: true })
     Description : string;
 
-    
-
     @OneToOne(() => Rule, (rule) => rule.Condition)
     Rule: Rule;
 

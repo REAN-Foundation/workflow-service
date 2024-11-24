@@ -6,7 +6,7 @@ import { register as registerSchemaRoutes } from '../api/engine/schema/schema.ro
 import { register as registerNodeRoutes } from '../api/engine/node/node.routes';
 import { register as registerRuleRoutes } from '../api/engine/rule/rule.routes';
 import { register as registerConditionRoutes } from '../api/engine/condition/condition.routes';
-import { register as registerEventRoutes } from '../api/engine/event/event.routes';
+// import { register as registerEventRoutes } from '../api/engine/event/event.routes';
 import { register as registerSchemaInstanceRoutes } from '../api/engine/schema.instance/schema.instance.routes';
 import { register as registerTypesRoutes } from '../api/types/types.routes';
 import { register as registerFileResourceRoutes } from '../api/general/file.resource/file.resource.routes';
@@ -35,7 +35,7 @@ export class RouteHandler {
                 registerNodeRoutes(expressApp);
                 registerRuleRoutes(expressApp);
                 registerConditionRoutes(expressApp);
-                registerEventRoutes(expressApp);
+                // registerEventRoutes(expressApp);
                 registerSchemaInstanceRoutes(expressApp);
                 registerTypesRoutes(expressApp);
                 registerFileResourceRoutes(expressApp);

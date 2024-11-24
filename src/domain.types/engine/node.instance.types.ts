@@ -23,13 +23,6 @@ export interface NodeInstanceResponseDto {
     id         : uuid;
     ExecutionStatus : ExecutionStatus;
     StatusUpdateTimestamp : Date;
-    ApplicableRule: {
-        id         : uuid;
-        Name       : string;
-        Description: string;
-    };
-    AvailableFacts       : any[];
-    ExecutedDefaultAction: boolean;
     ExecutionResult      : any;
     Node                 : {
         id    : uuid;

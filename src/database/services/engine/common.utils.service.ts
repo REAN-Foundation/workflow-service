@@ -7,7 +7,7 @@ import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { Source } from '../../database.connector';
 import { Repository } from 'typeorm';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { Context } from '../../../database/models/engine/context.model';
+import { NodeActionCreateModel } from '../../../domain.types/engine/node.action.types';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -21,8 +21,6 @@ export class CommonUtilsService {
 
     _ruleRepository: Repository<Rule> = Source.getRepository(Rule);
 
-    _contextRepository: Repository<Context> = Source.getRepository(Context);
-
     _actionRepository: Repository<NodeAction> = Source.getRepository(NodeAction);
 
     _clientRepository: Repository<Client> = Source.getRepository(Client);
@@ -32,9 +30,9 @@ export class CommonUtilsService {
     public getSchema = async (schemaId: uuid) => {
         const schema = await this._schemaRepository.findOne({
             where : {
-                id: schemaId as string
+                id : schemaId as string
             },
-            relations: {
+            relations : {
                 Client : true,
                 Nodes  : true,
             }
@@ -43,30 +41,30 @@ export class CommonUtilsService {
             ErrorHandler.throwNotFoundError('Schema cannot be found');
         }
         return schema;
-    }
+    };
 
-    public createAction = async (actionModel: any) => {
+    public createAction = async (actionModel: NodeActionCreateModel) => {
         const action = await this._actionRepository.create({
             ActionType  : actionModel.ActionType,
             Name        : actionModel.Name,
             Description : actionModel.Description,
-            InputParams : actionModel.InputParams,
-            OutputParams: actionModel.OutputParams
+            Input       : actionModel.Input,
+            Output      : actionModel.Output
         });
         return action;
-    }
+    };
 
     public getNode = async (nodeId: uuid) => {
         return await this._nodeRepository.findOne({
-            where: {
-                id: nodeId
+            where : {
+                id : nodeId
             },
-            relations: {
-                Action: true,
-                Children: true,
-                ParentNode: true,
-                Rules: true,
-                Schema: true,
+            relations : {
+                Actions    : true,
+                Children   : true,
+                ParentNode : true,
+                Paths      : true,
+                Schema     : true,
             }
         });
     };
@@ -83,21 +81,20 @@ export class CommonUtilsService {
         return client;
     };
 
-
-    public getContext = async (contextId: uuid) => {
-        const context = await this._contextRepository.findOne({
-            where : {
-                id : contextId
-            },
-            relations: {
-                Participant: true,
-                Group: true,
-            }
-        });
-        if (!context) {
-            ErrorHandler.throwNotFoundError('Context cannot be found');
-        }
-        return context;
-    };
+    // public getContext = async (contextId: uuid) => {
+    //     const context = await this._contextRepository.findOne({
+    //         where : {
+    //             id : contextId
+    //         },
+    //         relations : {
+    //             Participant : true,
+    //             Group       : true,
+    //         }
+    //     });
+    //     if (!context) {
+    //         ErrorHandler.throwNotFoundError('Context cannot be found');
+    //     }
+    //     return context;
+    // };
 
 }

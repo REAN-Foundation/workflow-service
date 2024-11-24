@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { Client } from "../client/client.model";
 import { Node } from "../engine/node.model";
-import { SchemaType } from "../../../domain.types/engine/intermediate.types";
+import { SchemaType } from "../../../domain.types/engine/engine.enums";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -28,7 +28,7 @@ export class Schema {
     @Column({ type: 'varchar', length: 512, nullable: true })
     Description : string;
 
-    @Column({ type: 'enum', enum: SchemaType, nullable: false, default: SchemaType.ReuseExistingInstance })
+    @Column({ type: 'enum', enum: SchemaType, nullable: false, default: SchemaType.ChatBot })
     Type : SchemaType;
 
     @ManyToOne(() => Client, { nullable: true, onDelete: 'CASCADE' })

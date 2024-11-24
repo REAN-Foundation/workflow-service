@@ -2,31 +2,31 @@ import "reflect-metadata";
 import {
     Column,
     Entity,
-    OneToOne,
     PrimaryGeneratedColumn,
     CreateDateColumn,
     UpdateDateColumn,
     DeleteDateColumn,
+    ManyToOne,
+    JoinColumn,
 } from 'typeorm';
-import {
-    ActionInputParams,
-    EventActionType,
-    ActionOutputParams } from "../../../domain.types/engine/intermediate.types";
-import { Rule } from "./rule.model";
+import { Node } from "./node.model";
+import { ActionInputParams, ActionOutputParams } from "../../../domain.types/engine/intermediate.types";
+import { ActionType } from "../../../domain.types/engine/engine.enums";
 
 ////////////////////////////////////////////////////////////////////////
 
-@Entity({ name: 'rule_actions' })
-export class RuleAction {
+@Entity({ name: 'question_options' })
+export class QuestionOption {
 
     @PrimaryGeneratedColumn('uuid')
     id : string;
 
-    @Column({ type: 'enum', enum: EventActionType, nullable: false })
-    ActionType : EventActionType;
+    @Column({ type: 'enum', enum: ActionType, nullable: false })
+    ActionType : ActionType;
 
-    @OneToOne(() => Rule, (rule) => rule.Action, { nullable: true, onDelete: 'CASCADE' })
-    ParentRule: Rule;
+    @ManyToOne(() => Node, (node) => node.Actions, { nullable: true })
+    @JoinColumn()
+    ParentNode: Node;
 
     @Column({ type: 'varchar', length: 256, nullable: false })
     Name : string;
@@ -35,10 +35,10 @@ export class RuleAction {
     Description : string;
 
     @Column({ type: 'simple-json', nullable: true })
-    InputParams : ActionInputParams;
+    Input : ActionInputParams;
 
     @Column({ type: 'simple-json', nullable: true })
-    OutputParams : ActionOutputParams;
+    Output : ActionOutputParams;
 
     @CreateDateColumn()
     CreatedAt : Date;

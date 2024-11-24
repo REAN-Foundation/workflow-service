@@ -24,23 +24,6 @@ export class SchemaInstanceMapper {
                 } : null,
                 EventTypes : eventTypes ?? [],
             },
-            Context : {
-                id          : instance.Context.id,
-                ReferenceId : instance.Context.ReferenceId,
-                Type        : instance.Context.Type,
-                Participant : instance.Context.Participant ? {
-                    id          : instance.Context.Participant.id,
-                    ReferenceId : instance.Context.Participant.ReferenceId,
-                    Prefix      : instance.Context.Participant.Prefix,
-                    FirstName   : instance.Context.Participant.FirstName,
-                    LastName    : instance.Context.Participant.LastName,
-                } : null,
-                ParticipantGroup : instance.Context.Group ? {
-                    id          : instance.Context.Group.id,
-                    Name        : instance.Context.Group.Name,
-                    Description : instance.Context.Group.Description,
-                } : null,
-            },
             RootNodeInstance : instance.RootNodeInstance ? {
                 id   : instance.RootNodeInstance.id,
                 Node : instance.RootNodeInstance.Node ? {

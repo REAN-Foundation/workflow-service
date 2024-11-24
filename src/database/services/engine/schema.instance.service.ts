@@ -13,7 +13,6 @@ import {
     SchemaInstanceSearchFilters,
     SchemaInstanceSearchResults,
     SchemaInstanceUpdateModel } from '../../../domain.types/engine/schema.instance.types';
-import { Context } from '../../models/engine/context.model';
 import { NodeInstance } from '../../models/engine/node.instance.model';
 import { Node } from '../../models/engine/node.model';
 import { CommonUtilsService } from './common.utils.service';
@@ -28,8 +27,6 @@ export class SchemaInstanceService extends BaseService {
 
     _schemaRepository: Repository<Schema> = Source.getRepository(Schema);
 
-    _contextRepository: Repository<Context> = Source.getRepository(Context);
-
     _nodeRepository: Repository<Node> = Source.getRepository(Node);
 
     _nodeInstanceRepository: Repository<NodeInstance> = Source.getRepository(NodeInstance);
@@ -43,11 +40,9 @@ export class SchemaInstanceService extends BaseService {
 
         const schema = await this._commonUtils.getSchema(createModel.SchemaId);
         const rootNode = await this._commonUtils.getNode(schema.RootNodeId);
-        const context = await this._commonUtils.getContext(createModel.ContextId);
 
         const schemaInstance = this._schemaInstanceRepository.create({
-            Schema  : schema,
-            Context : context,
+            Schema : schema,
         });
         var record = await this._schemaInstanceRepository.save(schemaInstance);
         const rootNodeInstance = await this._nodeInstanceRepository.create({
@@ -90,9 +85,6 @@ export class SchemaInstanceService extends BaseService {
                         Client : true,
                         Nodes  : true,
                     },
-                    Context : {
-                        Participant : true,
-                    },
                     CurrentNodeInstance : {
                         Node : true,
                     },
@@ -105,40 +97,6 @@ export class SchemaInstanceService extends BaseService {
                 }
             });
             return SchemaInstanceMapper.toResponseDto(schemaInstance);
-        } catch (error) {
-            logger.error(error.message);
-            ErrorHandler.throwInternalServerError(error.message, 500);
-        }
-    };
-
-    public getByContextId = async (contextId: uuid): Promise<SchemaInstanceResponseDto[]> => {
-        try {
-            var instances = await this._schemaInstanceRepository.find({
-                where : {
-                    Context : {
-                        id : contextId
-                    }
-                },
-                relations : {
-                    Schema : {
-                        Client : true,
-                        Nodes  : true,
-                    },
-                    Context : {
-                        Participant : true,
-                    },
-                    CurrentNodeInstance : {
-                        Node : true,
-                    },
-                    RootNodeInstance : {
-                        Node : true,
-                    },
-                    NodeInstances : {
-                        Node : true,
-                    },
-                }
-            });
-            return instances.map(x => SchemaInstanceMapper.toResponseDto(x));
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
@@ -183,10 +141,6 @@ export class SchemaInstanceService extends BaseService {
                 const schema = await this._commonUtils.getSchema(model.SchemaId);
                 schemaInstance.Schema = schema;
             }
-            if (model.ContextId != null) {
-                const context = await this._commonUtils.getContext(model.ContextId);
-                schemaInstance.Context = context;
-            }
             var record = await this._schemaInstanceRepository.save(schemaInstance);
             return SchemaInstanceMapper.toResponseDto(record);
         } catch (error) {
@@ -220,9 +174,6 @@ export class SchemaInstanceService extends BaseService {
                     Client : true,
                     Nodes  : true,
                 },
-                Context : {
-                    Participant : true,
-                },
                 CurrentNodeInstance : {
                     Node : true,
                 },
@@ -245,23 +196,6 @@ export class SchemaInstanceService extends BaseService {
                         id   : true,
                         Name : true,
                     }
-                },
-                Context : {
-                    id          : true,
-                    ReferenceId : true,
-                    Type        : true,
-                    Participant : {
-                        id          : true,
-                        ReferenceId : true,
-                        Prefix      : true,
-                        FirstName   : true,
-                        LastName    : true,
-                    },
-                    Group : {
-                        id          : true,
-                        Name        : true,
-                        Description : true,
-                    },
                 },
                 RootNodeInstance : {
                     id   : true,

@@ -87,11 +87,49 @@ export interface XNodePath {
     id            : uuid;
     Name          : string;
     Code          : string;
-    ParentNodeId  : NodeType;
+    ParentNodeId  : uuid;
     ParentNodeCode: string;
     NextNodeId    : uuid;
     NextNodeCode  : string;
-    Condition     : XPathCondition;
+    Rule          : XRule;
+}
+
+export interface XRule {
+    id          : uuid;
+    Name        : string;
+    Description : string;
+    ParentNodeId: uuid;
+    Condition   : XPathCondition;
+    NodePathId  : uuid;
+}
+
+export class XAction {
+
+    Type       : ActionType;
+    Name       : string;
+    Description: string;
+    RawInput   : any | undefined;
+    RawOutput  : any | undefined;
+    Input      : ActionInputParams | undefined | null;
+    Output     : ActionOutputParams | undefined | null;
+
+    public constructor(
+        type       : ActionType,
+        name       : string,
+        description: string,
+        input      : ActionInputParams | undefined | null,
+        output     : ActionOutputParams | undefined | null,
+        rawInput   : any | undefined,
+        rawOutput  : any | undefined) {
+        this.Type = type;
+        this.Name = name;
+        this.Description = description;
+        this.RawInput = rawInput;
+        this.RawOutput = rawOutput;
+        this.Input = input;
+        this.Output = output;
+    }
+
 }
 
 export interface XNode
@@ -147,47 +185,41 @@ export interface XSchema {
     id          : uuid;
     Name        : string;
     Description : string;
-    ValidFrom   : Date;
-    ValidTill   : Date;
-    IsValid     : boolean;
+    Active      : boolean;
     RootNode   ?: XNode;
     Tenant      : {
         id  : uuid;
         Name: string;
         Code: string;
     };
-    IdentificationParams?: Map<string, any>;
-    CreatedAt            : Date;
-    UpdatedAt            : Date;
+    Nodes        : XNode[];
+    ContextParams: ContextParams;
+    CreatedAt    : Date;
+    UpdatedAt    : Date;
 }
 
-export class XAction {
+export interface XNodeInstance {
+    NodeId          : uuid;
+    SchemaInstanceId: uuid;
+    Executed        : boolean;
+    CreatedAt       : Date;
+    UpdatedAt       : Date;
+}
 
-    Type       : ActionType;
-    Name       : string;
-    Description: string;
-    RawInput   : any | undefined;
-    RawOutput  : any | undefined;
-    Input      : Map<string, any> | undefined | null;
-    Output     : Map<string, any> | undefined | null;
-
-    public constructor(
-        type       : ActionType,
-        name       : string,
-        description: string,
-        input      : Map<string, any> | undefined | null,
-        output     : Map<string, any> | undefined | null,
-        rawInput   : any | undefined,
-        rawOutput  : any | undefined) {
-        this.Type = type;
-        this.Name = name;
-        this.Description = description;
-        this.RawInput = rawInput;
-        this.RawOutput = rawOutput;
-        this.Input = input;
-        this.Output = output;
-    }
-
+export interface XSchemaInstance {
+    id          : uuid;
+    SchemaId    : uuid;
+    Schema      : XSchema;
+    Name        : string;
+    Description : string;
+    Exited      : boolean;
+    RootNode   ?: XNode;
+    TenantId   ?: uuid;
+    Nodes        : XNode[];
+    ContextParams: ContextParams;
+    CurrentNode  : XNode;
+    CreatedAt    : Date;
+    UpdatedAt    : Date;
 }
 
 export class XSendMessageAction extends XAction {
@@ -195,8 +227,8 @@ export class XSendMessageAction extends XAction {
     public constructor(
         name       : string,
         description: string,
-        input      : Map<string, any> | undefined | null,
-        output     : Map<string, any> | undefined | null,
+        input      : ActionInputParams | undefined | null,
+        output     : ActionOutputParams | undefined | null,
         rawInput   : any | undefined | null = undefined,
         rawOutput  : any | undefined | null = undefined) {
         super(ActionType.SendMessage, name, description, input, output, rawInput, rawOutput);
@@ -209,8 +241,8 @@ export class XSendEmailAction extends XAction {
     public constructor(
         name       : string,
         description: string,
-        input      : Map<string, any> | undefined | null,
-        output     : Map<string, any> | undefined | null,
+        input      : ActionInputParams | undefined | null,
+        output     : ActionOutputParams | undefined | null,
         rawInput   : any | undefined | null = undefined,
         rawOutput  : any | undefined | null = undefined) {
         super(ActionType.SendEmail, name, description, input, output, rawInput, rawOutput);
@@ -223,8 +255,8 @@ export class XSendSmsAction extends XAction {
     public constructor(
         name       : string,
         description: string,
-        input      : Map<string, any> | undefined | null,
-        output     : Map<string, any> | undefined | null,
+        input      : ActionInputParams | undefined | null,
+        output     : ActionOutputParams | undefined | null,
         rawInput   : any | undefined | null = undefined,
         rawOutput  : any | undefined | null = undefined) {
         super(ActionType.SendSms, name, description, input, output, rawInput, rawOutput);
@@ -237,8 +269,8 @@ export class XRestApiCallAction extends XAction {
     public constructor(
         name       : string,
         description: string,
-        input      : Map<string, any> | undefined | null,
-        output     : Map<string, any> | undefined | null,
+        input      : ActionInputParams | undefined | null,
+        output     : ActionOutputParams | undefined | null,
         rawInput   : any | undefined | null = undefined,
         rawOutput  : any | undefined | null = undefined) {
         super(ActionType.RestApiCall, name, description, input, output, rawInput, rawOutput);
@@ -251,8 +283,8 @@ export class XPythonFunCallAction extends XAction {
     public constructor(
         name       : string,
         description: string,
-        input      : Map<string, any> | undefined | null,
-        output     : Map<string, any> | undefined | null,
+        input      : ActionInputParams | undefined | null,
+        output     : ActionOutputParams | undefined | null,
         rawInput   : any | undefined | null = undefined,
         rawOutput  : any | undefined | null = undefined) {
         super(ActionType.PythonFunCall, name, description, input, output, rawInput, rawOutput);
@@ -265,8 +297,8 @@ export class XLambdaFunCallAction extends XAction {
     public constructor(
         name       : string,
         description: string,
-        input      : Map<string, any> | undefined | null,
-        output     : Map<string, any> | undefined | null,
+        input      : ActionInputParams | undefined | null,
+        output     : ActionOutputParams | undefined | null,
         rawInput   : any | undefined | null = undefined,
         rawOutput  : any | undefined | null = undefined) {
         super(ActionType.LambdaFunCall, name, description, input, output, rawInput, rawOutput);
@@ -279,8 +311,8 @@ export class XStoreDataSqlDbAction extends XAction {
     public constructor(
         name       : string,
         description: string,
-        input      : Map<string, any> | undefined | null,
-        output     : Map<string, any> | undefined | null,
+        input      : ActionInputParams | undefined | null,
+        output     : ActionOutputParams | undefined | null,
         rawInput   : any | undefined | null = undefined,
         rawOutput  : any | undefined | null = undefined) {
         super(ActionType.StoreDataSqlDb, name, description, input, output, rawInput, rawOutput);
@@ -293,8 +325,8 @@ export class XExitAction extends XAction {
     public constructor(
         name       : string,
         description: string,
-        input      : Map<string, any> | undefined | null,
-        output     : Map<string, any> | undefined | null,
+        input      : ActionInputParams | undefined | null,
+        output     : ActionOutputParams | undefined | null,
         rawInput   : any | undefined | null = undefined,
         rawOutput  : any | undefined | null = undefined) {
         super(ActionType.Exit, name, description, input, output, rawInput, rawOutput);
@@ -307,8 +339,8 @@ export class XContinueAction extends XAction {
     public constructor(
         name       : string,
         description: string,
-        input      : Map<string, any> | undefined | null,
-        output     : Map<string, any> | undefined | null,
+        input      : ActionInputParams | undefined | null,
+        output     : ActionOutputParams | undefined | null,
         rawInput   : any | undefined | null = undefined,
         rawOutput  : any | undefined | null = undefined) {
         super(ActionType.Continue, name, description, input, output, rawInput, rawOutput);
@@ -316,11 +348,14 @@ export class XContinueAction extends XAction {
 
 }
 
-export interface ActionParams {
-    ActionType  : string;
+export interface Params {
     Name        : string;
     Description?: string;
     Value       : any;
+}
+
+export interface ActionParams extends Params {
+    ActionType  : string;
 }
 
 export interface ActionInputParams {
@@ -329,6 +364,10 @@ export interface ActionInputParams {
 
 export interface ActionOutputParams {
     Params: ActionParams[];
+}
+
+export interface ContextParams {
+    Params: Params[];
 }
 
 export interface DataExtractionInputParams extends ActionInputParams {

@@ -38,6 +38,7 @@ export interface SchemaUpdateModel {
 
 export interface SchemaResponseDto {
     id         : uuid;
+    Type       : SchemaType;
     Name       : string;
     Description: string;
     ValidFrom  : Date;

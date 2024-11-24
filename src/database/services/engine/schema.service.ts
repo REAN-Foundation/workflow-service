@@ -18,10 +18,7 @@ import { Node } from '../../models/engine/node.model';
 import { Condition } from '../../models/engine/condition.model';
 import { CommonUtilsService } from './common.utils.service';
 import { NodeAction } from '../../models/engine/node.action.model';
-import { NodeResponseDto, NodeSearchFilters, NodeSearchResults } from '../../../domain.types/engine/node.types';
-import { XNodePath } from 'src/domain.types/engine/engine.types';
-import { XPathCondition } from 'src/domain.types/engine/engine.types';
-import { XSchema } from 'src/domain.types/engine/engine.types';
+import { NodeResponseDto } from '../../../domain.types/engine/node.types';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -53,14 +50,11 @@ export class SchemaService extends BaseService {
         const rootNodeName = 'Root Node' + createModel.Name.substring(0, 25);
         let rootNode: NodeResponseDto = null;
         if (createModel.RootNode) {
-            const action = await this._commonUtils.createAction(createModel.RootNode.Action);
-            const actionRecord = await this. _actionRepository.save(action);
             rootNode = this._nodeRepository.create({
                 ParentNode  : null,
                 Name        : createModel.RootNode.Name,
                 Type        : createModel.RootNode.Type,
                 Description : createModel.RootNode.Description,
-                Action      : actionRecord,
             });
         }
         else {
@@ -229,119 +223,119 @@ export class SchemaService extends BaseService {
 
     //#endregion
 
-    public readTemplateObjToExport = async (templateId: uuid): Promise<XSchema> => {
-        var template = await this._assessmentHelperRepo.readTemplateAsObj(templateId);
-        template = this.sanitizeTemplateForExport(template);
-        return template;
-    };
+    // public readTemplateObjToExport = async (templateId: uuid): Promise<XSchema> => {
+    //     var template = await this._assessmentHelperRepo.readTemplateAsObj(templateId);
+    //     template = this.sanitizeTemplateForExport(template);
+    //     return template;
+    // };
 
-    public import = async (model: any): Promise<SchemaResponseDto> => {
-        var template: XSchema = model as XSchema;
-        return await this.addTemplate(template);
-    };
+    // public import = async (model: any): Promise<SchemaResponseDto> => {
+    //     var template: XSchema = model as XSchema;
+    //     return await this.addTemplate(template);
+    // };
 
-    public addTemplate = async (template: CAssessmentTemplate): Promise<AssessmentTemplateDto> => {
-        const resource = await AssessmentTemplateFileConverter.storeAssessmentTemplate(template);
-        template.FileResourceId = resource.id;
-        return await this._assessmentHelperRepo.addTemplate(template);
-    };
+    // public addTemplate = async (template: CAssessmentTemplate): Promise<AssessmentTemplateDto> => {
+    //     const resource = await AssessmentTemplateFileConverter.storeAssessmentTemplate(template);
+    //     template.FileResourceId = resource.id;
+    //     return await this._assessmentHelperRepo.addTemplate(template);
+    // };
 
-    getNode = async (nodeId: string): Promise<any> => {
-        return await this._assessmentHelperRepo.getNodeById(nodeId);
-    };
+    // getNode = async (nodeId: string): Promise<any> => {
+    //     return await this._assessmentHelperRepo.getNodeById(nodeId);
+    // };
 
-    deleteNode = async (nodeId: string): Promise<boolean> => {
-        return await this._assessmentHelperRepo.deleteNode(nodeId);
-    };
+    // deleteNode = async (nodeId: string): Promise<boolean> => {
+    //     return await this._assessmentHelperRepo.deleteNode(nodeId);
+    // };
 
-    addNode = async (
-        model: CAssessmentNode | CAssessmentListNode | CAssessmentQuestionNode | CAssessmentMessageNode) => {
-        return await this._assessmentHelperRepo.createNode(model.TemplateId, model.ParentNodeId, model);
-    };
+    // addNode = async (
+    //     model: CAssessmentNode | CAssessmentListNode | CAssessmentQuestionNode | CAssessmentMessageNode) => {
+    //     return await this._assessmentHelperRepo.createNode(model.TemplateId, model.ParentNodeId, model);
+    // };
 
-    updateNode = async(nodeId: uuid, updates: any) => {
-        return await this._assessmentHelperRepo.updateNode(nodeId, updates);
-    };
+    // updateNode = async(nodeId: uuid, updates: any) => {
+    //     return await this._assessmentHelperRepo.updateNode(nodeId, updates);
+    // };
 
-    sanitizeTemplateForExport = (template: CAssessmentTemplate): CAssessmentTemplate => {
+    // sanitizeTemplateForExport = (template: CAssessmentTemplate): CAssessmentTemplate => {
 
-        delete template.TemplateId;
+    //     delete template.TemplateId;
 
-        for (var node of template.Nodes) {
-            delete node.id;
-            delete node.TemplateId;
-            delete node.ParentNodeId;
+    //     for (var node of template.Nodes) {
+    //         delete node.id;
+    //         delete node.TemplateId;
+    //         delete node.ParentNodeId;
 
-            if (node.NodeType === AssessmentNodeType.NodeList) {
-                delete (node as CAssessmentListNode).ChildrenNodeIds;
-                delete (node as CAssessmentListNode).Children;
-            }
-            else if (node.NodeType === AssessmentNodeType.Question) {
-                for (var option of (node as CAssessmentQuestionNode).Options) {
-                    delete option.id;
-                    delete option.NodeId;
-                }
-                for (var path of (node as CAssessmentQuestionNode).Paths) {
-                    delete path.id;
-                    delete path.ParentNodeId;
-                    delete path.ConditionId;
-                    delete path.NextNodeId;
-                }
-            }
-            else if (node.NodeType === AssessmentNodeType.Message) {
-                delete (node as CAssessmentMessageNode).Acknowledged;
-            }
-        }
+    //         if (node.NodeType === AssessmentNodeType.NodeList) {
+    //             delete (node as CAssessmentListNode).ChildrenNodeIds;
+    //             delete (node as CAssessmentListNode).Children;
+    //         }
+    //         else if (node.NodeType === AssessmentNodeType.Question) {
+    //             for (var option of (node as CAssessmentQuestionNode).Options) {
+    //                 delete option.id;
+    //                 delete option.NodeId;
+    //             }
+    //             for (var path of (node as CAssessmentQuestionNode).Paths) {
+    //                 delete path.id;
+    //                 delete path.ParentNodeId;
+    //                 delete path.ConditionId;
+    //                 delete path.NextNodeId;
+    //             }
+    //         }
+    //         else if (node.NodeType === AssessmentNodeType.Message) {
+    //             delete (node as CAssessmentMessageNode).Acknowledged;
+    //         }
+    //     }
 
-        return template;
-    };
+    //     return template;
+    // };
 
-    public searchNodes = async (filters: NodeSearchFilters): Promise<NodeSearchResults> => {
-        return await this._assessmentHelperRepo.searchNodes(filters);
-    };
+    // public searchNodes = async (filters: NodeSearchFilters): Promise<NodeSearchResults> => {
+    //     return await this._assessmentHelperRepo.searchNodes(filters);
+    // };
 
-    addPath = async (nodeId: uuid, path: XNodePath): Promise<XNodePath> => {
-        return await this._assessmentHelperRepo.addPath(nodeId, path);
-    };
+    // addPath = async (nodeId: uuid, path: XNodePath): Promise<XNodePath> => {
+    //     return await this._assessmentHelperRepo.addPath(nodeId, path);
+    // };
 
-    updatePath = async (pathId: uuid, updates: XNodePath): Promise<XNodePath> => {
-        return await this._assessmentHelperRepo.updatePath(pathId, updates);
-    };
+    // updatePath = async (pathId: uuid, updates: XNodePath): Promise<XNodePath> => {
+    //     return await this._assessmentHelperRepo.updatePath(pathId, updates);
+    // };
 
-    getPath = async (pathId: uuid): Promise<XNodePath> => {
-        return await this._assessmentHelperRepo.getPath(pathId);
-    };
+    // getPath = async (pathId: uuid): Promise<XNodePath> => {
+    //     return await this._assessmentHelperRepo.getPath(pathId);
+    // };
 
-    deletePath = async (pathId: uuid): Promise<boolean> => {
-        return await this._assessmentHelperRepo.deletePath(pathId);
-    };
+    // deletePath = async (pathId: uuid): Promise<boolean> => {
+    //     return await this._assessmentHelperRepo.deletePath(pathId);
+    // };
 
-    addPathCondition = async (pathId: uuid, condition: XPathCondition): Promise<XPathCondition> => {
-        return await this._assessmentHelperRepo.addPathCondition(pathId, condition);
-    };
+    // addPathCondition = async (pathId: uuid, condition: XPathCondition): Promise<XPathCondition> => {
+    //     return await this._assessmentHelperRepo.addPathCondition(pathId, condition);
+    // };
 
-    updatePathCondition = async (conditionId: uuid, updates: XPathCondition): Promise<XPathCondition> => {
-        return await this._assessmentHelperRepo.updatePathCondition(conditionId, updates);
-    };
+    // updatePathCondition = async (conditionId: uuid, updates: XPathCondition): Promise<XPathCondition> => {
+    //     return await this._assessmentHelperRepo.updatePathCondition(conditionId, updates);
+    // };
 
-    getPathCondition = async (conditionId: uuid, nodeId: uuid, pathId: uuid): Promise<XPathCondition> => {
-        return await this._assessmentHelperRepo.getPathCondition(conditionId, nodeId, pathId);
-    };
+    // getPathCondition = async (conditionId: uuid, nodeId: uuid, pathId: uuid): Promise<XPathCondition> => {
+    //     return await this._assessmentHelperRepo.getPathCondition(conditionId, nodeId, pathId);
+    // };
 
-    deletePathCondition = async (conditionId: uuid): Promise<boolean> => {
-        return await this._assessmentHelperRepo.deletePathCondition(conditionId);
-    };
+    // deletePathCondition = async (conditionId: uuid): Promise<boolean> => {
+    //     return await this._assessmentHelperRepo.deletePathCondition(conditionId);
+    // };
 
-    getPathConditionForPath = async (pathId: uuid): Promise<XPathCondition> => {
-        return await this._assessmentHelperRepo.getPathConditionForPath(pathId);
-    };
+    // getPathConditionForPath = async (pathId: uuid): Promise<XPathCondition> => {
+    //     return await this._assessmentHelperRepo.getPathConditionForPath(pathId);
+    // };
 
-    getNodePaths = async (nodeId: uuid): Promise<XNodePath[]> => {
-        return await this._assessmentHelperRepo.getNodePaths(nodeId);
-    };
+    // getNodePaths = async (nodeId: uuid): Promise<XNodePath[]> => {
+    //     return await this._assessmentHelperRepo.getNodePaths(nodeId);
+    // };
 
-    setNextNodeToPath = async (parentNodeId: uuid, pathId: uuid, nextNodeId: uuid): Promise<XNodePath> => {
-        return await this._assessmentHelperRepo.setNextNodeToPath(parentNodeId, pathId, nextNodeId);
-    };
+    // setNextNodeToPath = async (parentNodeId: uuid, pathId: uuid, nextNodeId: uuid): Promise<XNodePath> => {
+    //     return await this._assessmentHelperRepo.setNextNodeToPath(parentNodeId, pathId, nextNodeId);
+    // };
 
 }

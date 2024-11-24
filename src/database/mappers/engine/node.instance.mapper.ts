@@ -15,13 +15,6 @@ export class NodeInstanceMapper {
             id                    : instance.id,
             ExecutionStatus       : instance.ExecutionStatus,
             StatusUpdateTimestamp : instance.StatusUpdateTimestamp,
-            ApplicableRule        : instance.ApplicableRule ? {
-                id          : instance.ApplicableRule.id,
-                Name        : instance.ApplicableRule.Name,
-                Description : instance.ApplicableRule.Description,
-            } : null,
-            AvailableFacts        : instance.AvailableFacts ?? [],
-            ExecutedDefaultAction : instance.ExecutedDefaultAction,
             ExecutionResult       : instance.ExecutionResult ?? null,
             Node                  : {
                 id   : instance.Node.id,

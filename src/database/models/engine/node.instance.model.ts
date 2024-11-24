@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { ExecutionStatus } from "../../../domain.types/engine/intermediate.types";
+import { ExecutionStatus } from "../../../domain.types/engine/engine.enums";
 import {
     Column,
     Entity,
@@ -15,6 +15,7 @@ import {
 import { Rule } from "./rule.model";
 import { Node } from './node.model';
 import { SchemaInstance } from "./schema.instance.model";
+import { NodePath } from "./node.path.model";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -44,13 +45,10 @@ export class NodeInstance {
     StatusUpdateTimestamp : Date;
 
     @OneToOne(() => Rule, { nullable: true })
-    ApplicableRule: Rule;
-
-    @Column({ type: 'simple-json', nullable: true })
-    AvailableFacts : any[];
+    ChosenNodePath: NodePath;
 
     @Column({ type: 'boolean', nullable: false, default: false })
-    ExecutedDefaultAction: boolean;
+    Executed: boolean;
 
     @Column({ type: 'simple-json', nullable: true })
     ExecutionResult : any;

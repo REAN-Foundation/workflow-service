@@ -6,17 +6,15 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     DeleteDateColumn,
-    ManyToOne,
-    JoinColumn,
 } from 'typeorm';
-import { Node } from "./node.model";
-import { ActionInputParams, ActionOutputParams } from "../../../domain.types/engine/intermediate.types";
 import { ActionType } from "../../../domain.types/engine/engine.enums";
+import { ActionInputParams } from "../../../domain.types/engine/intermediate.types";
+import { ActionOutputParams } from "../../../domain.types/engine/intermediate.types";
 
 ////////////////////////////////////////////////////////////////////////
 
-@Entity({ name: 'node_actions' })
-export class NodeAction {
+@Entity({ name: 'node_action_instances' })
+export class NodeActionInstance {
 
     @PrimaryGeneratedColumn('uuid')
     id : string;
@@ -24,15 +22,20 @@ export class NodeAction {
     @Column({ type: 'enum', enum: ActionType, nullable: false })
     ActionType : ActionType;
 
-    @ManyToOne(() => Node, (node) => node.Actions, { nullable: true })
-    @JoinColumn()
-    ParentNode: Node;
+    @Column({ type: 'uuid', nullable: false })
+    NodeId: string;
 
-    @Column({ type: 'varchar', length: 256, nullable: false })
-    Name : string;
+    @Column({ type: 'uuid', nullable: false })
+    ActionId: string;
 
-    @Column({ type: 'varchar', length: 512, nullable: true })
-    Description : string;
+    @Column({ type: 'uuid', nullable: false })
+    SchemaInstanceId: string;
+
+    @Column({ type: 'boolean', nullable: false, default: false })
+    Executed: boolean;
+
+    @Column({ type: 'date', nullable: true })
+    ExecutionTimestamp: Date;
 
     @Column({ type: 'simple-json', nullable: true })
     Input : ActionInputParams;

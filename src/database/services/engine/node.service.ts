@@ -56,11 +56,12 @@ export class NodeService extends BaseService {
                     id : id
                 },
                 relations : {
-                    Action     : true,
-                    ParentNode : true,
-                    Schema     : true,
-                    Rules      : true,
-                    Children   : true,
+                    Actions         : true,
+                    ParentNode      : true,
+                    Schema          : true,
+                    Paths           : true,
+                    Children        : true,
+                    DefaultNodePath : true,
                 }
             });
             return NodeMapper.toResponseDto(node);
@@ -100,10 +101,12 @@ export class NodeService extends BaseService {
                     id : id
                 },
                 relations : {
-                    Action     : true,
-                    Children   : true,
-                    ParentNode : true,
-                    Schema     : true,
+                    Actions         : true,
+                    ParentNode      : true,
+                    Schema          : true,
+                    Paths           : true,
+                    Children        : true,
+                    DefaultNodePath : true,
                 }
             });
             if (!node) {

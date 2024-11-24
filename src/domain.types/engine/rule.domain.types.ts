@@ -39,6 +39,17 @@ export interface RuleResponseDto {
         Name    : string;
         Operator: OperatorType;
     };
+    NodePath : {
+        id          : uuid,
+        Name        : string,
+        Description : string,
+        NextNode    : {
+            id              : uuid;
+            Name            : string;
+            Code            : string;
+            Description     : string;
+        }
+    },
     CreatedAt: Date;
     UpdatedAt: Date;
 }

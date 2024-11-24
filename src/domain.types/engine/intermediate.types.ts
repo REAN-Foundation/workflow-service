@@ -181,6 +181,27 @@ export interface XQuestionNodeResponse {
     CreatedAt       : Date;
 }
 
+export interface XWaitNode extends XNode {
+    WatingStarted: boolean;
+    DurationSec  : number;
+}
+
+export type XExecutionNode = XNode;
+
+export interface XExitNode extends XNode {
+    Exited       : boolean;
+    ExitTimestamp: Date;
+}
+
+export interface XDelayedActionNode extends XNode {
+    WatingStarted: boolean;
+    DurationSec  : number;
+}
+
+export interface XMessageNode extends XNode {
+    Message : string;
+}
+
 export interface XSchema {
     id          : uuid;
     Name        : string;

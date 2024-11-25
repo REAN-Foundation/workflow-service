@@ -2,16 +2,13 @@ import "reflect-metadata";
 import {
     Column,
     Entity,
-    PrimaryGeneratedColumn,
     CreateDateColumn,
     UpdateDateColumn,
     DeleteDateColumn,
+    PrimaryGeneratedColumn,
     ManyToOne,
-    JoinColumn,
 } from 'typeorm';
-import { Node } from "./node.model";
-import { ActionInputParams, ActionOutputParams } from "../../../domain.types/engine/intermediate.types";
-import { ActionType } from "../../../domain.types/engine/engine.enums";
+import { Question } from "./question.model";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -21,24 +18,20 @@ export class QuestionOption {
     @PrimaryGeneratedColumn('uuid')
     id : string;
 
-    @Column({ type: 'enum', enum: ActionType, nullable: false })
-    ActionType : ActionType;
-
-    @ManyToOne(() => Node, (node) => node.Actions, { nullable: true })
-    @JoinColumn()
-    ParentNode: Node;
+    @ManyToOne(() => Question, (question) => question.Options)
+    Question: Question;
 
     @Column({ type: 'varchar', length: 256, nullable: false })
-    Name : string;
+    Text : string;
 
     @Column({ type: 'varchar', length: 512, nullable: true })
-    Description : string;
+    ImageUrl : string;
+
+    @Column({ type: 'int', nullable: true })
+    Sequence : number;
 
     @Column({ type: 'simple-json', nullable: true })
-    Input : ActionInputParams;
-
-    @Column({ type: 'simple-json', nullable: true })
-    Output : ActionOutputParams;
+    Metadata : any;
 
     @CreateDateColumn()
     CreatedAt : Date;

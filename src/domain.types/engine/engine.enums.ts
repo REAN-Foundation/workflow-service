@@ -11,18 +11,18 @@ export const SchemaTypeList: SchemaType[] = [
 
 export enum NodeType {
     QuestionNode      = 'QuestionNode',
-    MessageNode       = 'MessageNode',
+    // MessageNode       = 'MessageNode',
     ExecutionNode     = 'ExecutionNode',
     DelayedActionNode = 'DelayedActionNode',
-    WaitNode          = 'WaitNode',
+    // WaitNode          = 'WaitNode',
 }
 
 export const NodeTypeList: NodeType[] = [
     NodeType.QuestionNode,
-    NodeType.MessageNode,
+    // NodeType.MessageNode,
     NodeType.ExecutionNode,
     NodeType.DelayedActionNode,
-    NodeType.WaitNode,
+    // NodeType.WaitNode,
 ];
 
 export enum ActionType {

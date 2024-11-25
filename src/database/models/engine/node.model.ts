@@ -14,7 +14,7 @@ import {
 import { NodeAction } from "./node.action.model";
 import { Schema } from "./schema.model";
 import { NodePath } from "./node.path.model";
-import { NodeType, QuestionResponseType } from "../../../domain.types/engine/engine.enums";
+import { NodeType } from "../../../domain.types/engine/engine.enums";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -54,12 +54,6 @@ export class Node {
 
     @Column({ type: 'simple-json', nullable: true })
     RawData : any;
-
-    @Column({ type: 'enum', enum: QuestionResponseType, nullable: false, default: QuestionResponseType.SingleChoiceSelection })
-    QuestionResponseType : QuestionResponseType;
-
-    @Column({ type: 'text', nullable: true })
-    Message : string;
 
     @OneToOne(() => NodePath, (path) => path.ParentNode, { nullable: true })
     DefaultNodePath: NodePath;

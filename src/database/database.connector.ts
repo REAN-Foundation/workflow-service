@@ -24,7 +24,7 @@ import { FileResourceVersion } from "./models/general/file.resource.version.mode
 import { DbClient } from "./db.clients/db.client";
 import { NodePath } from "./models/engine/node.path.model";
 import { NodeActionInstance } from "./models/engine/node.action.instance.model";
-import { QuestionOption } from "./models/engine/question.option.model";
+import { QuestionOption } from "./models/engine/question.model";
 
 ///////////////////////////////////////////////////////////////////////////////////
 

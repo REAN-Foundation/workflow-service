@@ -2,12 +2,13 @@ import { Node } from '../../models/engine/node.model';
 import {
     NodeResponseDto
 } from '../../../domain.types/engine/node.types';
+import { Question } from '../../../database/models/engine/question.model';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class NodeMapper {
 
-    static toResponseDto = (node: Node): NodeResponseDto => {
+    static toResponseDto = (node: Node, question?: Question): NodeResponseDto => {
         if (node == null) {
             return null;
         }
@@ -33,6 +34,16 @@ export class NodeMapper {
                     Description : x.Description,
                 };
             }) : [],
+            Question : question ? question.QuestionText : null,
+            Options  : question ? question.Options?.map(x => {
+                return {
+                    id       : x.id,
+                    Text     : x.Text,
+                    ImageUrl : x.ImageUrl,
+                    Sequence : x.Sequence,
+                    Metadata : x.Metadata,
+                };
+            }) : null,
 
             CreatedAt : node.CreatedAt,
             UpdatedAt : node.UpdatedAt,

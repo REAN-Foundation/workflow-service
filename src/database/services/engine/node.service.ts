@@ -10,12 +10,16 @@ import { NodeMapper } from '../../mappers/engine/node.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import {
+    DelayedActionNodeCreateModel,
     NodeCreateModel,
     NodeResponseDto,
     NodeSearchFilters,
     NodeSearchResults,
-    NodeUpdateModel } from '../../../domain.types/engine/node.types';
+    NodeUpdateModel,
+    QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
 import { CommonUtilsService } from './common.utils.service';
+import { NodeType } from '../../../domain.types/engine/engine.enums';
+import { Question } from '../../../database/models/engine/question.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -27,6 +31,8 @@ export class NodeService extends BaseService {
 
     _schemaRepository: Repository<Schema> = Source.getRepository(Schema);
 
+    _questionRepository: Repository<Question> = Source.getRepository(Question);
+
     _ruleRepository: Repository<Rule> = Source.getRepository(Rule);
 
     _actionRepository: Repository<NodeAction> = Source.getRepository(NodeAction);
@@ -35,17 +41,35 @@ export class NodeService extends BaseService {
 
     //#endregion
 
-    public create = async (createModel: NodeCreateModel)
+    public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel | DelayedActionNodeCreateModel)
         : Promise<NodeResponseDto> => {
         const schema = await this._commonUtils.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
         const node = this._nodeRepository.create({
+            Type        : createModel.Type,
             Schema      : schema,
             ParentNode  : parentNode,
             Name        : createModel.Name,
             Description : createModel.Description,
         });
         var record = await this._nodeRepository.save(node);
+        if (record == null)
+        {
+            return null;
+        }
+        var nodeId = record.id;
+        if (createModel.Type === NodeType.QuestionNode) {
+            var model = createModel as QuestionNodeCreateModel;
+            var questionModel = {
+                id       : nodeId,
+                Question : model.Question,
+                Options  : model.Options,
+            };
+            var question = await this._questionRepository.create(questionModel);
+            var questionRecord = await this._questionRepository.save(question);
+            logger.info(JSON.stringify(questionRecord, null, 2));
+        }
+
         return NodeMapper.toResponseDto(record);
     };
 

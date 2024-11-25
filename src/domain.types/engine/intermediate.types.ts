@@ -52,7 +52,7 @@ export class XConditionOperand {
 
 }
 
-export interface XPathCondition {
+export interface XCondition {
     id            : uuid;
     Name          : string;
     Code          : string;
@@ -69,18 +69,16 @@ export interface XPathCondition {
     SecondOperand?: XConditionOperand;
     ThirdOperand ?: XConditionOperand;
 
-    Children?     : XPathCondition[];
+    Children?     : XCondition[];
 }
 
 export interface XQuestionOption {
     id?               : uuid;
-    Code              : string;
-    ProviderGivenCode?: string;
     NodeId?           : uuid;
     Text              : string;
     ImageUrl?         : string;
     Sequence          : number;
-    MetaData          : Map<string, any>;
+    Metadata          : string;
 }
 
 export interface XNodePath {
@@ -99,8 +97,8 @@ export interface XRule {
     Name        : string;
     Description : string;
     ParentNodeId: uuid;
-    Condition   : XPathCondition;
-    NodePathId  : uuid;
+    Condition   : XCondition;
+    NodePathId ?: uuid;
 }
 
 export class XAction {
@@ -181,11 +179,6 @@ export interface XQuestionNodeResponse {
     CreatedAt       : Date;
 }
 
-export interface XWaitNode extends XNode {
-    WatingStarted: boolean;
-    DurationSec  : number;
-}
-
 export type XExecutionNode = XNode;
 
 export interface XExitNode extends XNode {
@@ -194,12 +187,8 @@ export interface XExitNode extends XNode {
 }
 
 export interface XDelayedActionNode extends XNode {
-    WatingStarted: boolean;
-    DurationSec  : number;
-}
-
-export interface XMessageNode extends XNode {
-    Message : string;
+    WaitingStarted  : boolean;
+    DelaySeconds : number;
 }
 
 export interface XSchema {

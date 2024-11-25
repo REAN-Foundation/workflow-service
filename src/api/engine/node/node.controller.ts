@@ -3,7 +3,7 @@ import { ResponseHandler } from '../../../common/handlers/response.handler';
 import { NodeValidator } from './node.validator';
 import { NodeService } from '../../../database/services/engine/node.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { DelayedActionNodeCreateModel, NodeCreateModel, NodeSearchFilters, NodeUpdateModel, QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
+import { NodeCreateModel, NodeSearchFilters, NodeUpdateModel, QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 
@@ -38,22 +38,6 @@ export class NodeController {
         try {
             var model: QuestionNodeCreateModel = await this._validator.validateCreateQuestionNodeRequest(request);
             model.Type = NodeType.QuestionNode;
-
-            const record = await this._service.create(model);
-            if (record === null) {
-                ErrorHandler.throwInternalServerError('Unable to add node!');
-            }
-            const message = 'Node added successfully!';
-            return ResponseHandler.success(request, response, message, 201, record);
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
-
-    createDelayedActionNode = async (request: express.Request, response: express.Response) => {
-        try {
-            var model: DelayedActionNodeCreateModel = await this._validator.validateCreateDelayedActionNodeRequest(request);
-            model.Type = NodeType.DelayedActionNode;
 
             const record = await this._service.create(model);
             if (record === null) {

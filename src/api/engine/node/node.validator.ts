@@ -4,8 +4,7 @@ import {
     NodeCreateModel,
     NodeUpdateModel,
     NodeSearchFilters,
-    QuestionNodeCreateModel,
-    DelayedActionNodeCreateModel
+    QuestionNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
@@ -30,16 +29,20 @@ export class NodeValidator extends BaseValidator {
                     Description : joi.string().max(256).optional(),
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
-                })).optional()
+                })).optional(),
+                ExecutionRuleId       : joi.string().uuid().optional(),
+                ExecutionDelaySeconds : joi.number().integer().optional(),
             });
             await node.validateAsync(request.body);
             return {
-                Type         : request.body.Type,
-                Name         : request.body.Name,
-                Description  : request.body.Description ?? null,
-                ParentNodeId : request.body.ParentNodeId,
-                SchemaId     : request.body.SchemaId,
-                Actions      : request.body.Actions ?? null,
+                Type                  : request.body.Type,
+                Name                  : request.body.Name,
+                Description           : request.body.Description ?? null,
+                ParentNodeId          : request.body.ParentNodeId,
+                SchemaId              : request.body.SchemaId,
+                Actions               : request.body.Actions ?? null,
+                ExecutionDelaySeconds : request.body.ExecutionDelaySeconds ?? null,
+                ExecutionRuleId       : request.body.ExecutionRuleId ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -92,61 +95,26 @@ export class NodeValidator extends BaseValidator {
         }
     };
 
-    public validateCreateDelayedActionNodeRequest = async (request: express.Request)
-    : Promise<DelayedActionNodeCreateModel> => {
-        try {
-            const MAX_DELAY_SECONDS = 60 * 60 * 24 * 35;
-            const node = joi.object({
-                Type         : joi.string().valid(...Object.values(NodeType)).required(),
-                Name         : joi.string().max(32).required(),
-                Description  : joi.string().max(256).optional(),
-                ParentNodeId : joi.string().uuid().required(),
-                SchemaId     : joi.string().uuid().required(),
-                Actions      : joi.array().items(joi.object({
-                    ActionType  : joi.string().valid(...Object.values(ActionType)).required(),
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
-                    RawInput    : joi.any().optional(),
-                    Input       : joi.object().optional(),
-                })).optional(),
-                DelaySeconds : joi.number().integer().max(MAX_DELAY_SECONDS).required(),
-                Rule         : joi.object({
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
-                }).optional(),
-            });
-            await node.validateAsync(request.body);
-            return {
-                Type         : request.body.Type,
-                Name         : request.body.Name,
-                Description  : request.body.Description ?? null,
-                ParentNodeId : request.body.ParentNodeId,
-                SchemaId     : request.body.SchemaId,
-                Actions      : request.body.Actions ?? null,
-                DelaySeconds : request.body.DelaySeconds ?? null,
-                Rule         : request.body.Rule ?? null,
-            };
-        } catch (error) {
-            ErrorHandler.handleValidationError(error);
-        }
-    };
-
     public validateUpdateRequest = async (request: express.Request): Promise<NodeUpdateModel|undefined> => {
         try {
             const node = joi.object({
-                Type         : joi.string().valid(...Object.values(NodeType)).optional(),
-                Name         : joi.string().max(32).optional(),
-                Description  : joi.string().max(256).optional(),
-                ParentNodeId : joi.string().uuid().optional(),
-                SchemaId     : joi.string().uuid().optional(),
+                Type                  : joi.string().valid(...Object.values(NodeType)).optional(),
+                Name                  : joi.string().max(32).optional(),
+                Description           : joi.string().max(256).optional(),
+                ParentNodeId          : joi.string().uuid().optional(),
+                SchemaId              : joi.string().uuid().optional(),
+                ExecutionRuleId       : joi.string().uuid().optional(),
+                ExecutionDelaySeconds : joi.number().integer().optional(),
             });
             await node.validateAsync(request.body);
             return {
-                Type         : request.body.Type ?? null,
-                Name         : request.body.Name ?? null,
-                Description  : request.body.Description ?? null,
-                ParentNodeId : request.body.ParentNodeId ?? null,
-                SchemaId     : request.body.SchemaId ?? null,
+                Type                  : request.body.Type ?? null,
+                Name                  : request.body.Name ?? null,
+                Description           : request.body.Description ?? null,
+                ParentNodeId          : request.body.ParentNodeId ?? null,
+                SchemaId              : request.body.SchemaId ?? null,
+                ExecutionRuleId       : request.body.ExecutionRuleId ?? null,
+                ExecutionDelaySeconds : request.body.ExecutionDelaySeconds ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

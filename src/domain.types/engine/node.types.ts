@@ -6,17 +6,19 @@ import {
     uuid
 } from "../miscellaneous/system.types";
 import { NodeType } from "./engine.enums";
-import { XAction, XQuestionOption, XRule } from "./intermediate.types";
+import { XAction, XQuestionOption } from "./intermediate.types";
 
 //////////////////////////////////////////////////////////////
 
 export interface NodeCreateModel {
-    Type         : NodeType;
-    Name         : string;
-    Description? : string;
-    ParentNodeId : uuid;
-    SchemaId     : uuid;
-    Actions     ?: XAction[];
+    Type                  : NodeType;
+    Name                  : string;
+    Description?          : string;
+    ParentNodeId          : uuid;
+    SchemaId              : uuid;
+    Actions              ?: XAction[];
+    ExecutionDelaySeconds?: number;
+    ExecutionRuleId      ?: uuid;
 }
 
 export interface QuestionNodeCreateModel extends NodeCreateModel {
@@ -24,18 +26,15 @@ export interface QuestionNodeCreateModel extends NodeCreateModel {
     Options  : XQuestionOption[];
 }
 
-export interface DelayedActionNodeCreateModel extends NodeCreateModel {
-    DelaySeconds : number;
-    Rule : XRule;
-}
-
 export interface NodeUpdateModel {
-    Type        ?: NodeType;
-    Name        ?: string;
-    Description ?: string;
-    ParentNodeId?: uuid;
-    SchemaId    ?: uuid;
-    Actions     ?: XAction[];
+    Type                 ?: NodeType;
+    Name                 ?: string;
+    Description          ?: string;
+    ParentNodeId         ?: uuid;
+    SchemaId             ?: uuid;
+    Actions              ?: XAction[];
+    ExecutionDelaySeconds?: number;
+    ExecutionRuleId      ?: uuid;
 }
 
 export interface NodeResponseDto {
@@ -58,11 +57,10 @@ export interface NodeResponseDto {
         Name       : string;
         Description: string;
     };
-    Question?    : string;
-    Options?     : XQuestionOption[];
-    DelaySeconds?: number;
-    Rule?        : XRule;
-
+    Question?             : string;
+    Options?              : XQuestionOption[];
+    ExecutionDelaySeconds?: number;
+    ExecutionRuleId?      : uuid;
     CreatedAt: Date;
     UpdatedAt: Date;
 }

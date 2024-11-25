@@ -10,7 +10,6 @@ import { NodeMapper } from '../../mappers/engine/node.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import {
-    DelayedActionNodeCreateModel,
     NodeCreateModel,
     NodeResponseDto,
     NodeSearchFilters,
@@ -41,7 +40,7 @@ export class NodeService extends BaseService {
 
     //#endregion
 
-    public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel | DelayedActionNodeCreateModel)
+    public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel)
         : Promise<NodeResponseDto> => {
         const schema = await this._commonUtils.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
@@ -58,8 +57,9 @@ export class NodeService extends BaseService {
             return null;
         }
         var nodeId = record.id;
+        var model = null;
         if (createModel.Type === NodeType.QuestionNode) {
-            var model = createModel as QuestionNodeCreateModel;
+            model = createModel as QuestionNodeCreateModel;
             var questionModel = {
                 id       : nodeId,
                 Question : model.Question,

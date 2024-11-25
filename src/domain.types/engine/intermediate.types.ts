@@ -179,18 +179,6 @@ export interface XQuestionNodeResponse {
     CreatedAt       : Date;
 }
 
-export type XExecutionNode = XNode;
-
-export interface XExitNode extends XNode {
-    Exited       : boolean;
-    ExitTimestamp: Date;
-}
-
-export interface XDelayedActionNode extends XNode {
-    WaitingStarted  : boolean;
-    DelaySeconds : number;
-}
-
 export interface XSchema {
     id          : uuid;
     Name        : string;

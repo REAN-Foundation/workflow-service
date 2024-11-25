@@ -44,9 +44,10 @@ export class NodeMapper {
                     Metadata : x.Metadata,
                 };
             }) : null,
-
-            CreatedAt : node.CreatedAt,
-            UpdatedAt : node.UpdatedAt,
+            ExecutionDelaySeconds : node.ExecutionDelaySeconds,
+            ExecutionRuleId       : node.ExecutionRuleId,
+            CreatedAt             : node.CreatedAt,
+            UpdatedAt             : node.UpdatedAt,
         };
         return dto;
     };

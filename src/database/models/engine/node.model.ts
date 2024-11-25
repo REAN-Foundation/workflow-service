@@ -58,6 +58,12 @@ export class Node {
     @OneToOne(() => NodePath, (path) => path.ParentNode, { nullable: true })
     DefaultNodePath: NodePath;
 
+    @Column({ type: 'uuid', nullable: true })
+    ExecutionRuleId: string;
+
+    @Column({ type: 'int', nullable: true })
+    ExecutionDelaySeconds: number;
+
     @CreateDateColumn()
     CreatedAt : Date;
 

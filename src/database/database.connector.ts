@@ -4,7 +4,6 @@ import { Config } from './database.config';
 import { logger } from '../logger/logger';
 import { DataSource } from "typeorm";
 import path from "path";
-import fs from 'fs';
 import { Client } from './models/client/client.model';
 import { User } from './models/user/user.model';
 import { Condition } from './models/engine/condition.model';
@@ -24,7 +23,8 @@ import { FileResourceVersion } from "./models/general/file.resource.version.mode
 import { DbClient } from "./db.clients/db.client";
 import { NodePath } from "./models/engine/node.path.model";
 import { NodeActionInstance } from "./models/engine/node.action.instance.model";
-import { QuestionOption } from "./models/engine/question.model";
+import { Question } from "./models/engine/question.model";
+import { QuestionOption } from "./models/engine/question.option.model";
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -69,6 +69,7 @@ class DatabaseConnector {
             Role,
             Privilege,
             FileResourceVersion,
+            Question,
             QuestionOption,
         ],
         migrations  : [],

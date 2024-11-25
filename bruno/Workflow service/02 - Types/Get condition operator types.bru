@@ -13,10 +13,10 @@ get {
 headers {
   Content-Type: application/json
   x-api-key: {{API_KEY}}
-  Authorization: Bearer {{MODERATOR_USER_JWT}}
+  Authorization: Bearer {{ADMIN_JWT}}
 }
 
-tests {
+script:post-response {
   isUpperCase = (str) => {
       return str.toUpperCase() === str;
   };
@@ -54,6 +54,9 @@ tests {
       console.log(error.message);
   }
   
+}
+
+tests {
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(200);
       var jsonRes = res.getBody();

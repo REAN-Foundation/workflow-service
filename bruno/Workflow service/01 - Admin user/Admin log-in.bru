@@ -12,27 +12,30 @@ post {
 
 body:json {
   {
-      "UserName": "admin",
+      "UserName": "{{ADMIN_USER_NAME}}",
       "Password": "{{ADMIN_PASSWORD}}"
   }
 }
 
-tests {
-  try {
-      var jsonRes = res.getBody();
-      bru.setEnvVar("ADMIN_JWT", jsonRes.Data.AccessToken);
-  }
-  catch (error) {
-      console.log(error.message);
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+    bru.setEnvVar("ADMIN_ACCESS_TOKEN", res.body.Data.AccessToken);
+    bru.setEnvVar("ADMIN_SESSION_ID", res.body.Data.User.SessionId);
+    bru.setEnvVar("ADMIN_USER_ID",res.body.Data.User.UserId);
   }
   
+}
+
+tests {
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(200);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
   
-  test("Moderator login: Access token is returned", function () {
+  test("Admin login: Access token is returned", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('AccessToken');
       expect(jsonRes.Data.AccessToken).to.not.be.null;

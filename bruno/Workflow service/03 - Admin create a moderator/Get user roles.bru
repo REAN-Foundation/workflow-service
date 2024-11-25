@@ -1,0 +1,40 @@
+meta {
+  name: Get user roles
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{BASE_URL}}/users/role-types
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+tests {
+  try {
+      var jsonRes = res.getBody();
+      var roleTypes = jsonRes.Data;
+      for(var i = 0; i < roleTypes.length; i++) {
+          var r = roleTypes[i];
+          var name = r.Name;
+          var id = r.id;
+          var str = name.toUpperCase() + "_ROLE_ID";
+          bru.setEnvVar(str, id);
+      }
+  }
+  catch (error) {
+      console.log(error.message);
+  }
+  
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+}

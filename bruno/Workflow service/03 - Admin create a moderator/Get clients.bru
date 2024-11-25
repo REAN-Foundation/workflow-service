@@ -1,0 +1,42 @@
+meta {
+  name: Get clients
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/clients/search
+  body: none
+  auth: none
+}
+
+headers {
+  x-api-key: {{API_KEY}}
+  Content-Type: application/json
+  Authorization: Bearer {{ADMIN_JWT}}
+}
+
+tests {
+  try {
+      var jsonRes = res.getBody();
+      var clients = jsonRes.Data.Items;
+      for(var i = 0; i < clients.length; i++) {
+          var r = clients[i];
+          var name = r.Name;
+          var id = r.id;
+          var str = "CLIENT_ID";
+          bru.setEnvVar(str, id);
+      }
+  }
+  catch (error) {
+      console.log(error.message);
+  }
+  
+  
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+}

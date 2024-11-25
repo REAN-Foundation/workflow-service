@@ -1,0 +1,39 @@
+meta {
+  name: Get user roles
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{BASE_URL}}/types/role-types
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("User roles are returned", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('Types');
+      expect(jsonRes.Data.Types.length).greaterThan(0);
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

@@ -25,6 +25,7 @@ export class SchemaMapper {
                 Name        : rootNode.Name,
                 Type        : rootNode.Type,
                 Actions     : rootNode.Actions ? rootNode.Actions.map(x => NodeActionMapper.toResponseDto(x)) : null,
+                NextNodeId  : rootNode.NextNodeId,
             } : null,
             ContextParams : schema.ContextParams,
             CreatedAt     : schema.CreatedAt,

@@ -64,6 +64,9 @@ export class Node {
     @Column({ type: 'int', nullable: true })
     ExecutionDelaySeconds: number;
 
+    @Column({ type: 'uuid', nullable: true })
+    NextNodeId: string;
+
     @CreateDateColumn()
     CreatedAt : Date;
 

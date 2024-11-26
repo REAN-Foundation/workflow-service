@@ -95,4 +95,16 @@ export class NodeController {
         }
     };
 
+    setNextNode = async (request: express.Request, response: express.Response) => {
+        try {
+            const id = await this._validator.requestParamAsUUID(request, 'id');
+            const nextNodeId = await this._validator.requestParamAsUUID(request, 'nextNodeId');
+            const updatedRecord = await this._service.setNextNode(id, nextNodeId);
+            const message = 'Next node set successfully!';
+            ResponseHandler.success(request, response, message, 200, updatedRecord);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 }

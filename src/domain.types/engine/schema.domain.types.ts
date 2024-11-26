@@ -40,6 +40,7 @@ export interface SchemaResponseDto {
        Description: string;
        Type       : NodeType;
        Actions    : NodeActionResponseDto[];
+       NextNodeId : uuid;
     };
     ContextParams?: ContextParams;
     CreatedAt     : Date;

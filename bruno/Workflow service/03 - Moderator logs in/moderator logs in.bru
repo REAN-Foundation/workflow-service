@@ -23,19 +23,19 @@ body:json {
   
 }
 
-script:pre-request {
-      //bru.setEnvVar("ADMIN_PASSWORD", jsonRes.Data.Client.id);
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+    bru.setEnvVar("MODERATOR_ACCESS_TOKEN", res.body.Data.AccessToken);
+    bru.setEnvVar("MODERATOR_SESSION_ID", res.body.Data.User.SessionId);
+    bru.setEnvVar("MODERATOR_USER_ID",res.body.Data.User.UserId);
+    bru.setEnvVar("MODERATOR_USER_JWT",res.body.Data.AccessToken);
+  }
+  
 }
 
 tests {
-  try {
-      var jsonRes = res.getBody();
-      bru.setEnvVar("MODERATOR_USER_JWT", jsonRes.Data.AccessToken);
-  }
-  catch (error) {
-      console.log(error.message);
-  }
-  
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(200);
       var jsonRes = res.getBody();

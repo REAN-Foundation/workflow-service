@@ -4,6 +4,22 @@ export enum SchemaType {
     Application = 'Application',
 }
 
+export enum ParamType {
+    Phonenumber = "Phonenumber",
+    Email       = "Email",
+    Location    = "Location",
+    Date        = "Date",
+    DateTime    = "DateTime",
+    Float       = 'Float',
+    Integer     = 'Integer',
+    Boolean     = 'Boolean',
+    Text        = 'Text',
+    Array       = 'Array',
+    Object      = 'Object',
+    Placeholder = 'Placeholder',
+    Unknown     = 'Unknown',
+}
+
 export const SchemaTypeList: SchemaType[] = [
     SchemaType.ChatBot,
     SchemaType.Application,
@@ -236,5 +252,16 @@ export const InputSourceTypeList: InputSourceType[] = [
     InputSourceType.JSON,
     InputSourceType.JSONFile,
     InputSourceType.CustomObject,
+];
 
+export enum OutputDestinationType {
+    Database    = "Database",
+    Almanac     = "Almanac",
+    ApiEndpoint = "ApiEndpoint",
+}
+
+export const OutputSourceTypeList: OutputDestinationType[] = [
+    OutputDestinationType.Database,
+    OutputDestinationType.Almanac,
+    OutputDestinationType.ApiEndpoint,
 ];

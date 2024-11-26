@@ -4,10 +4,14 @@ import { uuid } from "../miscellaneous/system.types";
 import {
     ActionType,
     CompositionOperator,
+    InputSourceType,
     NodeType,
     OperandDataType,
     OperatorType,
-    QuestionResponseType
+    OutputDestinationType,
+    ParamType,
+    QuestionResponseType,
+    SchemaType
 } from "./engine.enums";
 
 ////////////////////////////////////////////////////////////////
@@ -181,6 +185,7 @@ export interface XQuestionNodeResponse {
 
 export interface XSchema {
     id          : uuid;
+    Type        : SchemaType;
     Name        : string;
     Description : string;
     Active      : boolean;
@@ -348,8 +353,11 @@ export class XContinueAction extends XAction {
 
 export interface Params {
     Name        : string;
+    Type        : ParamType;
     Description?: string;
-    Value       : any;
+    Value       : any | null | undefined;
+    Source     ?: InputSourceType;
+    Key        ?: string;
 }
 
 export interface ActionParams extends Params {
@@ -365,6 +373,7 @@ export interface ActionOutputParams {
 }
 
 export interface ContextParams {
+    Name  : string;
     Params: Params[];
 }
 
@@ -383,18 +392,6 @@ export interface DataStorageInputParams extends ActionInputParams {
         Value: string;
     }[];
 }
-
-export enum OutputDestinationType {
-    Database    = "Database",
-    Almanac     = "Almanac",
-    ApiEndpoint = "ApiEndpoint",
-}
-
-export const OutputSourceTypeList: OutputDestinationType[] = [
-    OutputDestinationType.Database,
-    OutputDestinationType.Almanac,
-    OutputDestinationType.ApiEndpoint,
-];
 
 export interface ActionOutputParams {
     DestinationType : OutputDestinationType;

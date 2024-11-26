@@ -82,8 +82,7 @@ export class SchemaInstanceService extends BaseService {
                 },
                 relations : {
                     Schema : {
-                        Client : true,
-                        Nodes  : true,
+                        Nodes : true,
                     },
                     CurrentNodeInstance : {
                         Node : true,
@@ -171,8 +170,7 @@ export class SchemaInstanceService extends BaseService {
         var search : FindManyOptions<SchemaInstance> = {
             relations : {
                 Schema : {
-                    Client : true,
-                    Nodes  : true,
+                    Nodes : true,
                 },
                 CurrentNodeInstance : {
                     Node : true,
@@ -192,10 +190,7 @@ export class SchemaInstanceService extends BaseService {
                     id          : true,
                     Name        : true,
                     Description : true,
-                    Client      : {
-                        id   : true,
-                        Name : true,
-                    }
+                    TenantId    : true,
                 },
                 RootNodeInstance : {
                     id   : true,

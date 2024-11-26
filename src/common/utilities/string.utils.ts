@@ -84,12 +84,12 @@ export class StringUtils {
         return identifier;
     };
 
-    public static generateDisplayCode_RandomChars = (prefix = null) => {
+    public static generateDisplayCode_RandomChars = (length = 12, prefix = null) => {
         const code = genpass.generate({
-            length    : 24,
+            length    : length,
             numbers   : true,
-            lowercase : true,
-            uppercase : false,
+            lowercase : false,
+            uppercase : true,
             symbols   : false,
         });
         return prefix ? prefix + '#' + code : code;

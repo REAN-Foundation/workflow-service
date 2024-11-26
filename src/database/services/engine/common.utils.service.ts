@@ -33,8 +33,7 @@ export class CommonUtilsService {
                 id : schemaId as string
             },
             relations : {
-                Client : true,
-                Nodes  : true,
+                Nodes : true,
             }
         });
         if (!schema) {

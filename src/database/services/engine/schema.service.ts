@@ -18,7 +18,7 @@ import { Node } from '../../models/engine/node.model';
 import { Condition } from '../../models/engine/condition.model';
 import { CommonUtilsService } from './common.utils.service';
 import { NodeAction } from '../../models/engine/node.action.model';
-import { NodeResponseDto } from '../../../domain.types/engine/node.types';
+import { StringUtils } from '../../../common/utilities/string.utils';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -45,12 +45,11 @@ export class SchemaService extends BaseService {
     public create = async (createModel: SchemaCreateModel)
         : Promise<SchemaResponseDto> => {
 
-        const client = await this._commonUtils.getClient(createModel.ClientId);
-
-        const rootNodeName = 'Root Node' + createModel.Name.substring(0, 25);
-        let rootNode: NodeResponseDto = null;
+        const rootNodeName = 'RootNode-' + createModel.Name.substring(0, 25);
+        let rootNode: Node = null;
         if (createModel.RootNode) {
             rootNode = this._nodeRepository.create({
+                Code        : StringUtils.generateDisplayCode_RandomChars(),
                 ParentNode  : null,
                 Name        : createModel.RootNode.Name,
                 Type        : createModel.RootNode.Type,
@@ -64,21 +63,22 @@ export class SchemaService extends BaseService {
                 Description : `Root node for ${createModel.Name}`,
             });
         }
+        if (rootNode == null) {
+            ErrorHandler.throwInternalServerError('Unable to create Root Node!');
+        }
         var rootNodeRecord = await this._nodeRepository.save(rootNode);
 
-        const schema = this._schemaRepository.create({
-            Client      : client,
-            Name        : createModel.Name,
-            Description : createModel.Description,
-            Type        : createModel.Type,
-            ValidFrom   : createModel.ValidFrom,
-            ValidTill   : createModel.ValidTill,
-            IsValid     : createModel.IsValid ?? true,
-            RootNodeId  : rootNodeRecord.id,
+        const schema = await this._schemaRepository.create({
+            TenantId      : createModel.TenantId,
+            Name          : createModel.Name,
+            Description   : createModel.Description,
+            Type          : createModel.Type,
+            RootNodeId    : rootNodeRecord.id,
+            ContextParams : createModel.ContextParams,
         });
         var schemaRecord = await this._schemaRepository.save(schema);
 
-        rootNode.Schema = schemaRecord;
+        rootNodeRecord.Schema = schemaRecord;
         rootNodeRecord = await this._nodeRepository.save(rootNode);
 
         return SchemaMapper.toResponseDto(schemaRecord, rootNodeRecord);
@@ -91,8 +91,7 @@ export class SchemaService extends BaseService {
                     id : id
                 },
                 relations : {
-                    Client : true,
-                    Nodes  : true,
+                    Nodes : true,
                 }
             });
             const rootNode = await this._commonUtils.getNode(schema.RootNodeId);
@@ -139,10 +138,6 @@ export class SchemaService extends BaseService {
             //Schema code is not modifiable
             //Use renew key to update ApiKey, ValidFrom and ValidTill
 
-            if (model.ClientId != null) {
-                const client = await this._commonUtils.getClient(model.ClientId);
-                schema.Client = client;
-            }
             if (model.Name != null) {
                 schema.Name = model.Name;
             }
@@ -152,14 +147,8 @@ export class SchemaService extends BaseService {
             if (model.Type != null) {
                 schema.Type = model.Type;
             }
-            if (model.ValidFrom != null) {
-                schema.ValidFrom = model.ValidFrom;
-            }
-            if (model.ValidTill != null) {
-                schema.ValidTill = model.ValidTill;
-            }
-            if (model.IsValid != null) {
-                schema.IsValid = model.IsValid;
+            if (model.ContextParams != null) {
+                schema.ContextParams = model.ContextParams;
             }
             const rootNode = await this._commonUtils.getNode(schema.RootNodeId);
             var record = await this._schemaRepository.save(schema);
@@ -193,29 +182,17 @@ export class SchemaService extends BaseService {
             relations : {
             },
             where : {
-            },
-            select : {
-                id     : true,
-                Client : {
-                    id   : true,
-                    Name : true,
-                    Code : true,
-                },
-                Name        : true,
-                Description : true,
-                ValidFrom   : true,
-                ValidTill   : true,
-                IsValid     : true,
-                CreatedAt   : true,
-                UpdatedAt   : true,
             }
         };
 
-        if (filters.ClientId) {
-            search.where['Client'].id = filters.ClientId;
+        if (filters.TenantId) {
+            search.where['TenantId'] = filters.TenantId;
         }
         if (filters.Name) {
             search.where['Name'] = Like(`%${filters.Name}%`);
+        }
+        if (filters.Description) {
+            search.where['Description'] = Like(`%${filters.Description}%`);
         }
 
         return search;

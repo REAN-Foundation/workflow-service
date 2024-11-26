@@ -1,4 +1,3 @@
-import { EventType } from "../enums/event.type";
 import {
     BaseSearchFilters,
     BaseSearchResults
@@ -8,6 +7,7 @@ import {
 } from "../miscellaneous/system.types";
 import { NodeType, SchemaType } from "./engine.enums";
 import { ContextParams } from "./intermediate.types";
+import { NodeActionResponseDto } from "./node.action.types";
 import { NodeCreateModel } from "./node.types";
 
 //////////////////////////////////////////////////////////////
@@ -22,45 +22,34 @@ export interface SchemaCreateModel {
 }
 
 export interface SchemaUpdateModel {
-    ClientId?    : uuid;
     Type?        : SchemaType;
     Name?        : string;
     Description? : string;
-    ValidFrom   ?: Date;
-    ValidTill   ?: Date;
-    IsValid     ?: boolean;
-    EventTypeIds?: uuid[];
     ContextParams?: ContextParams;
 }
 
 export interface SchemaResponseDto {
-    id         : uuid;
-    Type       : SchemaType;
-    Name       : string;
-    Description: string;
-    ValidFrom  : Date;
-    ValidTill  : Date;
-    IsValid    : boolean;
-    RootNode  ?: {
+    id          : uuid;
+    Type        : SchemaType;
+    TenantId    : uuid;
+    Name        : string;
+    Description : string;
+    RootNode   ?: {
        id         : uuid,
        Name       : string;
        Description: string;
        Type       : NodeType;
+       Actions    : NodeActionResponseDto[];
     };
-    Client     : {
-        id  : uuid;
-        Name: string;
-        Code: string;
-    };
-    EventTypes ?: EventType[];
-    IdentificationParams?: Map<string, any>;
-    CreatedAt: Date;
-    UpdatedAt: Date;
+    ContextParams?: ContextParams;
+    CreatedAt     : Date;
+    UpdatedAt     : Date;
 }
 
 export interface SchemaSearchFilters extends BaseSearchFilters {
-    Name ?     : string;
-    ClientId ? : uuid;
+    Name?        : string;
+    Description? : string;
+    TenantId ?   : uuid;
 }
 
 export interface SchemaSearchResults extends BaseSearchResults {

@@ -25,6 +25,7 @@ export class SchemaController {
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add schema!');
             }
+            
             const message = 'Schema added successfully!';
             return ResponseHandler.success(request, response, message, 201, record);
         } catch (error) {

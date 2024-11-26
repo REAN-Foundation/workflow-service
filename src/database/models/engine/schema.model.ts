@@ -6,13 +6,11 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     DeleteDateColumn,
-    ManyToOne,
     OneToMany,
-    JoinColumn,
 } from 'typeorm';
-import { Client } from "../client/client.model";
 import { Node } from "../engine/node.model";
 import { SchemaType } from "../../../domain.types/engine/engine.enums";
+import { ContextParams } from "../../../domain.types/engine/intermediate.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -31,9 +29,8 @@ export class Schema {
     @Column({ type: 'enum', enum: SchemaType, nullable: false, default: SchemaType.ChatBot })
     Type : SchemaType;
 
-    @ManyToOne(() => Client, { nullable: true, onDelete: 'CASCADE' })
-    @JoinColumn()
-    Client : Client;
+    @Column({ type: 'uuid', nullable: false })
+    TenantId : string;
 
     @Column({ type: 'uuid', nullable: true })
     RootNodeId: string;
@@ -43,14 +40,8 @@ export class Schema {
     })
     Nodes: Node[];
 
-    @Column({ type: 'date', nullable: true })
-    ValidFrom : Date;
-
-    @Column({ type: 'date', nullable: true })
-    ValidTill : Date;
-
-    @Column({ type: 'boolean', nullable: false, default: true })
-    IsValid : boolean;
+    @Column({ type: 'simple-json', nullable: true })
+    ContextParams : ContextParams;
 
     @CreateDateColumn()
     CreatedAt : Date;

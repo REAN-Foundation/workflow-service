@@ -1,4 +1,3 @@
-import { EventType } from "../enums/event.type";
 import {
     BaseSearchFilters,
     BaseSearchResults
@@ -6,6 +5,7 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
+import { ContextParams } from "./intermediate.types";
 
 //////////////////////////////////////////////////////////////
 
@@ -25,12 +25,9 @@ export interface SchemaInstanceResponseDto {
         id         : uuid;
         Name       : string;
         Description: string;
-        Client     : {
-            id  : uuid;
-            Name: string;
-        },
-        EventTypes : EventType[],
+        TenantId   : uuid;
     };
+    ContextParams ?: ContextParams;
     RootNodeInstance : {
         id: uuid;
         Node: {

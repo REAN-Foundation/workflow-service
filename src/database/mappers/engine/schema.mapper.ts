@@ -13,26 +13,21 @@ export class SchemaMapper {
             return null;
         }
         const dto: SchemaResponseDto = {
-            id     : schema.id,
-            Type   : schema.Type,
-            Client : schema.Client ? {
-                id   : schema.Client.id,
-                Name : schema.Client.Name,
-                Code : schema.Client.Code,
-            } : null,
+            id          : schema.id,
+            Type        : schema.Type,
+            TenantId    : schema.TenantId,
             Name        : schema.Name,
             Description : schema.Description,
-            ValidFrom   : schema.ValidFrom,
-            ValidTill   : schema.ValidTill,
-            IsValid     : schema.IsValid,
             RootNode    : rootNode ? {
                 id          : rootNode.id,
                 Description : rootNode.Description,
                 Name        : rootNode.Name,
                 Type        : rootNode.Type,
+                Actions     : rootNode.Actions,
             } : null,
-            CreatedAt : schema.CreatedAt,
-            UpdatedAt : schema.UpdatedAt,
+            ContextParams : schema.ContextParams,
+            CreatedAt     : schema.CreatedAt,
+            UpdatedAt     : schema.UpdatedAt,
         };
         return dto;
     };

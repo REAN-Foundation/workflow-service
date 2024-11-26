@@ -31,6 +31,6 @@ export class UserAuthorizer {
     public verify = async (request: express.Request): Promise<boolean> => {
         const authorized = await this._authorizer.authorize(request, null);
         return authorized;
-    }
+    };
 
 }

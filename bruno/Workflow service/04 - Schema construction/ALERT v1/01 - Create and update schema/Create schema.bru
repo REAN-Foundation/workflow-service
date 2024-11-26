@@ -29,20 +29,22 @@ body:json {
           "Name": "Phone",
           "Type": "Phonenumber",
           "Description": "This is phone number of CFR responding to emergency",
-          "Value": "+91-9970155165"
+          "Value": null
         },
         {
           "Name": "Location",
           "Description": "This is the location where the emergency has occurred.",
+          "Type": "Location",
           "Value": {
-            "Longitude": 23.434343,
-            "Lattitude": 43.454353
+            "Longitude": null,
+            "Lattitude": null
           }
         },
         {
           "Name": "Timestamp",
           "Description": "This is the timestamp the emergency has been reported.",
-          "Value": "2024-11-26T10:07:56.255Z"
+          "Type": "DateTime",
+          "Value": null
         }
       ]
     },
@@ -50,26 +52,28 @@ body:json {
       "Type": "ExecutionNode",
       "Name": "Root Node",
       "Description": "Send first message upon triggering of the workflow",
-      "Action": {
-        "ActionType": "SendMessage",
-        "Name": "Send First message",
-        "Input": {
-          "Params": [
-            {
-              "ActionType": "SendMessage",
-              "Type": "Phonenumber",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:Phone"
-            },
-            {
-              "ActionType": "Send Message",
-              "Type": "Text",
-              "Value": "Hope you are safe."
-            }
-          ]
+      "Actions": [
+        {
+          "Type": "SendMessage",
+          "Name": "Send First message",
+          "Input": {
+            "Params": [
+              {
+                "ActionType": "SendMessage",
+                "Type": "Phonenumber",
+                "Value": null,
+                "Source": "Almanac",
+                "Key": "ContextParams:Phone"
+              },
+              {
+                "ActionType": "SendMessage",
+                "Type": "Text",
+                "Value": "Hope you are safe."
+              }
+            ]
+          }
         }
-      }
+      ]
     }
   }
 }

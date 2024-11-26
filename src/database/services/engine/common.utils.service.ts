@@ -44,7 +44,7 @@ export class CommonUtilsService {
 
     public createAction = async (actionModel: NodeActionCreateModel) => {
         const action = await this._actionRepository.create({
-            ActionType  : actionModel.ActionType,
+            Type        : actionModel.Type,
             Name        : actionModel.Name,
             Description : actionModel.Description,
             Input       : actionModel.Input,

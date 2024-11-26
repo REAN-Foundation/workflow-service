@@ -6,7 +6,7 @@ import { ActionInputParams, ActionOutputParams } from "./intermediate.types";
 ////////////////////////////////////////////////////////////////////////
 
 export interface NodeActionCreateModel {
-    ActionType  : ActionType;
+    Type        : ActionType;
     ParentNodeId: uuid;
     Name        : string;
     Description?: string;
@@ -15,7 +15,7 @@ export interface NodeActionCreateModel {
 }
 
 export interface NodeActionUpdateModel {
-    ActionType  ?: ActionType;
+    Type        ?: ActionType;
     ParentNodeId?: uuid;
     Name        ?: string;
     Description ?: string;
@@ -25,7 +25,7 @@ export interface NodeActionUpdateModel {
 
 export interface NodeActionResponseDto {
     id         : uuid;
-    ActionType : ActionType;
+    Type       : ActionType;
     Name       : string;
     Description: string;
     ParentNode : {
@@ -42,7 +42,7 @@ export interface NodeActionResponseDto {
 export interface NodeActionSearchFilters extends BaseSearchFilters {
     Name         ?: string;
     ParentNodeId ?: uuid;
-    ActionType   ?: ActionType;
+    Type         ?: ActionType;
 }
 
 export interface NodeActionSearchResults extends BaseSearchResults {

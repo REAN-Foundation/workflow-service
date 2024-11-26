@@ -11,7 +11,7 @@ export class NodeActionMapper {
         }
         const dto: NodeActionResponseDto = {
             id          : path.id,
-            ActionType  : path.ActionType,
+            Type        : path.Type,
             Name        : path.Name,
             Description : path.Description,
             ParentNode  : path.ParentNode ? {

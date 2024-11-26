@@ -78,6 +78,15 @@ body:json {
   }
 }
 
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+    bru.setEnvVar("SCHEMA_ID", res.body.Data.id);
+  }
+  
+}
+
 tests {
   try {
       var jsonRes = res.getBody();
@@ -98,11 +107,9 @@ tests {
   test("Schema is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
-      expect(jsonRes.Data).to.have.property('Client');
-      expect(jsonRes.Data.Client).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('TenantId');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
-      expect(jsonRes.Data).to.have.property('ValidFrom');
       expect(jsonRes.Data).to.have.property('RootNode');
   });
   

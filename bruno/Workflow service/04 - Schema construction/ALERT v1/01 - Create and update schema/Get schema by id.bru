@@ -1,11 +1,11 @@
 meta {
-  name: Get badge category by id
+  name: Get schema by id
   type: http
-  seq: 2
+  seq: 3
 }
 
 get {
-  url: {{BASE_URL}}/badge-categories/{{BADGE_CATEGORY_ID}}
+  url: {{BASE_URL}}/engine/schema/{{SCHEMA_ID}}
   body: json
   auth: none
 }
@@ -17,11 +17,19 @@ headers {
 }
 
 tests {
-  
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(200);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Schema is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('TenantId');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+      expect(jsonRes.Data).to.have.property('RootNode');
   });
   
 }

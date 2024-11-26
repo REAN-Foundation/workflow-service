@@ -26,7 +26,7 @@ export class NodeActionValidator extends BaseValidator {
             });
             await node.validateAsync(request.body);
             return {
-                ActionType   : request.body.ActionType,
+                Type         : request.body.Type,
                 Name         : request.body.Name,
                 Description  : request.body.Description ?? null,
                 ParentNodeId : request.body.ParentNodeId,
@@ -50,7 +50,7 @@ export class NodeActionValidator extends BaseValidator {
             });
             await node.validateAsync(request.body);
             return {
-                ActionType   : request.body.ActionType ?? null,
+                Type         : request.body.Type ?? null,
                 Name         : request.body.Name ?? null,
                 Description  : request.body.Description ?? null,
                 ParentNodeId : request.body.ParentNodeId ?? null,

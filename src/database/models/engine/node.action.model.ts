@@ -22,7 +22,7 @@ export class NodeAction {
     id : string;
 
     @Column({ type: 'enum', enum: ActionType, nullable: false })
-    ActionType : ActionType;
+    Type : ActionType;
 
     @ManyToOne(() => Node, (node) => node.Actions, { nullable: true })
     @JoinColumn()

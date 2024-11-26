@@ -3,6 +3,7 @@ import { Node } from '../../models/engine/node.model';
 import {
     SchemaResponseDto
 } from '../../../domain.types/engine/schema.domain.types';
+import { NodeActionMapper } from './node.action.mapper';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +24,7 @@ export class SchemaMapper {
                 Description : rootNode.Description,
                 Name        : rootNode.Name,
                 Type        : rootNode.Type,
-                Actions     : rootNode.Actions,
+                Actions     : rootNode.Actions ? rootNode.Actions.map(x => NodeActionMapper.toResponseDto(x)) : null,
             } : null,
             ContextParams : schema.ContextParams,
             CreatedAt     : schema.CreatedAt,

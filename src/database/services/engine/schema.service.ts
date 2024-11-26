@@ -68,6 +68,19 @@ export class SchemaService extends BaseService {
         }
         var rootNodeRecord = await this._nodeRepository.save(rootNode);
 
+        if (createModel.RootNode.Actions) {
+            for (var action of createModel.RootNode.Actions) {
+                var actionRecord = await this._actionRepository.create({
+                    ParentNode : rootNodeRecord,
+                    Type       : action.Type,
+                    Name       : action.Name,
+                    Input      : action.Input,
+                    Output     : action.Output,
+                });
+                await this._actionRepository.save(actionRecord);
+            }
+        }
+
         const schema = await this._schemaRepository.create({
             TenantId      : createModel.TenantId,
             Name          : createModel.Name,
@@ -78,10 +91,19 @@ export class SchemaService extends BaseService {
         });
         var schemaRecord = await this._schemaRepository.save(schema);
 
-        rootNodeRecord.Schema = schemaRecord;
+        rootNode.Schema = schemaRecord;
         rootNodeRecord = await this._nodeRepository.save(rootNode);
 
-        return SchemaMapper.toResponseDto(schemaRecord, rootNodeRecord);
+        var node = await this._nodeRepository.findOne({
+            where : {
+                id : rootNodeRecord.id
+            },
+            relations : {
+                Actions : true
+            }
+        });
+
+        return SchemaMapper.toResponseDto(schemaRecord, node);
     };
 
     public getById = async (id: uuid): Promise<SchemaResponseDto> => {

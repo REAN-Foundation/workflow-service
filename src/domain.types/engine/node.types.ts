@@ -5,7 +5,7 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { NodeType } from "./engine.enums";
+import { NodeType, QuestionResponseType } from "./engine.enums";
 import { XAction, XQuestionOption } from "./intermediate.types";
 
 //////////////////////////////////////////////////////////////
@@ -22,8 +22,9 @@ export interface NodeCreateModel {
 }
 
 export interface QuestionNodeCreateModel extends NodeCreateModel {
-    Question : string;
-    Options  : XQuestionOption[];
+    Question    : string;
+    ResponseType: QuestionResponseType;
+    Options     : XQuestionOption[];
 }
 
 export interface NodeUpdateModel {

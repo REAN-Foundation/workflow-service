@@ -92,7 +92,7 @@ export class StringUtils {
             uppercase : true,
             symbols   : false,
         });
-        return prefix ? prefix + '#' + code : code;
+        return prefix ? prefix + '-' + code : code;
     };
 
     public static convertCamelCaseToPascalCase = (str: string): string => {

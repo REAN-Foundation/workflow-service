@@ -8,7 +8,7 @@ import {
 } from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
-import { NodeType, ActionType } from '../../../domain.types/engine/engine.enums';
+import { NodeType, ActionType, QuestionResponseType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -24,7 +24,7 @@ export class NodeValidator extends BaseValidator {
                 ParentNodeId : joi.string().uuid().required(),
                 SchemaId     : joi.string().uuid().required(),
                 Actions      : joi.array().items(joi.object({
-                    ActionType  : joi.string().valid(...Object.values(ActionType)).required(),
+                    Type        : joi.string().valid(...Object.values(ActionType)).required(),
                     Name        : joi.string().max(32).required(),
                     Description : joi.string().max(256).optional(),
                     RawInput    : joi.any().optional(),
@@ -59,18 +59,19 @@ export class NodeValidator extends BaseValidator {
                 ParentNodeId : joi.string().uuid().required(),
                 SchemaId     : joi.string().uuid().required(),
                 Actions      : joi.array().items(joi.object({
-                    ActionType  : joi.string().valid(...Object.values(ActionType)).required(),
+                    Type        : joi.string().valid(...Object.values(ActionType)).required(),
                     Name        : joi.string().max(32).required(),
                     Description : joi.string().max(256).optional(),
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
                 })).optional(),
-                Question : joi.string().max(512).required(),
-                Options  : joi.array().items(joi.object({
-                    Text     : joi.string().max(512).required(),
-                    ImageUrl : joi.string().max(512).optional(),
-                    Sequence : joi.number().integer().max(10).optional(),
-                    Metadata : joi.string().max(1024).optional(),
+                Question     : joi.string().max(512).required(),
+                ResponseType : joi.string().valid(...Object.values(QuestionResponseType)).required(),
+                Options      : joi.array().items(joi.object({
+                    Text     : joi.string().allow(null).max(512).required(),
+                    ImageUrl : joi.string().allow(null).max(512).optional(),
+                    Sequence : joi.number().integer().allow(null).max(10).optional(),
+                    Metadata : joi.string().allow(null).max(1024).optional(),
                 })).optional(),
                 // Paths : joi.array().items(joi.object({
                 //     Name     : joi.string().max(512).required(),
@@ -88,6 +89,7 @@ export class NodeValidator extends BaseValidator {
                 SchemaId     : request.body.SchemaId,
                 Actions      : request.body.Actions ?? null,
                 Question     : request.body.Question ?? null,
+                ResponseType : request.body.ResponseType ?? null,
                 Options      : request.body.Options ?? [],
             };
         } catch (error) {

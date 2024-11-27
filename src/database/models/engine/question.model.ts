@@ -25,7 +25,7 @@ export class Question {
     QuestionText : string;
 
     @Column({ type: 'enum', enum: QuestionResponseType, nullable: false, default: QuestionResponseType.SingleChoiceSelection })
-    QuestionResponseType : QuestionResponseType;
+    ResponseType : QuestionResponseType;
 
     @OneToMany(() => QuestionOption, (option) => option.Question, { nullable: true })
     Options: QuestionOption[];

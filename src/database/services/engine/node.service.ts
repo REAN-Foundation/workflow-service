@@ -19,6 +19,7 @@ import {
 import { CommonUtilsService } from './common.utils.service';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 import { Question } from '../../../database/models/engine/question.model';
+import { StringUtils } from '../../../common/utilities/string.utils';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -44,7 +45,9 @@ export class NodeService extends BaseService {
         : Promise<NodeResponseDto> => {
         const schema = await this._commonUtils.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
+        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
         const node = this._nodeRepository.create({
+            Code        : StringUtils.generateDisplayCode_RandomChars(12, prefix),
             Type        : createModel.Type,
             Schema      : schema,
             ParentNode  : parentNode,
@@ -61,9 +64,10 @@ export class NodeService extends BaseService {
         if (createModel.Type === NodeType.QuestionNode) {
             model = createModel as QuestionNodeCreateModel;
             var questionModel = {
-                id       : nodeId,
-                Question : model.Question,
-                Options  : model.Options,
+                id           : nodeId,
+                QuestionText : model.QuestionText,
+                ResponseType : model.ResponseType,
+                Options      : model.Options,
             };
             var question = await this._questionRepository.create(questionModel);
             var questionRecord = await this._questionRepository.save(question);

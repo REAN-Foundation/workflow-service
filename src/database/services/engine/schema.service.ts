@@ -49,7 +49,7 @@ export class SchemaService extends BaseService {
         let rootNode: Node = null;
         if (createModel.RootNode) {
             rootNode = this._nodeRepository.create({
-                Code        : StringUtils.generateDisplayCode_RandomChars(),
+                Code        : StringUtils.generateDisplayCode_RandomChars(12, 'SCHMA'),
                 ParentNode  : null,
                 Name        : createModel.RootNode.Name,
                 Type        : createModel.RootNode.Type,

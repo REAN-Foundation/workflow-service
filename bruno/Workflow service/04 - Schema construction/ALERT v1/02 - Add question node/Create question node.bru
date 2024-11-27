@@ -1,0 +1,96 @@
+meta {
+  name: Create question node
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/question-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Q1-Medical Emergency",
+    "Description": "Question 1.",
+    "Question": "Are you facing medical emergency now?",
+    "Type": "QuestionNode",
+    "ParentNodeId": "{{SCHEMA_ROOT_NODE_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "ResponseType": "Single Choice Selection",
+    "Options": [
+      {
+        "Text": "Yes",
+        "ImageUrl": null,
+        "Sequence": 1,
+        "Metadata": null
+      },
+      {
+        "Text": "No",
+        "ImageUrl": null,
+        "Sequence": 2,
+        "Metadata": null
+      }
+    ],
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - Ambulance info",
+        "Input": {
+          "Params": [
+            {
+              "ActionType": "SendMessage",
+              "Type": "Phonenumber",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Phone"
+            },
+            {
+              "ActionType": "SendMessage",
+              "Type": "Text",
+              "Value": "If in doubt, call Ambulance - 108 (Point 9 & 10, under Functional Requirement)"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+    bru.setEnvVar("Q1_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Question node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

@@ -47,12 +47,15 @@ export class NodeService extends BaseService {
         const parentNode = await this.getNode(createModel.ParentNodeId);
         const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
         const node = this._nodeRepository.create({
-            Code        : StringUtils.generateDisplayCode_RandomChars(12, prefix),
-            Type        : createModel.Type,
-            Schema      : schema,
-            ParentNode  : parentNode,
-            Name        : createModel.Name,
-            Description : createModel.Description,
+            Code                  : StringUtils.generateDisplayCode_RandomChars(12, prefix),
+            Type                  : createModel.Type,
+            Schema                : schema,
+            ParentNode            : parentNode,
+            Name                  : createModel.Name,
+            Description           : createModel.Description,
+            ExecutionDelaySeconds : createModel.ExecutionDelaySeconds,
+            ExecutionRuleId       : createModel.ExecutionRuleId,
+            RawData               : createModel.RawData,
         });
         var record = await this._nodeRepository.save(node);
         if (record == null)

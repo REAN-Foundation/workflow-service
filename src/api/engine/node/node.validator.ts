@@ -32,6 +32,7 @@ export class NodeValidator extends BaseValidator {
                 })).optional(),
                 ExecutionRuleId       : joi.string().uuid().optional(),
                 ExecutionDelaySeconds : joi.number().integer().optional(),
+                RawData               : joi.object().allow(null).optional(),
             });
             await node.validateAsync(request.body);
             return {
@@ -43,6 +44,7 @@ export class NodeValidator extends BaseValidator {
                 Actions               : request.body.Actions ?? null,
                 ExecutionDelaySeconds : request.body.ExecutionDelaySeconds ?? null,
                 ExecutionRuleId       : request.body.ExecutionRuleId ?? null,
+                RawData               : request.body.RawData ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -65,7 +67,7 @@ export class NodeValidator extends BaseValidator {
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
                 })).optional(),
-                Question     : joi.string().max(512).required(),
+                QuestionText : joi.string().max(512).required(),
                 ResponseType : joi.string().valid(...Object.values(QuestionResponseType)).required(),
                 Options      : joi.array().items(joi.object({
                     Text     : joi.string().allow(null).max(512).required(),
@@ -73,6 +75,9 @@ export class NodeValidator extends BaseValidator {
                     Sequence : joi.number().integer().allow(null).max(10).optional(),
                     Metadata : joi.string().allow(null).max(1024).optional(),
                 })).optional(),
+                ExecutionRuleId       : joi.string().uuid().optional(),
+                ExecutionDelaySeconds : joi.number().integer().optional(),
+                RawData               : joi.object().allow(null).optional(),
                 // Paths : joi.array().items(joi.object({
                 //     Name     : joi.string().max(512).required(),
                 //     Code : joi.string().max(16).optional(),
@@ -82,15 +87,18 @@ export class NodeValidator extends BaseValidator {
             });
             await node.validateAsync(request.body);
             return {
-                Type         : request.body.Type,
-                Name         : request.body.Name,
-                Description  : request.body.Description ?? null,
-                ParentNodeId : request.body.ParentNodeId,
-                SchemaId     : request.body.SchemaId,
-                Actions      : request.body.Actions ?? null,
-                Question     : request.body.Question ?? null,
-                ResponseType : request.body.ResponseType ?? null,
-                Options      : request.body.Options ?? [],
+                Type                  : request.body.Type,
+                Name                  : request.body.Name,
+                Description           : request.body.Description ?? null,
+                ParentNodeId          : request.body.ParentNodeId,
+                SchemaId              : request.body.SchemaId,
+                Actions               : request.body.Actions ?? null,
+                QuestionText          : request.body.QuestionText ?? null,
+                ResponseType          : request.body.ResponseType ?? null,
+                Options               : request.body.Options ?? [],
+                ExecutionDelaySeconds : request.body.ExecutionDelaySeconds ?? null,
+                ExecutionRuleId       : request.body.ExecutionRuleId ?? null,
+                RawData               : request.body.RawData ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -107,6 +115,7 @@ export class NodeValidator extends BaseValidator {
                 SchemaId              : joi.string().uuid().optional(),
                 ExecutionRuleId       : joi.string().uuid().optional(),
                 ExecutionDelaySeconds : joi.number().integer().optional(),
+                RawData               : joi.object().allow(null).optional(),
             });
             await node.validateAsync(request.body);
             return {
@@ -117,6 +126,7 @@ export class NodeValidator extends BaseValidator {
                 SchemaId              : request.body.SchemaId ?? null,
                 ExecutionRuleId       : request.body.ExecutionRuleId ?? null,
                 ExecutionDelaySeconds : request.body.ExecutionDelaySeconds ?? null,
+                RawData               : request.body.RawData ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

@@ -19,12 +19,13 @@ export interface NodeCreateModel {
     Actions              ?: XAction[];
     ExecutionDelaySeconds?: number;
     ExecutionRuleId      ?: uuid;
+    RawData              ?: any;
 }
 
 export interface QuestionNodeCreateModel extends NodeCreateModel {
-    Question    : string;
-    ResponseType: QuestionResponseType;
-    Options     : XQuestionOption[];
+    QuestionText : string;
+    ResponseType : QuestionResponseType;
+    Options      : XQuestionOption[];
 }
 
 export interface NodeUpdateModel {
@@ -36,6 +37,7 @@ export interface NodeUpdateModel {
     Actions              ?: XAction[];
     ExecutionDelaySeconds?: number;
     ExecutionRuleId      ?: uuid;
+    RawData              ?: any;
 }
 
 export interface NodeResponseDto {
@@ -58,10 +60,14 @@ export interface NodeResponseDto {
         Name       : string;
         Description: string;
     };
-    Question?             : string;
-    Options?              : XQuestionOption[];
+    Question ? : {
+        ResponseType  : QuestionResponseType;
+        QuestionText? : string;
+        Options?      : XQuestionOption[];
+    },
     ExecutionDelaySeconds?: number;
     ExecutionRuleId?      : uuid;
+    RawData?              : any;
     CreatedAt: Date;
     UpdatedAt: Date;
 }

@@ -34,18 +34,22 @@ export class NodeMapper {
                     Description : x.Description,
                 };
             }) : [],
-            Question : question ? question.QuestionText : null,
-            Options  : question ? question.Options?.map(x => {
-                return {
-                    id       : x.id,
-                    Text     : x.Text,
-                    ImageUrl : x.ImageUrl,
-                    Sequence : x.Sequence,
-                    Metadata : x.Metadata,
-                };
-            }) : null,
+            Question : question ? {
+                ResponseType : question.ResponseType,
+                QuestionText : question.QuestionText ?? null,
+                Options      : question.Options ? question.Options.map(x => {
+                    return {
+                        id       : x.id,
+                        Text     : x.Text,
+                        ImageUrl : x.ImageUrl,
+                        Sequence : x.Sequence,
+                        Metadata : x.Metadata,
+                    };
+                }) : null,
+            } : null,
             ExecutionDelaySeconds : node.ExecutionDelaySeconds,
             ExecutionRuleId       : node.ExecutionRuleId,
+            RawData               : node.RawData,
             CreatedAt             : node.CreatedAt,
             UpdatedAt             : node.UpdatedAt,
         };

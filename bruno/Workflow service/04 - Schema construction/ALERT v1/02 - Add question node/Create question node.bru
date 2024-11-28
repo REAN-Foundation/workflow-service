@@ -20,10 +20,10 @@ body:json {
   {
     "Name": "Q1-Medical Emergency",
     "Description": "Question 1.",
-    "Question": "Are you facing medical emergency now?",
     "Type": "QuestionNode",
     "ParentNodeId": "{{SCHEMA_ROOT_NODE_ID}}",
     "SchemaId": "{{SCHEMA_ID}}",
+    "QuestionText": "Are you facing medical emergency now?",
     "ResponseType": "Single Choice Selection",
     "Options": [
       {
@@ -67,7 +67,7 @@ body:json {
 script:post-response {
   let status = res.getStatus();
   console.log(status)
-  if (status == 200) {
+  if (status == 201) {
     bru.setEnvVar("Q1_ID", res.body.Data.id);
   }
   

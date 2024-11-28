@@ -19,6 +19,7 @@ import { Condition } from '../../models/engine/condition.model';
 import { CommonUtilsService } from './common.utils.service';
 import { NodeAction } from '../../models/engine/node.action.model';
 import { StringUtils } from '../../../common/utilities/string.utils';
+import { NodeType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -49,7 +50,7 @@ export class SchemaService extends BaseService {
         let rootNode: Node = null;
         if (createModel.RootNode) {
             rootNode = this._nodeRepository.create({
-                Code        : StringUtils.generateDisplayCode_RandomChars(12, 'SCHMA'),
+                Code        : StringUtils.generateDisplayCode_RandomChars(12, 'ENODE'),
                 ParentNode  : null,
                 Name        : createModel.RootNode.Name,
                 Type        : createModel.RootNode.Type,
@@ -58,9 +59,11 @@ export class SchemaService extends BaseService {
         }
         else {
             rootNode = await this._nodeRepository.create({
+                Code        : StringUtils.generateDisplayCode_RandomChars(12, 'ENODE'),
                 Name        : rootNodeName,
                 ParentNode  : null,
                 Description : `Root node for ${createModel.Name}`,
+                Type        : NodeType.ExecutionNode,
             });
         }
         if (rootNode == null) {

@@ -1,6 +1,9 @@
 import { logger } from "../../logger/logger";
 import { EventResponseDto } from "../../domain.types/engine/event.types";
 import * as asyncLib from 'async';
+import { EventType } from "../../domain.types/enums/event.type";
+import UserMessageEventHandler from './user.message.event.handler';
+
 // import { ContextService } from "../../database/services/engine/context.service";
 // import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
 // import { SchemaEngine } from "./schema.engine";
@@ -48,6 +51,14 @@ export default class EventHandler {
 
         try {
             logger.info(JSON.stringify(event, null, 2));
+
+            if (event.EventType === EventType.UserMessage) {
+                var handler = new UserMessageEventHandler();
+                await handler.handle(event);
+            }
+            else {
+                logger.info('Terminating workflow!');
+            }
             //Process incoming event here...
 
             // const contextService = new ContextService();

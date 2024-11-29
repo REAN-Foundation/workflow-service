@@ -4,47 +4,46 @@ import {
     BaseSearchResults
 } from "../miscellaneous/base.search.types";
 import { uuid } from "../miscellaneous/system.types";
+import { UserMessageEvent } from "./intermediate.types";
 
 ////////////////////////////////////////////////////////////
 
 export interface EventCreateModel {
-    TenantId         : uuid;
     EventType        : EventType;
-    ReferenceId     ?: uuid;
+    TenantId         : uuid;
+    SchemaId         : uuid;
     SchemaInstanceId?: uuid;
-    SchemaName      ?: string;
-    SchemaId        ?: uuid;
-    TimeStamp        : Date;
+    UserMessage     ?: UserMessageEvent;
+    Payload         ?: any;
+    EventTimeStamp   : Date;
 }
 
 export interface EventUpdateModel {
     SchemaInstanceId?: uuid;
-    ReferenceId     ?: uuid;
-    Handled         ?: boolean;
-    SchemaName      ?: string;
-    SchemaId        ?: uuid;
 }
 
 export interface EventResponseDto {
-    id               : uuid;
-    TenantId         : uuid;
-    EventType        : EventType;
-    ReferenceId     ?: uuid;
-    SchemaInstanceId?: uuid;
-    SchemaName      ?: string;
-    SchemaId        ?: uuid;
-    TimeStamp        : Date;
-    Handled         ?: boolean;
-    CreatedAt        : Date;
-    UpdatedAt        : Date;
+    id                 : uuid;
+    EventType          : EventType;
+    TenantId           : uuid;
+    SchemaId          ?: uuid;
+    SchemaInstanceId  ?: uuid;
+    SchemaName        ?: string;
+    SchemaInstanceCode?: string;
+    UserMessage       ?: UserMessageEvent;
+    Payload           ?: any;
+    EventTimeStamp     : Date;
+    Handled           ?: boolean;
+    HandledTimestamp  ?: Date;
+    CreatedAt          : Date;
+    UpdatedAt          : Date;
 }
 
 export interface EventSearchFilters extends BaseSearchFilters {
     TenantId         : uuid;
     EventType        : EventType;
-    ReferenceId     ?: uuid;
+    SchemaId        ?: uuid;
     SchemaInstanceId?: uuid;
-    SchemaName      ?: string;
 }
 
 export interface EventSearchResults extends BaseSearchResults {

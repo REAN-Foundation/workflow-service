@@ -5,6 +5,7 @@ import {
     ActionType,
     CompositionOperator,
     InputSourceType,
+    UserMessageType,
     NodeType,
     OperandDataType,
     OperatorType,
@@ -15,6 +16,35 @@ import {
 } from "./engine.enums";
 
 ////////////////////////////////////////////////////////////////
+
+export interface Location {
+    Name     ?: string;
+    Lattitude?: number;
+    Longitude?: number;
+}
+
+export interface QuestionResponseMessage {
+    QuestionId          ?: uuid;
+    QuestionText        ?: string;
+    QuestionOptions     ?: XQuestionOption[];
+    ChosenOption        ?: string;
+    ChosenOptionSequence?: number;
+    PreviousMessageId   ?: uuid;
+    PreviousNodeId      ?: uuid;
+}
+
+export interface UserMessageEvent {
+    Phone?           : string;
+    EventTimestamp   : Date;
+    MessageType      : UserMessageType;
+    MessageChannel   : MessageChannel;
+    TextMessage     ?: string;
+    ImageUrl        ?: string;
+    AudioUrl        ?: string;
+    VideoUrl        ?: string;
+    Location        ?: Location;
+    QuestionResponse?: QuestionResponseMessage;
+}
 
 export class XConditionOperand {
 

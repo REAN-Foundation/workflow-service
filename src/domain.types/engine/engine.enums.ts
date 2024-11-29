@@ -25,20 +25,52 @@ export const SchemaTypeList: SchemaType[] = [
     SchemaType.Application,
 ];
 
+export enum UserMessageType {
+    Text     = 'Text',
+    Audio    = 'Audio',
+    Video    = 'Video',
+    Link     = 'Link',
+    Location = 'Location',
+    File     = 'File'
+}
+
+export const MessageTypeList: UserMessageType[] = [
+    UserMessageType.Text,
+    UserMessageType.Audio,
+    UserMessageType.Video,
+    UserMessageType.Link,
+    UserMessageType.Location,
+    UserMessageType.File,
+];
+
+export enum MessageChannelType {
+    WhatsApp = 'WhatsApp',
+    Telegram = 'Telegram',
+    Sms      = 'Sms',
+    Other    = 'Other',
+}
+
+export const MessageChannelList: MessageChannelType[] = [
+    MessageChannelType.WhatsApp,
+    MessageChannelType.Telegram,
+    MessageChannelType.Sms,
+    MessageChannelType.Other,
+];
+
 export enum NodeType {
-    QuestionNode      = 'QuestionNode',
-    // MessageNode       = 'MessageNode',
-    ExecutionNode     = 'ExecutionNode',
-    DelayedActionNode = 'DelayedActionNode',
-    // WaitNode          = 'WaitNode',
+    QuestionNode  = 'QuestionNode',
+    ListeningNode = 'ListeningNode',
+    ExecutionNode = 'ExecutionNode',
+    DecisionNode  = 'DecisionNode',
+    WaitNode      = 'WaitNode',
 }
 
 export const NodeTypeList: NodeType[] = [
     NodeType.QuestionNode,
-    // NodeType.MessageNode,
+    NodeType.ListeningNode,
     NodeType.ExecutionNode,
-    NodeType.DelayedActionNode,
-    // NodeType.WaitNode,
+    NodeType.DecisionNode,
+    NodeType.WaitNode,
 ];
 
 export enum ActionType {

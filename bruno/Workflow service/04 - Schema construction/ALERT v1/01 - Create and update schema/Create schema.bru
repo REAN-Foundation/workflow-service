@@ -26,9 +26,27 @@ body:json {
       "Name": "Schema instance context",
       "Params": [
         {
-          "Name": "Phone",
+          "Name": "Reporter Phonenumber",
           "Type": "Phonenumber",
-          "Description": "This is phone number of CFR responding to emergency",
+          "Description": "This is phone number of person reporting an emergency incident",
+          "Value": null
+        },
+        {
+          "Name": "CFR 1 Phonenumber",
+          "Type": "Phonenumber",
+          "Description": "This is phone number of CFR - 1",
+          "Value": null
+        },
+        {
+          "Name": "CFR 2 Phonenumber",
+          "Type": "Phonenumber",
+          "Description": "This is phone number of CFR - 2",
+          "Value": null
+        },
+        {
+          "Name": "CFR 3 Phonenumber",
+          "Type": "Phonenumber",
+          "Description": "This is phone number of CFR - 3",
           "Value": null
         },
         {
@@ -44,6 +62,12 @@ body:json {
           "Name": "Timestamp",
           "Description": "This is the timestamp the emergency has been reported.",
           "Type": "DateTime",
+          "Value": null
+        },
+        {
+          "Name": "Incident Code",
+          "Description": "This is the code of the reported emergency incident. This value is generated on schema instance generation",
+          "Type": "Text",
           "Value": null
         }
       ]

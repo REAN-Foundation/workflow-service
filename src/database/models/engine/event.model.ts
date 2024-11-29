@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
 import { EventType } from "../../../domain.types/enums/event.type";
+import { UserMessageEvent } from "../../../domain.types/engine/intermediate.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -22,10 +23,28 @@ export class Event {
     EventType: EventType;
 
     @Column({ type: 'uuid', nullable: true })
-    ReferenceId: uuid;
+    TenantId: uuid;
+
+    @Column({ type: 'uuid', nullable: true })
+    SchemaId: uuid;
+
+    @Column({ type: 'uuid', nullable: true })
+    SchemaInstanceId: uuid;
+
+    @Column({ type: 'simple-json', nullable: true })
+    UserMessage: UserMessageEvent;
 
     @Column({ type: 'simple-json', nullable: true })
     Payload: any;
+
+    @Column({ type: 'timestamp', nullable: false })
+    EventTimeStamp: Date;
+
+    @Column({ type: 'boolean', nullable: false, default: false })
+    Handled: boolean;
+
+    @Column({ type: 'timestamp', nullable: true })
+    HandledTimestamp: Date;
 
     @CreateDateColumn()
     CreatedAt : Date;

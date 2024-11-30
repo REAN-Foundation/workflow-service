@@ -7,8 +7,8 @@ import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.inst
 import { ParamType } from "../../domain.types/engine/engine.enums";
 import { ContextParams, Params, TimestampUnit, DistanceUnit } from "../../domain.types/engine/intermediate.types";
 import { compareLocations, compareTimestamps } from "../../domain.types/engine/value.comparator";
-
-// import { IExtractor } from "../fact.extractors/extractor.interface";
+import { SchemaEngine } from "./schema.engine";
+import { logger } from "../../logger/logger";
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -53,10 +53,7 @@ export class UserMessageEventHandler {
         }
         else {
             var schemaInstances = await this._schemaInstanceService.getBySchemaId(schema.id);
-            if (schemaInstances.length === 0) {
-                schemaInstance = await this.createSchemaInstance(schema, event);
-            }
-            else {
+            if (schemaInstances.length > 0) {
                 var matchedSchema = schemaInstances.find(x => this.checkSchemaInstanceCodeMatch(x, event));
                 if (matchedSchema) {
                     schemaInstance = matchedSchema;
@@ -75,53 +72,26 @@ export class UserMessageEventHandler {
                     if (selectedInstance) {
                         schemaInstance = selectedInstance;
                     }
-                    else {
-                        schemaInstance = await this.createSchemaInstance(schema, event);
-                    }
                 }
             }
         }
 
-        if (!schemaInstance) {
-            return false;
-        }
+        // 3. Start the schema instance execution
 
-        // If found,
-        //    - Get the correct executing node, active listening nodes, triggered waiting nodes
-        // else,
-        //    a. Create a new schema instance
-        //    b. Set current node as root node
-        //    c. Start node execution
-        //    d. Initiate the listening nodes - Add this as an action from root node
+        var engine = new SchemaEngine();
+        var currentNodeInstance = await engine.execute(schema, schemaInstance, event);
+        logger.info(`Current Node: ${currentNodeInstance.Node.Name}`);
 
         return true;
     };
 
-    private async createSchemaInstance(schema: SchemaResponseDto, event: EventResponseDto, ) {
-        var schemaInstanceContextParams = schema.ContextParams;
-        for (var p of schemaInstanceContextParams.Params) {
-            if (p.Type === ParamType.Phonenumber) {
-                p.Value = event.UserMessage.Phone;
-            }
-            if (p.Type === ParamType.Location) {
-                p.Value = event.UserMessage.Location;
-            }
-            if (p.Type === ParamType.Date) {
-                p.Value = new Date();
-            }
-        }
-        const schemaInstance = await this._schemaInstanceService.create({
-            SchemaId      : schema.id,
-            ContextParams : schemaInstanceContextParams,
-        });
-        return schemaInstance;
-    }
-
-    private checkSchemaInstanceCodeMatch(schemaInstance: SchemaInstanceResponseDto, event: EventResponseDto): boolean {
+    private checkSchemaInstanceCodeMatch(
+        schemaInstance: SchemaInstanceResponseDto, event: EventResponseDto): boolean {
         if (schemaInstance.ContextParams.Params.length === 0) {
             return false;
         }
-        var p = schemaInstance.ContextParams.Params.find(x => x.Type === ParamType.Text && x.Key === 'SchemaInstanceCode');
+        var p = schemaInstance.ContextParams.Params.find(
+            x => x.Type === ParamType.Text && x.Key === 'SchemaInstanceCode');
         if (!p) {
             return false;
         }
@@ -181,12 +151,3 @@ export class UserMessageEventHandler {
     }
 
 }
-
-// const facts = [];
-// for await (var fact of factNames) {
-//     var extractor = this._extractors.find(x => x.Fact === fact);
-//     if (extractor) {
-//         var extracted = extractor.Extractor.extract(contextReferenceId, fact);
-//         facts.push(extracted);
-//     }
-// }

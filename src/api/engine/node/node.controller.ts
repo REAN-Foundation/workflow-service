@@ -3,7 +3,7 @@ import { ResponseHandler } from '../../../common/handlers/response.handler';
 import { NodeValidator } from './node.validator';
 import { NodeService } from '../../../database/services/engine/node.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { NodeCreateModel, NodeSearchFilters, NodeUpdateModel, QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
+import { DecisionNodeCreateModel, ListeningNodeCreateModel, NodeCreateModel, NodeSearchFilters, NodeUpdateModel, QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 
@@ -38,6 +38,38 @@ export class NodeController {
         try {
             var model: QuestionNodeCreateModel = await this._validator.validateCreateQuestionNodeRequest(request);
             model.Type = NodeType.QuestionNode;
+
+            const record = await this._service.create(model);
+            if (record === null) {
+                ErrorHandler.throwInternalServerError('Unable to add node!');
+            }
+            const message = 'Node added successfully!';
+            return ResponseHandler.success(request, response, message, 201, record);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    createListeningNode = async (request: express.Request, response: express.Response) => {
+        try {
+            var model: ListeningNodeCreateModel = await this._validator.validateCreateListeningNodeRequest(request);
+            model.Type = NodeType.ListeningNode;
+
+            const record = await this._service.create(model);
+            if (record === null) {
+                ErrorHandler.throwInternalServerError('Unable to add node!');
+            }
+            const message = 'Node added successfully!';
+            return ResponseHandler.success(request, response, message, 201, record);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    createDecisionNode = async (request: express.Request, response: express.Response) => {
+        try {
+            var model: DecisionNodeCreateModel = await this._validator.validateCreateDecisionNodeRequest(request);
+            model.Type = NodeType.DecisionNode;
 
             const record = await this._service.create(model);
             if (record === null) {

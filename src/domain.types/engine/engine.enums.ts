@@ -58,17 +58,17 @@ export const MessageChannelList: MessageChannelType[] = [
 ];
 
 export enum NodeType {
+    ExecutionNode = 'ExecutionNode',
     QuestionNode  = 'QuestionNode',
     ListeningNode = 'ListeningNode',
-    ExecutionNode = 'ExecutionNode',
     DecisionNode  = 'DecisionNode',
     WaitNode      = 'WaitNode',
 }
 
 export const NodeTypeList: NodeType[] = [
+    NodeType.ExecutionNode,
     NodeType.QuestionNode,
     NodeType.ListeningNode,
-    NodeType.ExecutionNode,
     NodeType.DecisionNode,
     NodeType.WaitNode,
 ];

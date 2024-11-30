@@ -1,5 +1,4 @@
 import { Event } from '../../models/engine/event.model';
-import { Context } from '../../models/engine/context.model';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { Source } from '../../database.connector';
@@ -22,22 +21,20 @@ export class EventService extends BaseService {
 
     _eventRepository: Repository<Event> = Source.getRepository(Event);
 
-    _contextRepository: Repository<Context> = Source.getRepository(Context);
-
     //#endregion
 
     public create = async (createModel: EventCreateModel)
         : Promise<EventResponseDto> => {
 
-        const context = await this.getOrCreateContextByReferenceId(createModel.ReferenceId);
-        const eventType = createModel.EventType;
-
-        const event = this._eventRepository.create({
-            Context     : context,
-            EventType   : eventType,
-            Payload     : createModel.Payload,
-            ReferenceId : createModel.ReferenceId,
-        });
+        var eventModel = {
+            EventType        : createModel.EventType,
+            SchemaId         : createModel.SchemaId,
+            SchemaInstanceId : createModel.SchemaInstanceId,
+            EventTimeStamp   : createModel.EventTimeStamp,
+            UserMessage      : createModel.UserMessage,
+            Payload          : createModel.Payload,
+        };
+        const event = this._eventRepository.create(eventModel);
         var record = await this._eventRepository.save(event);
         return EventMapper.toResponseDto(record);
     };
@@ -101,61 +98,25 @@ export class EventService extends BaseService {
             relations : {
             },
             where : {
-            },
-            select : {
-                id        : true,
-                Payload   : true,
-                EventType : true,
-                Context   : {
-                    id          : true,
-                    ReferenceId : true,
-                    Type        : true,
-                    Participant : {
-                        id          : true,
-                        ReferenceId : true,
-                        Prefix      : true,
-                        FirstName   : true,
-                        LastName    : true,
-                    },
-                    Group : {
-                        id          : true,
-                        Name        : true,
-                        Description : true,
-                    },
-                },
-                CreatedAt : true,
-                UpdatedAt : true,
             }
         };
 
-        if (filters.ReferenceId) {
-            search.where['ReferenceId'] = filters.ReferenceId;
+        if (filters.TenantId) {
+            search.where['TenantId'] = filters.TenantId;
         }
-        if (filters.TypeId) {
-            search.where['EventType'].id = filters.TypeId;
+        if (filters.EventType) {
+            search.where['EventType'] = filters.EventType;
+        }
+        if (filters.SchemaId) {
+            search.where['SchemaId'] = filters.SchemaId;
+        }
+        if (filters.SchemaInstanceId) {
+            search.where['SchemaInstanceId'] = filters.SchemaInstanceId;
         }
 
         return search;
     };
 
     //#endregion
-
-    private async getOrCreateContextByReferenceId(referenceId: uuid) {
-        if (!referenceId) {
-            return null;
-        }
-        var context = await this._contextRepository.findOne({
-            where : {
-                ReferenceId : referenceId
-            }
-        });
-        if (!context) {
-            var record = await this._contextRepository.create({
-                ReferenceId : referenceId,
-            });
-            context = await this._contextRepository.save(record);
-        }
-        return context;
-    }
 
 }

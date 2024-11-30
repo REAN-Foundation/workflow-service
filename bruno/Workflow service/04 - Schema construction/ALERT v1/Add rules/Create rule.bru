@@ -1,0 +1,73 @@
+meta {
+  name: Create rule
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/rules
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+      "SchemaId": "{{SCHEMA_ID}}",
+      "Name": "Medication 7 Day Badge Rule",
+      "Description": "This rule represents logical steps involved in awarding a badge for consecutive 7 days.",
+      "ParentNodeId": "{{SCHEMA_ROOT_NODE_ID}}",
+      "Action": {
+          "ActionType": "{{AWARD_BADGE_EVENT_TYPE}}",
+          "Name": "Medication 7-Days Badge",
+          "Description": "This rule represents logical steps involved in awarding a badge for consecutive 7 days.",
+          "Params": {
+              "Message": "Award medication 7-days badge.",
+              "Action": "{{AWARD_BADGE_EVENT_TYPE}}",
+              "NextNodeId": null,
+              "Extra": {}
+          }
+      }
+  }
+}
+
+tests {
+  try {
+      var jsonRes = res.getBody();
+      bru.setEnvVar("RULE_ID", jsonRes.Data.id);
+      bru.setEnvVar("ROOT_CONDITION_ID", jsonRes.Data.Condition.id);
+      bru.setEnvVar("RULE_ACTION_ID", jsonRes.Data.Action.id);
+  }
+  catch (error) {
+      console.log(error.message);
+  }
+  
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Schema is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Client');
+      expect(jsonRes.Data.Client).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+      expect(jsonRes.Data).to.have.property('ValidFrom');
+      expect(jsonRes.Data).to.have.property('RootNodeId');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

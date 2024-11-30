@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import {
+    Column,
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
@@ -12,7 +13,7 @@ import {
 } from 'typeorm';
 import { Schema } from "./schema.model";
 import { NodeInstance } from "./node.instance.model";
-import { Context } from "./context.model";
+import { Almanac, ContextParams } from "../../../domain.types/engine/intermediate.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -26,9 +27,8 @@ export class SchemaInstance {
     @JoinColumn()
     Schema: Schema;
 
-    @ManyToOne(() => Context)
-    @JoinColumn()
-    Context: Context;
+    @Column({ type: 'simple-json', nullable: true })
+    ContextParams: ContextParams;
 
     @OneToMany(() => NodeInstance, (nodeInstance) => nodeInstance.SchemaInstance)
     NodeInstances : NodeInstance[];
@@ -40,6 +40,15 @@ export class SchemaInstance {
     @OneToOne(() => NodeInstance)
     @JoinColumn()
     CurrentNodeInstance: NodeInstance;
+
+    @Column({ type: 'boolean', nullable: false, default: false })
+    ExecutionStarted: boolean;
+
+    @Column({ type: 'datetime', nullable: true })
+    ExecutionStartedTimestamp: Date;
+
+    @Column({ type: 'simple-json', nullable: true })
+    Almanac: Almanac;
 
     @CreateDateColumn()
     CreatedAt : Date;

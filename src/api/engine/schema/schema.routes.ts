@@ -12,6 +12,10 @@ export const register = (app: express.Application): void => {
     const controller = new SchemaController();
     const contextBase = 'Schema';
 
+    // router.get('/:id/export', Auth.handle(`${contextBase}.export`), controller.Export);
+    // router.post('/import-file', Auth.handle(`${contextBase}.importFromFile`), controller.ImportFromFile);
+    // router.post('/import-json', Auth.handle(`${contextBase}.importFromJson`), controller.ImportFromJson);
+
     router.post('/', Auth.handle(`${contextBase}.Create`, true, true, true), controller.create);
     router.get('/search', Auth.handle(`${contextBase}.Search`, true, true, true), controller.search);
     router.get('/:id', Auth.handle(`${contextBase}.GetById`, true, true, true), controller.getById);

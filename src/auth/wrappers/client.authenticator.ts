@@ -36,6 +36,6 @@ export class ClientAuthenticator {
     public verify = async (request: express.Request): Promise<boolean> => {
         const authResult = await this._authenticator.authenticate(request);
         return authResult.Result;
-    }
+    };
 
 }

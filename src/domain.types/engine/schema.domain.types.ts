@@ -1,4 +1,3 @@
-import { EventType } from "../enums/event.type";
 import {
     BaseSearchFilters,
     BaseSearchResults
@@ -6,68 +5,52 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { EventActionType, InputParams, NodeType, OutputParams } from "./engine.types";
-import { NodeCreateModel } from "./node.domain.types";
+import { NodeType, SchemaType } from "./engine.enums";
+import { ContextParams } from "./intermediate.types";
+import { NodeActionResponseDto } from "./node.action.types";
+import { NodeCreateModel } from "./node.types";
 
 //////////////////////////////////////////////////////////////
 
 export interface SchemaCreateModel {
-    ClientId     : uuid;
-    Name         : string;
-    Description? : string;
-    ValidFrom   ?: Date;
-    ValidTill   ?: Date;
-    IsValid     ?: boolean;
-    EventTypeIds?: uuid[];
-    RootNode    ?: NodeCreateModel;
-    IdentificationParams?: Map<string, any>;
+    TenantId      : uuid;
+    Type          : SchemaType;
+    Name          : string;
+    Description?  : string;
+    RootNode     ?: NodeCreateModel;
+    ContextParams?: ContextParams;
 }
 
 export interface SchemaUpdateModel {
-    ClientId?    : uuid;
+    Type?        : SchemaType;
     Name?        : string;
     Description? : string;
-    ValidFrom   ?: Date;
-    ValidTill   ?: Date;
-    IsValid     ?: boolean;
-    EventTypeIds?: uuid[];
-    IdentificationParams?: Map<string, any>;
+    ContextParams?: ContextParams;
 }
 
 export interface SchemaResponseDto {
-    id         : uuid;
-    Name       : string;
-    Description: string;
-    ValidFrom  : Date;
-    ValidTill  : Date;
-    IsValid    : boolean;
-    RootNode  ?: {
+    id          : uuid;
+    Type        : SchemaType;
+    TenantId    : uuid;
+    Name        : string;
+    Description : string;
+    RootNode   ?: {
        id         : uuid,
        Name       : string;
        Description: string;
        Type       : NodeType;
-        Action ?  : {
-            ActionType  : EventActionType;
-            Name        : string;
-            Description : string;
-            InputParams : InputParams;
-            OutputParams: OutputParams;
-        }
+       Actions    : NodeActionResponseDto[];
+       NextNodeId : uuid;
     };
-    Client     : {
-        id  : uuid;
-        Name: string;
-        Code: string;
-    };
-    EventTypes ?: EventType[];
-    IdentificationParams?: Map<string, any>;
-    CreatedAt: Date;
-    UpdatedAt: Date;
+    ContextParams?: ContextParams;
+    CreatedAt     : Date;
+    UpdatedAt     : Date;
 }
 
 export interface SchemaSearchFilters extends BaseSearchFilters {
-    Name ?     : string;
-    ClientId ? : uuid;
+    Name?        : string;
+    Description? : string;
+    TenantId ?   : uuid;
 }
 
 export interface SchemaSearchResults extends BaseSearchResults {

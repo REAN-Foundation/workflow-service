@@ -1,0 +1,82 @@
+meta {
+  name: 03 - Create next node - Extract existing badges
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+      "ParentNodeId": "{{NODE_02_ID}}",
+      "SchemaId": "{{SCHEMA_ID}}",
+      "Name": "Get existing badges",
+      "Description": "Extract existing 15-day exercise badges for the participant.",
+      "Type": "Execution-Node",
+      "Action": {
+          "ActionType": "Extract-Data",
+          "Name": "Extract-Badges",
+          "InputParams": {
+              "RecordType": "Badge",
+              "SourceType": "Database",
+              "InputTag": "Badge",
+              "Filters": [
+                  {
+                      "Key": "BadgeCategory",
+                      "Value": "Exercise"
+                  },
+                  {
+                      "Key": "BadgeTitle",
+                      "Value": "15-Day Physical Activity"
+                  }
+              ]
+          },
+          "OutputParams": {
+              "Message": "Extracting 15-day exercise badges",
+              "OutputTag": "Extract-Data:Badge",
+              "DestinationType": "Almanac"
+          }
+      }
+  }
+}
+
+tests {
+  try {
+      var jsonRes = res.getBody();
+      bru.setEnvVar("NODE_03_ID", jsonRes.Data.id);
+  }
+  catch (error) {
+      console.log(error.message);
+  }
+  
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+      expect(jsonRes.Data).to.have.property('ParentNode');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

@@ -11,10 +11,10 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
 } from 'typeorm';
-import { NodeDefaultAction } from "./node.default.action.model";
-import { Rule } from "./rule.model";
+import { NodeAction } from "./node.action.model";
 import { Schema } from "./schema.model";
-import { NodeType } from "../../../domain.types/engine/engine.types";
+import { NodePath } from "./node.path.model";
+import { NodeType } from "../../../domain.types/engine/engine.enums";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -30,6 +30,9 @@ export class Node {
     @Column({ type: 'varchar', length: 256, nullable: false })
     Name : string;
 
+    @Column({ type: 'varchar', length: 256, nullable: false })
+    Code : string;
+
     @Column({ type: 'varchar', length: 512, nullable: true })
     Description : string;
 
@@ -43,15 +46,26 @@ export class Node {
     @JoinColumn()
     Schema: Schema;
 
-    @OneToMany(() => Rule, (rule) => rule.ParentNode, {
-        cascade  : true,
-        nullable : true,
-    })
-    Rules: Rule[];
+    @OneToMany(() => NodePath, (path) => path.ParentNode, { cascade: true })
+    Paths: NodePath[];
 
-    @OneToOne(() => NodeDefaultAction, (action) => action.ParentNode, { onDelete: 'CASCADE' })
-    @JoinColumn()
-    Action: NodeDefaultAction;
+    @OneToMany(() => NodeAction, (path) => path.ParentNode, { cascade: true })
+    Actions: NodeAction[];
+
+    @Column({ type: 'simple-json', nullable: true })
+    RawData : any;
+
+    @OneToOne(() => NodePath, (path) => path.ParentNode, { nullable: true })
+    DefaultNodePath: NodePath;
+
+    @Column({ type: 'uuid', nullable: true })
+    ExecutionRuleId: string;
+
+    @Column({ type: 'int', nullable: true })
+    ExecutionDelaySeconds: number;
+
+    @Column({ type: 'uuid', nullable: true })
+    NextNodeId: string;
 
     @CreateDateColumn()
     CreatedAt : Date;

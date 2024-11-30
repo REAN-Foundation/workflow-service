@@ -5,13 +5,7 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { 
-    ActionInputParams, 
-    ActionOutputParams,
-    EventActionType, 
-    InputParams, 
-    OperatorType, 
-    OutputParams } from "./engine.types";
+import { OperatorType } from "./engine.enums";
 
 //////////////////////////////////////////////////////////////
 
@@ -20,13 +14,7 @@ export interface RuleCreateModel {
     Description?: string;
     ParentNodeId: uuid;
     SchemaId    : uuid;
-    Action      : {
-        ActionType    : EventActionType;
-        Name          : string;
-        Description  ?: string;
-        InputParams?: InputParams;
-        OutputParams?: OutputParams;
-    };
+    ConditionId : uuid;
 }
 
 export interface RuleUpdateModel {
@@ -34,13 +22,7 @@ export interface RuleUpdateModel {
     Description  ?: string;
     ParentNodeId ?: uuid;
     SchemaId     ?: uuid;
-    Action       ?: {
-        ActionType   ?: EventActionType;
-        Name         ?: string;
-        Description  ?: string;
-        InputParams?: InputParams;
-        OutputParams?: OutputParams;
-    };
+    ConditionId  ?: uuid;
 }
 
 export interface RuleResponseDto {
@@ -57,13 +39,16 @@ export interface RuleResponseDto {
         Name    : string;
         Operator: OperatorType;
     };
-    Action: {
-        id           : uuid;
-        Name         : string;
-        Description  : string;
-        ActionType   : EventActionType;
-        InputParams ?: ActionInputParams;
-        OutputParams?: ActionOutputParams;
+    NodePath : {
+        id          : uuid,
+        Name        : string,
+        Description : string,
+        NextNode    : {
+            id              : uuid;
+            Name            : string;
+            Code            : string;
+            Description     : string;
+        }
     },
     CreatedAt: Date;
     UpdatedAt: Date;

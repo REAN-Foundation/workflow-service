@@ -15,24 +15,27 @@ export class RuleMapper {
             id          : rule.id,
             Name        : rule.Name,
             Description : rule.Description,
-            ParentNode : rule.ParentNode ? {
+            ParentNode  : rule.ParentNode ? {
                 id          : rule.ParentNode.id,
                 Name        : rule.ParentNode.Name,
                 Description : rule.ParentNode.Description,
             }          : null,
             Condition : {
-                id          : rule.Condition.id,
-                Name        : rule.Condition.Name,
-                Operator    : rule.Condition.Operator,
+                id       : rule.Condition.id,
+                Name     : rule.Condition.Name,
+                Operator : rule.Condition.Operator,
             },
-            Action : rule.Action ? {
-                id          : rule.Action.id,
-                Name        : rule.Action.Name,
-                Description : rule.Action.Description,
-                ActionType  : rule.Action.ActionType,
-                InputParams : rule.Action.InputParams,
-                OutputParams: rule.Action.OutputParams,
-            }           : null,
+            NodePath : {
+                id          : rule.NodePath.id,
+                Name        : rule.NodePath.Name,
+                Description : rule.NodePath.Description,
+                NextNode    : {
+                    id          : rule.NodePath.NextNode.id,
+                    Name        : rule.NodePath.NextNode.Name,
+                    Code        : rule.NodePath.NextNode.Code,
+                    Description : rule.NodePath.NextNode.Description,
+                }
+            },
             CreatedAt : rule.CreatedAt,
             UpdatedAt : rule.UpdatedAt,
         };

@@ -2,13 +2,12 @@ import { SchemaInstance } from '../../models/engine/schema.instance.model';
 import {
     SchemaInstanceResponseDto
 } from '../../../domain.types/engine/schema.instance.types';
-import { EventType } from '../../../domain.types/enums/event.type';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class SchemaInstanceMapper {
 
-    static toResponseDto = (instance: SchemaInstance, eventTypes?: EventType[]): SchemaInstanceResponseDto => {
+    static toResponseDto = (instance: SchemaInstance): SchemaInstanceResponseDto => {
         if (instance == null) {
             return null;
         }
@@ -18,28 +17,7 @@ export class SchemaInstanceMapper {
                 id          : instance.Schema.id,
                 Name        : instance.Schema.Name,
                 Description : instance.Schema.Description,
-                Client      : instance.Schema.Client ? {
-                    id   : instance.Schema.Client.id,
-                    Name : instance.Schema.Client.Name,
-                } : null,
-                EventTypes : eventTypes ?? [],
-            },
-            Context : {
-                id          : instance.Context.id,
-                ReferenceId : instance.Context.ReferenceId,
-                Type        : instance.Context.Type,
-                Participant : instance.Context.Participant ? {
-                    id          : instance.Context.Participant.id,
-                    ReferenceId : instance.Context.Participant.ReferenceId,
-                    Prefix      : instance.Context.Participant.Prefix,
-                    FirstName   : instance.Context.Participant.FirstName,
-                    LastName    : instance.Context.Participant.LastName,
-                } : null,
-                ParticipantGroup : instance.Context.Group ? {
-                    id          : instance.Context.Group.id,
-                    Name        : instance.Context.Group.Name,
-                    Description : instance.Context.Group.Description,
-                } : null,
+                TenantId    : instance.Schema.TenantId,
             },
             RootNodeInstance : instance.RootNodeInstance ? {
                 id   : instance.RootNodeInstance.id,
@@ -64,8 +42,12 @@ export class SchemaInstanceMapper {
                     } : null
                 };
             }) : [],
-            CreatedAt : instance.CreatedAt,
-            UpdatedAt : instance.UpdatedAt,
+            Almanac                   : instance.Almanac,
+            ContextParams             : instance.ContextParams,
+            ExecutionStarted          : instance.ExecutionStarted,
+            ExecutionStartedTimestamp : instance.ExecutionStartedTimestamp,
+            CreatedAt                 : instance.CreatedAt,
+            UpdatedAt                 : instance.UpdatedAt,
         };
         return dto;
     };

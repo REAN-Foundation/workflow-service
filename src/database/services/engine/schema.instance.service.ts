@@ -13,7 +13,6 @@ import {
     SchemaInstanceSearchFilters,
     SchemaInstanceSearchResults,
     SchemaInstanceUpdateModel } from '../../../domain.types/engine/schema.instance.types';
-import { Context } from '../../models/engine/context.model';
 import { NodeInstance } from '../../models/engine/node.instance.model';
 import { Node } from '../../models/engine/node.model';
 import { CommonUtilsService } from './common.utils.service';
@@ -28,8 +27,6 @@ export class SchemaInstanceService extends BaseService {
 
     _schemaRepository: Repository<Schema> = Source.getRepository(Schema);
 
-    _contextRepository: Repository<Context> = Source.getRepository(Context);
-
     _nodeRepository: Repository<Node> = Source.getRepository(Node);
 
     _nodeInstanceRepository: Repository<NodeInstance> = Source.getRepository(NodeInstance);
@@ -43,11 +40,9 @@ export class SchemaInstanceService extends BaseService {
 
         const schema = await this._commonUtils.getSchema(createModel.SchemaId);
         const rootNode = await this._commonUtils.getNode(schema.RootNodeId);
-        const context = await this._commonUtils.getContext(createModel.ContextId);
 
         const schemaInstance = this._schemaInstanceRepository.create({
-            Schema  : schema,
-            Context : context,
+            Schema : schema,
         });
         var record = await this._schemaInstanceRepository.save(schemaInstance);
         const rootNodeInstance = await this._nodeInstanceRepository.create({
@@ -87,11 +82,7 @@ export class SchemaInstanceService extends BaseService {
                 },
                 relations : {
                     Schema : {
-                        Client : true,
-                        Nodes  : true,
-                    },
-                    Context : {
-                        Participant : true,
+                        Nodes : true,
                     },
                     CurrentNodeInstance : {
                         Node : true,
@@ -111,21 +102,17 @@ export class SchemaInstanceService extends BaseService {
         }
     };
 
-    public getByContextId = async (contextId: uuid): Promise<SchemaInstanceResponseDto[]> => {
+    public getBySchemaId = async (schemaId: uuid): Promise<SchemaInstanceResponseDto[]> => {
         try {
-            var instances = await this._schemaInstanceRepository.find({
+            var schemaInstances = await this._schemaInstanceRepository.find({
                 where : {
-                    Context : {
-                        id : contextId
+                    Schema : {
+                        id : schemaId
                     }
                 },
                 relations : {
                     Schema : {
-                        Client : true,
-                        Nodes  : true,
-                    },
-                    Context : {
-                        Participant : true,
+                        Nodes : true,
                     },
                     CurrentNodeInstance : {
                         Node : true,
@@ -138,7 +125,7 @@ export class SchemaInstanceService extends BaseService {
                     },
                 }
             });
-            return instances.map(x => SchemaInstanceMapper.toResponseDto(x));
+            return schemaInstances.map(x => SchemaInstanceMapper.toResponseDto(x));
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
@@ -179,13 +166,8 @@ export class SchemaInstanceService extends BaseService {
             if (!schemaInstance) {
                 ErrorHandler.throwNotFoundError('SchemaInstance not found!');
             }
-            if (model.SchemaId != null) {
-                const schema = await this._commonUtils.getSchema(model.SchemaId);
-                schemaInstance.Schema = schema;
-            }
-            if (model.ContextId != null) {
-                const context = await this._commonUtils.getContext(model.ContextId);
-                schemaInstance.Context = context;
+            if (model.ContextParams != null) {
+                schemaInstance.ContextParams = model.ContextParams;
             }
             var record = await this._schemaInstanceRepository.save(schemaInstance);
             return SchemaInstanceMapper.toResponseDto(record);
@@ -217,11 +199,7 @@ export class SchemaInstanceService extends BaseService {
         var search : FindManyOptions<SchemaInstance> = {
             relations : {
                 Schema : {
-                    Client : true,
-                    Nodes  : true,
-                },
-                Context : {
-                    Participant : true,
+                    Nodes : true,
                 },
                 CurrentNodeInstance : {
                     Node : true,
@@ -241,27 +219,7 @@ export class SchemaInstanceService extends BaseService {
                     id          : true,
                     Name        : true,
                     Description : true,
-                    Client      : {
-                        id   : true,
-                        Name : true,
-                    }
-                },
-                Context : {
-                    id          : true,
-                    ReferenceId : true,
-                    Type        : true,
-                    Participant : {
-                        id          : true,
-                        ReferenceId : true,
-                        Prefix      : true,
-                        FirstName   : true,
-                        LastName    : true,
-                    },
-                    Group : {
-                        id          : true,
-                        Name        : true,
-                        Description : true,
-                    },
+                    TenantId    : true,
                 },
                 RootNodeInstance : {
                     id   : true,
@@ -290,16 +248,10 @@ export class SchemaInstanceService extends BaseService {
         };
 
         if (filters.SchemaId) {
-            search.where['Schema'] = {
-                id : ''
-            };
             search.where['Schema'].id = filters.SchemaId;
         }
-        if (filters.ContextId) {
-            search.where['Context'] = {
-                id : ''
-            };
-            search.where['Context'].id = filters.ContextId;
+        if (filters.TenantId) {
+            search.where['TenantId'] = filters.TenantId;
         }
 
         return search;

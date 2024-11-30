@@ -1,7 +1,7 @@
 import { Node } from '../../models/engine/node.model';
 import { Schema } from '../../models/engine/schema.model';
 import { Rule } from '../../models/engine/rule.model';
-import { NodeDefaultAction } from '../../models/engine/node.default.action.model';
+import { NodeAction } from '../../models/engine/node.action.model';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { Source } from '../../../database/database.connector';
@@ -9,13 +9,17 @@ import { FindManyOptions, Like, Repository } from 'typeorm';
 import { NodeMapper } from '../../mappers/engine/node.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { 
-    NodeCreateModel, 
-    NodeResponseDto, 
-    NodeSearchFilters, 
-    NodeSearchResults, 
-    NodeUpdateModel } from '../../../domain.types/engine/node.domain.types';
+import {
+    NodeCreateModel,
+    NodeResponseDto,
+    NodeSearchFilters,
+    NodeSearchResults,
+    NodeUpdateModel,
+    QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
 import { CommonUtilsService } from './common.utils.service';
+import { NodeType } from '../../../domain.types/engine/engine.enums';
+import { Question } from '../../../database/models/engine/question.model';
+import { StringUtils } from '../../../common/utilities/string.utils';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -27,30 +31,52 @@ export class NodeService extends BaseService {
 
     _schemaRepository: Repository<Schema> = Source.getRepository(Schema);
 
+    _questionRepository: Repository<Question> = Source.getRepository(Question);
+
     _ruleRepository: Repository<Rule> = Source.getRepository(Rule);
 
-    _actionRepository: Repository<NodeDefaultAction> = Source.getRepository(NodeDefaultAction);
+    _actionRepository: Repository<NodeAction> = Source.getRepository(NodeAction);
 
     _commonUtils: CommonUtilsService = new CommonUtilsService();
 
     //#endregion
 
-    public create = async (createModel: NodeCreateModel)
+    public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel)
         : Promise<NodeResponseDto> => {
-
         const schema = await this._commonUtils.getSchema(createModel.SchemaId);
-        const action = await this._commonUtils.createAction(createModel.Action);
-        const actionRecord = await this._actionRepository.save(action);
         const parentNode = await this.getNode(createModel.ParentNodeId);
-
+        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
         const node = this._nodeRepository.create({
-            Schema     : schema,
-            ParentNode : parentNode,
-            Name       : createModel.Name,
-            Description: createModel.Description,
-            Action     : actionRecord,
+            Code                  : StringUtils.generateDisplayCode_RandomChars(12, prefix),
+            Type                  : createModel.Type,
+            Schema                : schema,
+            ParentNode            : parentNode,
+            Name                  : createModel.Name,
+            Description           : createModel.Description,
+            ExecutionDelaySeconds : createModel.ExecutionDelaySeconds,
+            ExecutionRuleId       : createModel.ExecutionRuleId,
+            RawData               : createModel.RawData,
         });
         var record = await this._nodeRepository.save(node);
+        if (record == null)
+        {
+            return null;
+        }
+        var nodeId = record.id;
+        var model = null;
+        if (createModel.Type === NodeType.QuestionNode) {
+            model = createModel as QuestionNodeCreateModel;
+            var questionModel = {
+                id           : nodeId,
+                QuestionText : model.QuestionText,
+                ResponseType : model.ResponseType,
+                Options      : model.Options,
+            };
+            var question = await this._questionRepository.create(questionModel);
+            var questionRecord = await this._questionRepository.save(question);
+            logger.info(JSON.stringify(questionRecord, null, 2));
+        }
+
         return NodeMapper.toResponseDto(record);
     };
 
@@ -60,12 +86,13 @@ export class NodeService extends BaseService {
                 where : {
                     id : id
                 },
-                relations: {
-                    Action    : true,
-                    ParentNode: true,
-                    Schema    : true,
-                    Rules     : true,
-                    Children  : true,
+                relations : {
+                    Actions         : true,
+                    ParentNode      : true,
+                    Schema          : true,
+                    Paths           : true,
+                    Children        : true,
+                    DefaultNodePath : true,
                 }
             });
             return NodeMapper.toResponseDto(node);
@@ -104,11 +131,13 @@ export class NodeService extends BaseService {
                 where : {
                     id : id
                 },
-                relations: {
-                    Action: true,
-                    Children: true,
-                    ParentNode: true,
-                    Schema: true,
+                relations : {
+                    Actions         : true,
+                    ParentNode      : true,
+                    Schema          : true,
+                    Paths           : true,
+                    Children        : true,
+                    DefaultNodePath : true,
                 }
             });
             if (!node) {
@@ -127,10 +156,6 @@ export class NodeService extends BaseService {
             }
             if (model.Description != null) {
                 node.Description = model.Description;
-            }
-            if (model.Action != null) {
-                const defaultAction = await this.updateAction(node.Action.id, model.Action);
-                node.Action = defaultAction;
             }
             var record = await this._nodeRepository.save(node);
             return NodeMapper.toResponseDto(record);
@@ -155,6 +180,33 @@ export class NodeService extends BaseService {
         }
     };
 
+    public setNextNode = async (id: uuid, nextNodeId: uuid): Promise<boolean> => {
+        try {
+            var node = await this._nodeRepository.findOne({
+                where : {
+                    id : id
+                }
+            });
+            if (!node) {
+                ErrorHandler.throwNotFoundError('Node not found!');
+            }
+            var nextNode = await this._nodeRepository.findOne({
+                where : {
+                    id : nextNodeId
+                }
+            });
+            if (!nextNode) {
+                ErrorHandler.throwNotFoundError('Next Node not found!');
+            }
+            node.NextNodeId = nextNodeId;
+            var result = await this._nodeRepository.save(node);
+            return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     //#region Privates
 
     private getSearchModel = (filters: NodeSearchFilters) => {
@@ -165,36 +217,21 @@ export class NodeService extends BaseService {
             where : {
             },
             select : {
-                id      : true,
-                Name       : true,
-                Description: true,
-                Schema: {
-                    id         : true,
-                    Name       : true,
-                    Description: true,
-                },
-                ParentNode       : {
-                    id  : true,
-                    Name: true,
-                    Description: true,
-                },
-                Children: {
+                id          : true,
+                Name        : true,
+                Description : true,
+                Schema      : {
                     id          : true,
                     Name        : true,
                     Description : true,
                 },
-                Rules: {
+                ParentNode : {
                     id          : true,
                     Name        : true,
                     Description : true,
                 },
-                Action   : {
-                    id          : true,
-                    Name        : true,
-                    Description : true,   
-                },
-                CreatedAt  : true,
-                UpdatedAt  : true,
+                CreatedAt : true,
+                UpdatedAt : true,
             }
         };
 
@@ -218,8 +255,8 @@ export class NodeService extends BaseService {
             return null;
         }
         const node = await this._nodeRepository.findOne({
-            where: {
-                id: nodeId
+            where : {
+                id : nodeId
             }
         });
         if (!node) {
@@ -228,41 +265,4 @@ export class NodeService extends BaseService {
         return node;
     }
 
-    private async updateAction(actionId: uuid, actionModel: any) {
-        if (!actionId) {
-            ErrorHandler.throwNotFoundError('Action cannot be found');
-        }
-        const action = await this._actionRepository.findOne({
-            where: {
-                id: actionId
-            }
-        });
-        if (!action) {
-            ErrorHandler.throwNotFoundError('Action cannot be found');
-        }
-        if(actionModel && actionModel.ActionType) {
-            action.ActionType = actionModel.ActionType;
-        }
-        if(actionModel && actionModel.Name) {
-            action.Name = actionModel.Name;
-        }
-        if(actionModel && actionModel.Description) {
-            action.Description = actionModel.Description;
-        }
-        if(actionModel && actionModel.InputParams) {
-            action.InputParams = actionModel.InputParams;
-        }
-        if(actionModel && actionModel.OutputParams && actionModel.OutputParams.Message) {
-            action.OutputParams.Message = actionModel.OutputParams.Message;
-        }
-        if(actionModel && actionModel.OutputParams && actionModel.OutputParams.NextNodeId) {
-            action.OutputParams.NextNodeId = actionModel.OutputParams.NextNodeId;
-        }
-        if(actionModel && actionModel.OutputParams && actionModel.OutputParams.Extra) {
-            action.OutputParams.Extra = actionModel.OutputParams.Extra;
-        }
-
-        const updated = await this._actionRepository.save(action);
-        return updated;
-    }
 }

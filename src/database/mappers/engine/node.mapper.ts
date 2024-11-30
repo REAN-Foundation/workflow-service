@@ -1,13 +1,14 @@
 import { Node } from '../../models/engine/node.model';
 import {
     NodeResponseDto
-} from '../../../domain.types/engine/node.domain.types';
+} from '../../../domain.types/engine/node.types';
+import { Question } from '../../../database/models/engine/question.model';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class NodeMapper {
 
-    static toResponseDto = (node: Node): NodeResponseDto => {
+    static toResponseDto = (node: Node, question?: Question): NodeResponseDto => {
         if (node == null) {
             return null;
         }
@@ -26,24 +27,31 @@ export class NodeMapper {
                 Name        : node.ParentNode.Name,
                 Description : node.ParentNode.Description,
             }          : null,
-            Children : node.Children? node.Children.map(x => {
+            Children : node.Children ? node.Children.map(x => {
                 return {
                     id          : x.id,
                     Name        : x.Name,
                     Description : x.Description,
                 };
-            }): [],
-            Rules         : node.Rules,
-            Action : node.Action ? {
-                id          : node.Action.id,
-                Name        : node.Action.Name,
-                Description : node.Action.Description,
-                ActionType  : node.Action.ActionType,
-                InputParams : node.Action.InputParams,
-                OutputParams: node.Action.OutputParams,
+            }) : [],
+            Question : question ? {
+                ResponseType : question.ResponseType,
+                QuestionText : question.QuestionText ?? null,
+                Options      : question.Options ? question.Options.map(x => {
+                    return {
+                        id       : x.id,
+                        Text     : x.Text,
+                        ImageUrl : x.ImageUrl,
+                        Sequence : x.Sequence,
+                        Metadata : x.Metadata,
+                    };
+                }) : null,
             } : null,
-            CreatedAt : node.CreatedAt,
-            UpdatedAt : node.UpdatedAt,
+            ExecutionDelaySeconds : node.ExecutionDelaySeconds,
+            ExecutionRuleId       : node.ExecutionRuleId,
+            RawData               : node.RawData,
+            CreatedAt             : node.CreatedAt,
+            UpdatedAt             : node.UpdatedAt,
         };
         return dto;
     };

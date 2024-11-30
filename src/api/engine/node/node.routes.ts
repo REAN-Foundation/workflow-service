@@ -12,7 +12,10 @@ export const register = (app: express.Application): void => {
     const controller = new NodeController();
     const contextBase = 'Node';
 
+    router.post('/question-node', Auth.handle(`${contextBase}.CreateQuestionNode`, true, true, true), controller.createQuestionNode);
     router.post('/', Auth.handle(`${contextBase}.Create`, true, true, true), controller.create);
+    router.put('/:id/next-node/:nextNodeId', Auth.handle(`${contextBase}.SetNextNode`, true, true, true), controller.setNextNode);
+
     router.get('/search', Auth.handle(`${contextBase}.Search`, true, true, true), controller.search);
     router.get('/:id', Auth.handle(`${contextBase}.GetById`, true, true, true), controller.getById);
     router.put('/:id', Auth.handle(`${contextBase}.Update`, true, true, true), controller.update);

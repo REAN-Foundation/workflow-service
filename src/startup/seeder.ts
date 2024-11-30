@@ -6,16 +6,14 @@ import { UserService } from '../database/services/user/user.service';
 import { UserCreateModel } from "../domain.types/user/user.domain.types";
 import { Gender } from "../domain.types/miscellaneous/system.types";
 import { RoleService } from "../database/services/user/role.service";
-import { FileResourceService } from "../database/services/general/file.resource.service";
+// import { FileResourceService } from "../database/services/general/file.resource.service";
 import { PrivilegeService } from "../database/services/user/privilege.service";
 import { RoleCreateModel } from "../domain.types/user/role.domain.types";
 import { ClientResponseDto } from "../domain.types/client/client.domain.types";
 import { FileUtils } from "../common/utilities/file.utils";
 import { StringUtils } from "../common/utilities/string.utils";
-import { BadgeStockImageDomainModel } from "../domain.types/badge.stock.image/badge.stock.image.domain.model";
-import { BadgeStockImageService } from "../database/services/badge.stock.images/badge.stock.image.service";
 import { ClientService } from "../database/services/client/client.service";
-import { Injector } from "./injector";
+// import { Injector } from "./injector";
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -28,7 +26,7 @@ export class Seeder {
             await seedInternalClients();
             await seedRolePrivileges();
             await seedDefaultUsers();
-            await seedBadgeStockImages();
+            // await seedBadgeStockImages();
         } catch (error) {
             logger.error(error.message);
         }
@@ -174,46 +172,46 @@ const seedDefaultRoles = async () => {
     logger.info('Seeded default roles successfully!');
 };
 
-const seedBadgeStockImages = async () => {
-    const fileResourceService: FileResourceService = Injector.Container.resolve(FileResourceService);
-    const badgeStockImageService: BadgeStockImageService = new BadgeStockImageService();
+// const seedBadgeStockImages = async () => {
+//     const fileResourceService: FileResourceService = Injector.Container.resolve(FileResourceService);
+//     const badgeStockImageService: BadgeStockImageService = new BadgeStockImageService();
 
-    var images = await badgeStockImageService.getAll();
-    if (images.length > 0) {
-        return;
-    }
+//     var images = await badgeStockImageService.getAll();
+//     if (images.length > 0) {
+//         return;
+//     }
 
-    var destinationStoragePath = 'assets/images/stock.badge.images/';
-    var sourceFilePath = path.join(process.cwd(), './assets/images/stock.badge.images/');
+//     var destinationStoragePath = 'assets/images/stock.badge.images/';
+//     var sourceFilePath = path.join(process.cwd(), './assets/images/stock.badge.images/');
 
-    var files = fs.readdirSync(sourceFilePath);
-    var imageFiles = files.filter((f) => {
-        return path.extname(f).toLowerCase() === '.png';
-    });
+//     var files = fs.readdirSync(sourceFilePath);
+//     var imageFiles = files.filter((f) => {
+//         return path.extname(f).toLowerCase() === '.png';
+//     });
 
-    for await (const fileName of imageFiles) {
-        var sourceLocation = path.join(sourceFilePath, fileName);
-        var storageKey = destinationStoragePath + fileName;
+//     for await (const fileName of imageFiles) {
+//         var sourceLocation = path.join(sourceFilePath, fileName);
+//         var storageKey = destinationStoragePath + fileName;
 
-        var uploaded = await fileResourceService.uploadLocal(storageKey, sourceLocation, true);
+//         var uploaded = await fileResourceService.uploadLocal(storageKey, sourceLocation, true);
 
-        if (!uploaded) {
-            continue;
-        }
+//         if (!uploaded) {
+//             continue;
+//         }
 
-        var domainModel: BadgeStockImageDomainModel = {
-            Code       : fileName.replace('.png', ''),
-            FileName   : fileName,
-            ResourceId : uploaded.id,
-            PublicUrl  : uploaded.DefaultVersion.Url,
-        };
+//         var domainModel: BadgeStockImageDomainModel = {
+//             Code       : fileName.replace('.png', ''),
+//             FileName   : fileName,
+//             ResourceId : uploaded.id,
+//             PublicUrl  : uploaded.DefaultVersion.Url,
+//         };
 
-        var badgeStockImage = await badgeStockImageService.create(domainModel);
-        if (!badgeStockImage) {
-            logger.info('Error occurred while seeding badge stock images!');
-        }
-    }
-};
+//         var badgeStockImage = await badgeStockImageService.create(domainModel);
+//         if (!badgeStockImage) {
+//             logger.info('Error occurred while seeding badge stock images!');
+//         }
+//     }
+// };
 
 const loadJSONSeedFile = (file: string): any => {
     var filepath = path.join(process.cwd(), 'seed.data', file);

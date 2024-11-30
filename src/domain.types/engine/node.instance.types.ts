@@ -5,7 +5,7 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { ContextType, EventActionType, ExecutionStatus, InputParams, NodeType, OperandDataType, OperatorType, OutputParams } from "./engine.types";
+import { ExecutionStatus, NodeType } from "./engine.enums";
 
 //////////////////////////////////////////////////////////////
 
@@ -23,64 +23,15 @@ export interface NodeInstanceResponseDto {
     id         : uuid;
     ExecutionStatus : ExecutionStatus;
     StatusUpdateTimestamp : Date;
-    ApplicableRule: {
-        id         : uuid;
-        Name       : string;
-        Description: string;
-    };
-    AvailableFacts       : any[];
-    ExecutedDefaultAction: boolean;
     ExecutionResult      : any;
     Node                 : {
         id    : uuid;
         Type  : NodeType;
         Name  : string;
-        Action: {
-            id           : uuid;
-            Name         : string;
-            ActionType   : EventActionType;
-            InputParams  : InputParams;
-            OutputParams : OutputParams;
-        } | null,
-        Rules: {
-            id    : uuid,
-            Name  : string;
-            Action: {
-                id        : uuid;
-                Name      : string;
-                ActionType: EventActionType;
-                InputParams  : InputParams;
-                OutputParams : OutputParams;
-            },
-            Condition: {
-                id      : uuid;
-                Name    : string;
-                Operator: OperatorType,
-                DataType: OperandDataType,
-                Fact    : string;
-            }
-        }[],
     };
     SchemaInstance : {
         id    : uuid;
         Schema: {
-            id         : uuid;
-            Name       : string;
-            Description: string;
-        };
-    };
-    Context : {
-        id          : uuid;
-        ReferenceId : uuid;
-        Type        : ContextType;
-        Participant?: {
-            id         : uuid;
-            ReferenceId: uuid;
-            Prefix     : string;
-            FirstName  : string;
-            LastName   : string;
-        };
-        ParticipantGroup ?: {
             id         : uuid;
             Name       : string;
             Description: string;

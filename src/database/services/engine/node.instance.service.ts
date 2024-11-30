@@ -1,20 +1,18 @@
 import { NodeInstance } from '../../models/engine/node.instance.model';
 import { Node } from '../../models/engine/node.model';
-import { Rule } from '../../models/engine/rule.model';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { Source } from '../../../database/database.connector';
-import { FindManyOptions, Like, Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { NodeInstanceMapper } from '../../mappers/engine/node.instance.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { 
-    NodeInstanceCreateModel, 
-    NodeInstanceResponseDto, 
-    NodeInstanceSearchFilters, 
-    NodeInstanceSearchResults, 
+import {
+    NodeInstanceCreateModel,
+    NodeInstanceResponseDto,
+    NodeInstanceSearchFilters,
+    NodeInstanceSearchResults,
     NodeInstanceUpdateModel } from '../../../domain.types/engine/node.instance.types';
-import { Context } from '../../models/engine/context.model';
 import { SchemaInstance } from '../../models/engine/schema.instance.model';
 
 ///////////////////////////////////////////////////////////////////////
@@ -38,8 +36,8 @@ export class NodeInstanceService extends BaseService {
         const schemaInstance = await this.getSchemaInstance(createModel.SchemaInstanceId);
 
         const nodeInstance = this._nodeInstanceRepository.create({
-            Node          : node,
-            SchemaInstance: schemaInstance,
+            Node           : node,
+            SchemaInstance : schemaInstance,
         });
         var record = await this._nodeInstanceRepository.save(nodeInstance);
         return NodeInstanceMapper.toResponseDto(record);
@@ -54,23 +52,13 @@ export class NodeInstanceService extends BaseService {
                 relations : {
                     SchemaInstance : {
                         Schema : true,
-                        Context: true,
                     },
-                    ChildrenNodeInstances: {
-                        Node: {
-                            Rules : true,
-                            Action: true
-                        }
+                    ChildrenNodeInstances : {
+                        Node : true
                     },
-                    Node : {
-                        Rules : true,
-                        Action: true,
-                    },
+                    Node               : true,
                     ParentNodeInstance : {
-                        Node: {
-                            Action: true,
-                            Rules : true,
-                        }
+                        Node : true
                     }
                 },
             });
@@ -151,94 +139,54 @@ export class NodeInstanceService extends BaseService {
 
         var search : FindManyOptions<NodeInstance> = {
             relations : {
-                SchemaInstance       : true,
-                ChildrenNodeInstances: true,
-                Node                 : true,
-                ParentNodeInstance   : true
+                SchemaInstance        : true,
+                ChildrenNodeInstances : true,
+                Node                  : true,
+                ParentNodeInstance    : true
             },
             where : {
             },
             select : {
-                id  : true,
-                Node: {
-                    id         : true,
-                    Name       : true,
-                    Description: true,
-                    Action: {
-                        id          : true,
-                        Name        : true,
-                        ActionType  : true,
-                        InputParams : {},
-                        OutputParams: {},
+                id   : true,
+                Node : {
+                    id          : true,
+                    Name        : true,
+                    Description : true,
+                    Actions     : {
+                        id     : true,
+                        Name   : true,
+                        Type   : true,
+                        Input  : {},
+                        Output : {},
                     },
-                    Rules : {
-                        id: true,
-                        Name: true,
-                        Action: {
-                            id          : true,
-                            Name        : true,
-                            ActionType  : true,
-                            InputParams : {},
-                            OutputParams: {},
-                        },
-                        Condition: {
-                            id: true,
-                            Name: true,
-                            Operator: true,
-                            DataType: true,
-                            Fact: true,
-                        }
-                    }
                 },
-                ExecutionResult: true,
-                ExecutionStatus: true,
+                ExecutionResult       : true,
+                ExecutionStatus       : true,
                 StatusUpdateTimestamp : true,
-                ApplicableRule: {
-                    id: true,
-                    Name: true,
-                    Description: true,
-                },
-                ExecutedDefaultAction: true,
-                SchemaInstance: {
-                    id    : true,
-                    Schema: {
-                        id  : true,
-                        Name: true,
-                    },
-                    Context       : {
-                        id         : true,
-                        ReferenceId: true,
-                        Type       : true,
-                        Participant: {
-                            id         : true,
-                            ReferenceId: true,
-                            Prefix     : true,
-                            FirstName  : true,
-                            LastName   : true,
-                        },
-                        Group : {
-                            id         : true,
-                            Name       : true,
-                            Description: true,
-                        },
+                Executed              : true,
+                SchemaInstance        : {
+                    id     : true,
+                    Schema : {
+                        id   : true,
+                        Name : true,
                     },
                 },
-                ParentNodeInstance: {
-                    id  : true,
-                    Node: {
-                        id  : true,
-                        Name: true,
+                ParentNodeInstance : {
+                    id   : true,
+                    Node : {
+                        id   : true,
+                        Name : true,
                     },
                 },
                 ChildrenNodeInstances : {
-                    id  : true,
-                    Node: {
-                        id  : true,
-                        Name: true,
+                    id   : true,
+                    Node : {
+                        id   : true,
+                        Name : true,
                     },
                 },
-                CreatedAt: true,
-                UpdatedAt: true,
+                CreatedAt : true,
+                UpdatedAt : true,
             }
         };
 
@@ -256,8 +204,8 @@ export class NodeInstanceService extends BaseService {
 
     private async getNode(nodeId: uuid) {
         const node = await this._nodeRepository.findOne({
-            where: {
-                id: nodeId
+            where : {
+                id : nodeId
             }
         });
         if (!node) {
@@ -268,8 +216,8 @@ export class NodeInstanceService extends BaseService {
 
     private async getSchemaInstance(schemaInstanceId: uuid) {
         const schemaInstance = await this._schemaInstanceRepository.findOne({
-            where: {
-                id: schemaInstanceId
+            where : {
+                id : schemaInstanceId
             }
         });
         if (!schemaInstance) {

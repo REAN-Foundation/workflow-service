@@ -1,0 +1,75 @@
+meta {
+  name: Get composite operator types
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BASE_URL}}/types/composite-operator-types
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{ADMIN_JWT}}
+}
+
+tests {
+  isUpperCase = (str) => {
+      return str.toUpperCase() === str;
+  };
+  
+  convertPascalCaseToCapitalSnakeCase = (str) => {
+      if (str.length > 0) {
+          var outstr = "";
+          str = str.replace('-', '');
+          for (var i = 0; i < str.length; i++) {
+              var c = str.charAt(i);
+              if (isUpperCase(c) && i !== 0) {
+                  outstr += '_' + c.toUpperCase();
+              }
+              else {
+                  outstr += c.toUpperCase();
+              }
+          }
+          return outstr;
+      }
+      return str;
+  };
+  
+  try {
+      var jsonRes = res.getBody();
+      var types = jsonRes.Data.Types;
+      for(var i = 0; i < types.length; i++) {
+          var r = types[i];
+          const x = convertPascalCaseToCapitalSnakeCase(r);
+          var str = x + "_COMPOSITE_OPERATOR_TYPE";
+          console.log(str);
+          bru.setEnvVar(str, types[i]);
+      }
+  }
+  catch (error) {
+      console.log(error.message);
+  }
+  
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Composite operator types are returned", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('Types');
+      expect(jsonRes.Data.Types.length).greaterThan(0);
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { LogicalOperator, CompositionOperator, MathematicalOperator, OperandDataType, OperatorType } from "../../../domain.types/engine/engine.types";
 import {
     Column,
     Entity,
@@ -12,6 +11,7 @@ import {
     ManyToOne,
 } from 'typeorm';
 import { Rule } from "./rule.model";
+import { CompositionOperator, LogicalOperator, MathematicalOperator, OperandDataType, OperatorType } from "../../../domain.types/engine/engine.enums";
 
 ////////////////////////////////////////////////////////////////////////
 

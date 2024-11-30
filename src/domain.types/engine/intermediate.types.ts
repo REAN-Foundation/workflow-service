@@ -26,6 +26,15 @@ export interface Location {
 export type DistanceUnit = 'km' | 'mi' | 'm';
 export type TimestampUnit = 'ms' | 's' | 'm' | 'h' | 'd' | 'w' | 'mo' | 'y';
 
+export interface AlmanacObject {
+    Name: string;
+    Data: any[] | any;
+}
+
+export interface Almanac {
+    Facts: AlmanacObject[];
+}
+
 export interface QuestionResponseMessage {
     QuestionId          ?: uuid;
     QuestionText        ?: string;
@@ -243,19 +252,24 @@ export interface XNodeInstance {
 }
 
 export interface XSchemaInstance {
-    id          : uuid;
-    SchemaId    : uuid;
-    Schema      : XSchema;
-    Name        : string;
-    Description : string;
-    Exited      : boolean;
-    RootNode   ?: XNode;
-    TenantId   ?: uuid;
-    Nodes        : XNode[];
-    ContextParams: ContextParams;
-    CurrentNode  : XNode;
-    CreatedAt    : Date;
-    UpdatedAt    : Date;
+    id                  : uuid;
+    SchemaId            : uuid;
+    Schema              : XSchema;
+    Name                : string;
+    Description         : string;
+    Exited              : boolean;
+    RootNode           ?: XNode;
+    RootNodeInstance    : XNodeInstance;
+    TenantId           ?: uuid;
+    Nodes               : XNode[];
+    NodeInstances       : XNodeInstance[];
+    CurrentNodeInstance : XNodeInstance;
+    ContextParams       : ContextParams;
+    ActiveListeningNodes: XNodeInstance[];
+    Almanac             : Almanac;
+    CurrentNode         : XNode;
+    CreatedAt           : Date;
+    UpdatedAt           : Date;
 }
 
 export class XSendMessageAction extends XAction {

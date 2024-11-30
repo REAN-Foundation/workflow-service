@@ -7,6 +7,7 @@ import {
 } from '../../../domain.types/engine/schema.instance.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
+import { ParamType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -15,13 +16,21 @@ export class SchemaInstanceValidator extends BaseValidator {
     public validateCreateRequest = async (request: express.Request): Promise<SchemaInstanceCreateModel> => {
         try {
             const schema = joi.object({
-                SchemaId  : joi.string().uuid().required(),
-                ContextId : joi.string().uuid().required(),
+                SchemaId      : joi.string().uuid().required(),
+                ContextParams : joi.object({
+                    Name   : joi.string().max(128).required(),
+                    Params : joi.array().items(joi.object({
+                        Name        : joi.string().max(128).required(),
+                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
+                        Description : joi.string().max(256).optional(),
+                        Value       : joi.any().required(),
+                    })).required()
+                }).optional(),
             });
             await schema.validateAsync(request.body);
             return {
-                SchemaId  : request.body.SchemaId,
-                ContextId : request.body.ContextId,
+                SchemaId      : request.body.SchemaId,
+                ContextParams : request.body.ContextParams
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -31,13 +40,19 @@ export class SchemaInstanceValidator extends BaseValidator {
     public validateUpdateRequest = async (request: express.Request): Promise<SchemaInstanceUpdateModel|undefined> => {
         try {
             const schema = joi.object({
-                SchemaId  : joi.string().uuid().optional(),
-                ContextId : joi.string().uuid().optional(),
+                ContextParams : joi.object({
+                    Name   : joi.string().max(128).required(),
+                    Params : joi.array().items(joi.object({
+                        Name        : joi.string().max(128).required(),
+                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
+                        Description : joi.string().max(256).optional(),
+                        Value       : joi.any().required(),
+                    })).required()
+                }).optional(),
             });
             await schema.validateAsync(request.body);
             return {
-                SchemaId  : request.body.SchemaId ?? null,
-                ContextId : request.body.ContextId ?? null,
+                ContextParams : request.body.ContextParams ?? null
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

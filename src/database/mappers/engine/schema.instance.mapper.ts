@@ -42,6 +42,7 @@ export class SchemaInstanceMapper {
                     } : null
                 };
             }) : [],
+            Almanac                   : instance.Almanac,
             ContextParams             : instance.ContextParams,
             ExecutionStarted          : instance.ExecutionStarted,
             ExecutionStartedTimestamp : instance.ExecutionStartedTimestamp,

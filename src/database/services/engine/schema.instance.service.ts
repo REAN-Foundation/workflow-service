@@ -166,9 +166,8 @@ export class SchemaInstanceService extends BaseService {
             if (!schemaInstance) {
                 ErrorHandler.throwNotFoundError('SchemaInstance not found!');
             }
-            if (model.SchemaId != null) {
-                const schema = await this._commonUtils.getSchema(model.SchemaId);
-                schemaInstance.Schema = schema;
+            if (model.ContextParams != null) {
+                schemaInstance.ContextParams = model.ContextParams;
             }
             var record = await this._schemaInstanceRepository.save(schemaInstance);
             return SchemaInstanceMapper.toResponseDto(record);
@@ -249,16 +248,10 @@ export class SchemaInstanceService extends BaseService {
         };
 
         if (filters.SchemaId) {
-            search.where['Schema'] = {
-                id : ''
-            };
             search.where['Schema'].id = filters.SchemaId;
         }
-        if (filters.ContextId) {
-            search.where['Context'] = {
-                id : ''
-            };
-            search.where['Context'].id = filters.ContextId;
+        if (filters.TenantId) {
+            search.where['TenantId'] = filters.TenantId;
         }
 
         return search;

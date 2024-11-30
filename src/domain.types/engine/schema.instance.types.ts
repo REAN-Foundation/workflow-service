@@ -5,7 +5,7 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { ContextParams } from "./intermediate.types";
+import { Almanac, ContextParams } from "./intermediate.types";
 
 //////////////////////////////////////////////////////////////
 
@@ -15,8 +15,7 @@ export interface SchemaInstanceCreateModel {
 }
 
 export interface SchemaInstanceUpdateModel {
-    SchemaId  ?: uuid;
-    ContextId ?: uuid;
+    ContextParams : ContextParams;
 }
 
 export interface SchemaInstanceResponseDto {
@@ -49,6 +48,7 @@ export interface SchemaInstanceResponseDto {
             Name: string;
         }
     }[];
+    Almanac: Almanac;
     ExecutionStarted: boolean;
     ExecutionStartedTimestamp: Date;
     CreatedAt: Date;
@@ -57,7 +57,7 @@ export interface SchemaInstanceResponseDto {
 
 export interface SchemaInstanceSearchFilters extends BaseSearchFilters {
     SchemaId  ?: uuid;
-    ContextId ?: uuid;
+    TenantId  ?: uuid;
 }
 
 export interface SchemaInstanceSearchResults extends BaseSearchResults {

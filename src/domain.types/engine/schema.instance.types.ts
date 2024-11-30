@@ -11,7 +11,7 @@ import { ContextParams } from "./intermediate.types";
 
 export interface SchemaInstanceCreateModel {
     SchemaId  : uuid;
-    ContextId : uuid;
+    ContextParams : ContextParams;
 }
 
 export interface SchemaInstanceUpdateModel {
@@ -49,6 +49,8 @@ export interface SchemaInstanceResponseDto {
             Name: string;
         }
     }[];
+    ExecutionStarted: boolean;
+    ExecutionStartedTimestamp: Date;
     CreatedAt: Date;
     UpdatedAt: Date;
 }

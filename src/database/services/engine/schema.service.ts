@@ -199,6 +199,29 @@ export class SchemaService extends BaseService {
         }
     };
 
+    public getByTenantId = async (tenantId: uuid): Promise<SchemaResponseDto[]> => {
+        try {
+            var schemas = await this._schemaRepository.find({
+                where : {
+                    TenantId : tenantId
+                },
+                relations : {
+                    Nodes : true,
+                }
+            });
+            var dtos: SchemaResponseDto[] = [];
+            for (var schema of schemas) {
+                const rootNode = await this._commonUtils.getNode(schema.RootNodeId);
+                var dto = SchemaMapper.toResponseDto(schema, rootNode);
+                dtos.push(dto);
+            }
+            return dtos;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     //#region Privates
 
     private getSearchModel = (filters: SchemaSearchFilters) => {

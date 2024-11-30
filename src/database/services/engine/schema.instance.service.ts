@@ -102,6 +102,36 @@ export class SchemaInstanceService extends BaseService {
         }
     };
 
+    public getBySchemaId = async (schemaId: uuid): Promise<SchemaInstanceResponseDto[]> => {
+        try {
+            var schemaInstances = await this._schemaInstanceRepository.find({
+                where : {
+                    Schema : {
+                        id : schemaId
+                    }
+                },
+                relations : {
+                    Schema : {
+                        Nodes : true,
+                    },
+                    CurrentNodeInstance : {
+                        Node : true,
+                    },
+                    RootNodeInstance : {
+                        Node : true,
+                    },
+                    NodeInstances : {
+                        Node : true,
+                    },
+                }
+            });
+            return schemaInstances.map(x => SchemaInstanceMapper.toResponseDto(x));
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public search = async (filters: SchemaInstanceSearchFilters)
         : Promise<SchemaInstanceSearchResults> => {
         try {

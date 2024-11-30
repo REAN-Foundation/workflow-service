@@ -42,8 +42,11 @@ export class SchemaInstanceMapper {
                     } : null
                 };
             }) : [],
-            CreatedAt : instance.CreatedAt,
-            UpdatedAt : instance.UpdatedAt,
+            ContextParams             : instance.ContextParams,
+            ExecutionStarted          : instance.ExecutionStarted,
+            ExecutionStartedTimestamp : instance.ExecutionStartedTimestamp,
+            CreatedAt                 : instance.CreatedAt,
+            UpdatedAt                 : instance.UpdatedAt,
         };
         return dto;
     };

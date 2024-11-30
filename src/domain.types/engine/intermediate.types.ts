@@ -23,6 +23,9 @@ export interface Location {
     Longitude?: number;
 }
 
+export type DistanceUnit = 'km' | 'mi' | 'm';
+export type TimestampUnit = 'ms' | 's' | 'm' | 'h' | 'd' | 'w' | 'mo' | 'y';
+
 export interface QuestionResponseMessage {
     QuestionId          ?: uuid;
     QuestionText        ?: string;
@@ -382,12 +385,15 @@ export class XContinueAction extends XAction {
 }
 
 export interface Params {
-    Name        : string;
-    Type        : ParamType;
-    Description?: string;
-    Value       : any | null | undefined;
-    Source     ?: InputSourceType;
-    Key        ?: string;
+    Name                : string;
+    Type                : ParamType;
+    Description        ?: string;
+    Value               : any | null | undefined;
+    Source             ?: InputSourceType;
+    Key                ?: string;
+    Required           ?: boolean;
+    ComparisonThreshold?: number;
+    ComparisonUnit     ?: string;
 }
 
 export interface ActionParams extends Params {

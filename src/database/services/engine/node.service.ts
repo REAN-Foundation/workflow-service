@@ -10,6 +10,8 @@ import { NodeMapper } from '../../mappers/engine/node.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import {
+    YesNoNodeCreateModel,
+    ListeningNodeCreateModel,
     NodeCreateModel,
     NodeResponseDto,
     NodeSearchFilters,
@@ -41,7 +43,7 @@ export class NodeService extends BaseService {
 
     //#endregion
 
-    public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel)
+    public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel | ListeningNodeCreateModel | YesNoNodeCreateModel)
         : Promise<NodeResponseDto> => {
         const schema = await this._commonUtils.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);

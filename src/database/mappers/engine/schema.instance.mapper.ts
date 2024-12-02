@@ -13,6 +13,7 @@ export class SchemaInstanceMapper {
         }
         const dto: SchemaInstanceResponseDto = {
             id     : instance.id,
+            Code   : instance.Code,
             Schema : {
                 id          : instance.Schema.id,
                 Name        : instance.Schema.Name,

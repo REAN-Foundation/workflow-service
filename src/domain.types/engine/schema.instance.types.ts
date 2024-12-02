@@ -5,13 +5,16 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { Almanac, ContextParams } from "./intermediate.types";
+import { NodeType } from "./engine.enums";
+import { Almanac, ContextParams } from "./intermediate.types/intermediate.types";
 
 //////////////////////////////////////////////////////////////
 
 export interface SchemaInstanceCreateModel {
-    SchemaId  : uuid;
-    ContextParams : ContextParams;
+    SchemaId     : uuid;
+    TenantId     : uuid;
+    ContextParams: ContextParams;
+    Code        ?: string;
 }
 
 export interface SchemaInstanceUpdateModel {
@@ -20,6 +23,8 @@ export interface SchemaInstanceUpdateModel {
 
 export interface SchemaInstanceResponseDto {
     id         : uuid;
+    Code       : string;
+    TenantId   : uuid;
     Schema     : {
         id         : uuid;
         Name       : string;
@@ -39,6 +44,7 @@ export interface SchemaInstanceResponseDto {
         Node: {
             id: uuid;
             Name: string;
+            Type: NodeType;
         }
     };
     NodeInstances : {
@@ -46,6 +52,8 @@ export interface SchemaInstanceResponseDto {
         Node: {
             id: uuid;
             Name: string;
+            Type: NodeType;
+            Active?: boolean;
         }
     }[];
     Almanac: Almanac;
@@ -58,6 +66,7 @@ export interface SchemaInstanceResponseDto {
 export interface SchemaInstanceSearchFilters extends BaseSearchFilters {
     SchemaId  ?: uuid;
     TenantId  ?: uuid;
+    Code      ?: string;
 }
 
 export interface SchemaInstanceSearchResults extends BaseSearchResults {

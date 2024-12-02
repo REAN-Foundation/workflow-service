@@ -21,7 +21,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 200) {
-    bru.setEnvVar("ADMIN_ACCESS_TOKEN", res.body.Data.AccessToken);
+    bru.setEnvVar("ADMIN_ACCESS_TOKEN", res.body.Data.AccessToken, );
     bru.setEnvVar("ADMIN_SESSION_ID", res.body.Data.User.SessionId);
     bru.setEnvVar("ADMIN_USER_ID",res.body.Data.User.UserId);
   }

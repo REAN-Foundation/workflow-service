@@ -3,7 +3,7 @@ import { Schema } from '../../models/engine/schema.model';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { Source } from '../../../database/database.connector';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, Like, Repository } from 'typeorm';
 import { SchemaInstanceMapper } from '../../mappers/engine/schema.instance.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
@@ -132,6 +132,24 @@ export class SchemaInstanceService extends BaseService {
         }
     };
 
+    public getCount = async (tenantId: uuid, schemaId: uuid, pattern: string) => {
+        try {
+            var count = await this._schemaInstanceRepository.count({
+                where : {
+                    TenantId : tenantId,
+                    Schema   : {
+                        id : schemaId
+                    },
+                    Code : Like(`%${pattern}%`)
+                }
+            });
+            return count;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public search = async (filters: SchemaInstanceSearchFilters)
         : Promise<SchemaInstanceSearchResults> => {
         try {
@@ -252,6 +270,9 @@ export class SchemaInstanceService extends BaseService {
         }
         if (filters.TenantId) {
             search.where['TenantId'] = filters.TenantId;
+        }
+        if (filters.Code) {
+            search.where['Code'] = Like(`%${filters.Code}%`);
         }
 
         return search;

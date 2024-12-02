@@ -1,6 +1,6 @@
 import { uuid } from "../../../../domain.types/miscellaneous/system.types";
 import { IDataStore } from "../../interfaces/data.store.interface";
-import { DataStorageInputParams, OutputParams, ProcessorResult } from "../../../../domain.types/engine/intermediate.types";
+import { DataStorageInputParams, OutputParams, ProcessorResult } from "../../../../domain.types/engine/intermediate.types/intermediate.types";
 
 //////////////////////////////////////////////////////////////////////
 

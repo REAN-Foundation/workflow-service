@@ -1,7 +1,7 @@
 import { BaseSearchFilters, BaseSearchResults } from "../miscellaneous/base.search.types";
 import { uuid } from "../miscellaneous/system.types";
 import { ActionType } from "./engine.enums";
-import { ActionInputParams, ActionOutputParams } from "./intermediate.types";
+import { ActionInputParams, ActionOutputParams } from "./intermediate.types/params.types";
 
 ////////////////////////////////////////////////////////////////////////
 

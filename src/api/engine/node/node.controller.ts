@@ -3,7 +3,7 @@ import { ResponseHandler } from '../../../common/handlers/response.handler';
 import { NodeValidator } from './node.validator';
 import { NodeService } from '../../../database/services/engine/node.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { DecisionNodeCreateModel, ListeningNodeCreateModel, NodeCreateModel, NodeSearchFilters, NodeUpdateModel, QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
+import { YesNoNodeCreateModel, ListeningNodeCreateModel, NodeCreateModel, NodeSearchFilters, NodeUpdateModel, QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 
@@ -66,10 +66,10 @@ export class NodeController {
         }
     };
 
-    createDecisionNode = async (request: express.Request, response: express.Response) => {
+    createYesNoNode = async (request: express.Request, response: express.Response) => {
         try {
-            var model: DecisionNodeCreateModel = await this._validator.validateCreateDecisionNodeRequest(request);
-            model.Type = NodeType.DecisionNode;
+            var model: YesNoNodeCreateModel = await this._validator.validateCreateYesNoNodeRequest(request);
+            model.Type = NodeType.YesNoNode;
 
             const record = await this._service.create(model);
             if (record === null) {

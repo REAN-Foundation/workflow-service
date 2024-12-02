@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 import { Schema } from "./schema.model";
 import { NodeInstance } from "./node.instance.model";
-import { Almanac, ContextParams } from "../../../domain.types/engine/intermediate.types";
+import { Almanac, ContextParams } from "../../../domain.types/engine/intermediate.types/intermediate.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -23,9 +23,15 @@ export class SchemaInstance {
     @PrimaryGeneratedColumn('uuid')
     id : string;
 
+    @Column({ type: 'uuid', nullable: false })
+    TenantId : string;
+
     @ManyToOne(() => Schema)
     @JoinColumn()
     Schema: Schema;
+
+    @Column({ type: 'varchar', length: 10, nullable: false })
+    Code : string;
 
     @Column({ type: 'simple-json', nullable: true })
     ContextParams: ContextParams;

@@ -6,7 +6,7 @@ import {
     NodeSearchFilters,
     QuestionNodeCreateModel,
     ListeningNodeCreateModel,
-    DecisionNodeCreateModel
+    YesNoNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
@@ -155,8 +155,8 @@ export class NodeValidator extends BaseValidator {
         }
     };
 
-    public validateCreateDecisionNodeRequest = async (request: express.Request)
-    : Promise<DecisionNodeCreateModel> => {
+    public validateCreateYesNoNodeRequest = async (request: express.Request)
+    : Promise<YesNoNodeCreateModel> => {
         try {
             const node = joi.object({
                 Type         : joi.string().valid(...Object.values(NodeType)).required(),

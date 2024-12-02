@@ -8,8 +8,8 @@ import {
     DeleteDateColumn,
 } from 'typeorm';
 import { ActionType } from "../../../domain.types/engine/engine.enums";
-import { ActionInputParams } from "../../../domain.types/engine/intermediate.types";
-import { ActionOutputParams } from "../../../domain.types/engine/intermediate.types";
+import { ActionInputParams } from "../../../domain.types/engine/intermediate.types/intermediate.types";
+import { ActionOutputParams } from "../../../domain.types/engine/intermediate.types/intermediate.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -24,6 +24,9 @@ export class NodeActionInstance {
 
     @Column({ type: 'uuid', nullable: false })
     NodeId: string;
+
+    @Column({ type: 'uuid', nullable: false })
+    NodeInstanceId: string;
 
     @Column({ type: 'uuid', nullable: false })
     ActionId: string;

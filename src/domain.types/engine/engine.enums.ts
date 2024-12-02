@@ -17,6 +17,8 @@ export enum ParamType {
     Array       = 'Array',
     Object      = 'Object',
     Placeholder = 'Placeholder',
+    NodeId      = 'NodeId',
+    SchemaId    = 'SchemaId',
     Unknown     = 'Unknown',
 }
 
@@ -61,7 +63,7 @@ export enum NodeType {
     ExecutionNode = 'ExecutionNode',
     QuestionNode  = 'QuestionNode',
     ListeningNode = 'ListeningNode',
-    DecisionNode  = 'DecisionNode',
+    YesNoNode     = 'YesNoNode',
     WaitNode      = 'WaitNode',
 }
 
@@ -69,30 +71,42 @@ export const NodeTypeList: NodeType[] = [
     NodeType.ExecutionNode,
     NodeType.QuestionNode,
     NodeType.ListeningNode,
-    NodeType.DecisionNode,
+    NodeType.YesNoNode,
     NodeType.WaitNode,
 ];
 
 export enum ActionType {
-    SendMessage    = 'SendMessage',
-    SendEmail      = 'SendEmail',
-    SendSms        = 'SendSms',
-    RestApiCall    = 'RestApiCall',
-    PythonFunCall  = 'PythonFunCall',
-    LambdaFunCall  = 'LambdaFunCall',
-    StoreDataSqlDb = 'StoreDataSqlDb',
-    Exit           = 'Exit',
-    Continue       = 'Continue',
+    TriggerListeningNode   = 'TriggerListeningNode',
+    TriggerWaitNode        = 'TriggerWaitNode',
+    TriggerAnotherWorkflow = 'TriggerAnotherWorkflow',
+    SendMessage            = 'SendMessage',
+    SendEmail              = 'SendEmail',
+    SendSms                = 'SendSms',
+    RestApiCall            = 'RestApiCall',
+    PythonFunCall          = 'PythonFunCall',
+    LambdaFunCall          = 'LambdaFunCall',
+    StoreToSqlDb           = 'StoreToSqlDb',
+    GetFromSqlDb           = 'GetFromSqlDb',
+    StoreToAlmanac         = 'StoreToAlmanac',
+    ExistsInAlmanac        = 'ExistsInAlmanac',
+    GetFromAlmanac         = 'GetFromAlmanac',
+    Exit                   = 'Exit',
+    Continue               = 'Continue',
 }
 
 export const ActionTypeList: ActionType[] = [
+    ActionType.TriggerListeningNode,
+    ActionType.TriggerWaitNode,
+    ActionType.TriggerAnotherWorkflow,
     ActionType.SendMessage,
     ActionType.SendEmail,
     ActionType.SendSms,
     ActionType.RestApiCall,
     ActionType.PythonFunCall,
     ActionType.LambdaFunCall,
-    ActionType.StoreDataSqlDb,
+    ActionType.StoreToSqlDb,
+    ActionType.StoreToAlmanac,
+    ActionType.GetFromAlmanac,
     ActionType.Exit,
     ActionType.Continue,
 ];
@@ -265,6 +279,8 @@ export const ExecutionStatusList: ExecutionStatus[] = [
 ];
 
 export enum InputSourceType {
+    UserEvent    = "UserEvent",
+    SystemEvent  = "SystemEvent",
     Database     = "Database",
     Almanac      = "Almanac",
     ApiEndpoint  = "ApiEndpoint",
@@ -276,6 +292,8 @@ export enum InputSourceType {
 }
 
 export const InputSourceTypeList: InputSourceType[] = [
+    InputSourceType.UserEvent,
+    InputSourceType.SystemEvent,
     InputSourceType.Database,
     InputSourceType.Almanac,
     InputSourceType.ApiEndpoint,

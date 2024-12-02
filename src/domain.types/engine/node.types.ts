@@ -6,7 +6,10 @@ import {
     uuid
 } from "../miscellaneous/system.types";
 import { NodeType, QuestionResponseType } from "./engine.enums";
-import { ActionInputParams, XAction, XQuestionOption } from "./intermediate.types";
+import { XAction } from "./intermediate.types/action.types";
+import { XConditionOperand, XQuestionOption } from "./intermediate.types/intermediate.types";
+import { ActionInputParams } from "./intermediate.types/params.types";
+import { NodeActionResponseDto } from "./node.action.types";
 
 //////////////////////////////////////////////////////////////
 
@@ -17,8 +20,6 @@ export interface NodeCreateModel {
     ParentNodeId          : uuid;
     SchemaId              : uuid;
     Actions              ?: XAction[];
-    ExecutionDelaySeconds?: number;
-    ExecutionRuleId      ?: uuid;
     RawData              ?: any;
 }
 
@@ -32,8 +33,14 @@ export interface ListeningNodeCreateModel extends NodeCreateModel {
     Input : ActionInputParams;
 }
 
-export interface DecisionNodeCreateModel extends NodeCreateModel {
-    DecisionRuleId: uuid;
+export interface YesNoNodeCreateModel extends NodeCreateModel {
+    //These are the actions executed before the evaluation of the decision rule
+    PreEvaluationActions : NodeActionResponseDto[];
+    //Once the actions are executed, the input operands are calculated and stored
+    InputOperandValues : XConditionOperand[];
+    //The decision rule is evaluated based on the input operands.
+    //Input operands are identified by their names in the decision rule
+    DecisionRuleId : uuid;
 }
 
 export interface NodeUpdateModel {

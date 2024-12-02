@@ -1,5 +1,5 @@
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { DataExtractionInputParams, OutputParams, ProcessorResult } from '../../../domain.types/engine/intermediate.types';
+import { DataExtractionInputParams, OutputParams, ProcessorResult } from '../../../domain.types/engine/intermediate.types/intermediate.types';
 
 export interface IDataExtractor {
 

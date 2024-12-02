@@ -5,10 +5,11 @@ import { SchemaInstanceService } from "../../database/services/engine/schema.ins
 import { SchemaResponseDto } from "../../domain.types/engine/schema.domain.types";
 import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.instance.types";
 import { ParamType } from "../../domain.types/engine/engine.enums";
-import { ContextParams, Params, TimestampUnit, DistanceUnit } from "../../domain.types/engine/intermediate.types";
-import { compareLocations, compareTimestamps } from "../../domain.types/engine/value.comparator";
+import { compareLocations, compareTimestamps } from "./engine.utils";
 import { SchemaEngine } from "./schema.engine";
 import { logger } from "../../logger/logger";
+import { ContextParams, Params } from "../../domain.types/engine/intermediate.types/params.types";
+import { DistanceUnit, TimestampUnit } from "../../domain.types/engine/intermediate.types/common.types";
 
 ///////////////////////////////////////////////////////////////////////////
 

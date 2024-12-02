@@ -19,5 +19,5 @@ export const register = (app: express.Application): void => {
     router.put('/:id', Auth.handle(`${contextBase}.Update`, true, true, true), controller.update);
     router.delete('/:id', Auth.handle(`${contextBase}.Delete`, true, true, true), controller.delete);
 
-    app.use('/api/v1/engine/node-paths', router);
+    app.use('/api/v1/engine/node-actions', router);
 };

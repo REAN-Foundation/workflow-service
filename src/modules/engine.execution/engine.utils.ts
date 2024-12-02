@@ -1,4 +1,4 @@
-import { Location, TimestampUnit, DistanceUnit } from "../../domain.types/engine/intermediate.types";
+import { Location, TimestampUnit, DistanceUnit } from "../../domain.types/engine/intermediate.types/intermediate.types";
 import { logger } from "../../logger/logger";
 
 /**
@@ -120,3 +120,14 @@ export function compareTimestamps(
     // Check if the difference is within the threshold
     return diffInMs <= thresholdInMs;
 }
+
+export function formatDateToYYMMDD(date: Date): string {
+    const padZero = (num: number, size: number) => String(num).padStart(size, '0');
+
+    const year = date.getFullYear() % 100; // Get last 2 digits of the year
+    const month = padZero(date.getMonth() + 1, 2); // Months are 0-indexed
+    const day = padZero(date.getDate(), 2);
+
+    return `${year}${month}${day}`;
+}
+

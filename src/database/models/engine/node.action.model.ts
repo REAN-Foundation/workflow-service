@@ -10,7 +10,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { Node } from "./node.model";
-import { ActionInputParams, ActionOutputParams } from "../../../domain.types/engine/intermediate.types";
+import { ActionInputParams, ActionOutputParams } from "../../../domain.types/engine/intermediate.types/intermediate.types";
 import { ActionType } from "../../../domain.types/engine/engine.enums";
 
 ////////////////////////////////////////////////////////////////////////

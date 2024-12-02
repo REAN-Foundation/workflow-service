@@ -32,24 +32,6 @@ body:json {
           "Value": null
         },
         {
-          "Name": "CFR 1 Phonenumber",
-          "Type": "Phonenumber",
-          "Description": "This is phone number of CFR - 1",
-          "Value": null
-        },
-        {
-          "Name": "CFR 2 Phonenumber",
-          "Type": "Phonenumber",
-          "Description": "This is phone number of CFR - 2",
-          "Value": null
-        },
-        {
-          "Name": "CFR 3 Phonenumber",
-          "Type": "Phonenumber",
-          "Description": "This is phone number of CFR - 3",
-          "Value": null
-        },
-        {
           "Name": "Location",
           "Description": "This is the location where the emergency has occurred.",
           "Type": "Location",
@@ -69,33 +51,6 @@ body:json {
           "Description": "This is the code of the reported emergency incident. This value is generated on schema instance generation",
           "Type": "Text",
           "Value": null
-        }
-      ]
-    },
-    "RootNode": {
-      "Type": "ExecutionNode",
-      "Name": "Root Node",
-      "Description": "Send first message upon triggering of the workflow",
-      "Actions": [
-        {
-          "Type": "SendMessage",
-          "Name": "Send First message",
-          "Input": {
-            "Params": [
-              {
-                "ActionType": "SendMessage",
-                "Type": "Phonenumber",
-                "Value": null,
-                "Source": "Almanac",
-                "Key": "ContextParams:Phone"
-              },
-              {
-                "ActionType": "SendMessage",
-                "Type": "Text",
-                "Value": "Hope you are safe."
-              }
-            ]
-          }
         }
       ]
     }

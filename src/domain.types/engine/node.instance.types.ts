@@ -12,6 +12,7 @@ import { ExecutionStatus, NodeType } from "./engine.enums";
 export interface NodeInstanceCreateModel {
     NodeId          : uuid;
     SchemaInstanceId: uuid;
+    ExecutionStatus : ExecutionStatus;
 }
 
 export interface NodeInstanceUpdateModel {

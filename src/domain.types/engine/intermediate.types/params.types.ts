@@ -1,5 +1,7 @@
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
-import { InputSourceType, OutputDestinationType, ParamType } from "../engine.enums";
+import { ActionType, InputSourceType, OutputDestinationType, ParamType } from "../engine.enums";
+
+//////////////////////////////////////////////////////////////////////
 
 export interface Params {
     Name                : string;
@@ -15,9 +17,7 @@ export interface Params {
     ComparisonUnit     ?: string;
 }
 
-export interface ActionParams extends Params {
-    ActionType  : string;
-}
+export type ActionParams = Params;
 
 export interface ActionInputParams {
     Params: ActionParams[];

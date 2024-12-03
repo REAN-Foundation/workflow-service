@@ -1,11 +1,11 @@
 meta {
-  name: Update next node for node 03
+  name: Set next node of yes-no node
   type: http
-  seq: 8
+  seq: 2
 }
 
 put {
-  url: {{BASE_URL}}/engine/nodes/{{NODE_03_ID}}
+  url: {{BASE_URL}}/engine/nodes/{{LOCATION_YES_NO_NODE_ID}}/next-node/{{EXECUTION_NODE_1_ID}}
   body: json
   auth: none
 }
@@ -16,30 +16,11 @@ headers {
   Authorization: Bearer {{MODERATOR_USER_JWT}}
 }
 
-body:json {
-  {
-      "Action": {
-          "OutputParams": {
-              "NextNodeId": "{{NODE_04_ID}}"
-          }
-      }
-  }
-}
-
 tests {
-  
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(200);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
-  });
-  
-  test("Node is updated", function () {
-      var jsonRes = res.getBody();
-      expect(jsonRes.Data).to.have.property('id');
-      expect(jsonRes.Data).to.have.property('Name');
-      expect(jsonRes.Data).to.have.property('Description');
-      expect(jsonRes.Data).to.have.property('ParentNode');
   });
   
 }

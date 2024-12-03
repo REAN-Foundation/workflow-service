@@ -16,7 +16,7 @@ export class RuleValidator extends BaseValidator {
                 Description  : joi.string().max(512).optional(),
                 ParentNodeId : joi.string().uuid().required(),
                 SchemaId     : joi.string().uuid().required(),
-                ConditionId  : joi.string().uuid().required(),
+                ConditionId  : joi.string().uuid().optional(),
             });
             await rule.validateAsync(request.body);
             return {
@@ -24,7 +24,7 @@ export class RuleValidator extends BaseValidator {
                 Description  : request.body.Description ?? null,
                 ParentNodeId : request.body.ParentNodeId,
                 SchemaId     : request.body.SchemaId,
-                ConditionId  : request.body.ConditionId,
+                ConditionId  : request.body.ConditionId ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

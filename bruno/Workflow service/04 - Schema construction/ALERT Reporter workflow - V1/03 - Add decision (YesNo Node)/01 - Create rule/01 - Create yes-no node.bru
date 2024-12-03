@@ -1,5 +1,5 @@
 meta {
-  name: 01 - Create decision node
+  name: 01 - Create yes-no node
   type: http
   seq: 1
 }
@@ -29,14 +29,14 @@ body:json {
       "Input": {
         "Params": [
           {
-            "ActionType": "SendMessage",
+            "Name": "Reporter Phonenumber",
             "Type": "Phonenumber",
             "Value": null,
             "Source": "Almanac",
-            "Key": "ContextParams:Phone"
+            "Key": "ContextParams:Reporter:Phonenumber"
           },
           {
-            "ActionType": "SendMessage",
+            "Name": "Location Prompt Message",
             "Type": "Text",
             "Value": "Please send location of the emergency"
           }
@@ -45,7 +45,9 @@ body:json {
     },
     "YesAction": {
       "Type": "Continue",
-      "Name": "Continue to next node. This will set the next node as current node"
+      "Name": "Continue to next node.",
+      "Description": "This will set the next node as current node.",
+      "Input": null
     }
   }
 }

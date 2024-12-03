@@ -1,11 +1,11 @@
 meta {
-  name: Create child condition - check if badge already exists
+  name: Send reporter message - 1 - Text
   type: http
-  seq: 4
+  seq: 1
 }
 
 post {
-  url: {{BASE_URL}}/engine/conditions
+  url: {{BASE_URL}}/engine/events
   body: json
   auth: none
 }
@@ -18,22 +18,23 @@ headers {
 
 body:json {
   {
-      "SchemaId": "{{SCHEMA_ID}}",
-      "Name": "Medication 7 Day Badge Rule",
-      "Description": "This rule represents logical steps involved in awarding a badge for consecutive 7 days.",
-      "ParentNodeId": "{{SCHEMA_ROOT_NODE_ID}}",
-      "Action": {
-          "ActionType": "{{AWARD_BADGE_EVENT_TYPE}}",
-          "Name": "Medication 7-Days Badge",
-          "Description": "This rule represents logical steps involved in awarding a badge for consecutive 7 days.",
-          "Params": {
-              "Message": "Award medication 7-days badge.",
-              "Action": "{{AWARD_BADGE_EVENT_TYPE}}",
-              "NextNodeId": null,
-              "Extra": {}
-          }
-      }
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "+91-9123456789",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "Text",
+      "MessageChannel": "WhatsApp",
+      "TextMessage": "Help..."
+    }
   }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
 }
 
 tests {

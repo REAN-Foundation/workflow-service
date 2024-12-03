@@ -5,21 +5,22 @@ export enum SchemaType {
 }
 
 export enum ParamType {
-    Phonenumber = "Phonenumber",
-    Email       = "Email",
-    Location    = "Location",
-    Date        = "Date",
-    DateTime    = "DateTime",
-    Float       = 'Float',
-    Integer     = 'Integer',
-    Boolean     = 'Boolean',
-    Text        = 'Text',
-    Array       = 'Array',
-    Object      = 'Object',
-    Placeholder = 'Placeholder',
-    NodeId      = 'NodeId',
-    SchemaId    = 'SchemaId',
-    Unknown     = 'Unknown',
+    Phonenumber   = "Phonenumber",
+    Email         = "Email",
+    Location      = "Location",
+    RestApiParams = "RestApiParams",
+    Date          = "Date",
+    DateTime      = "DateTime",
+    Float         = 'Float',
+    Integer       = 'Integer',
+    Boolean       = 'Boolean',
+    Text          = 'Text',
+    Array         = 'Array',
+    Object        = 'Object',
+    Placeholder   = 'Placeholder',
+    NodeId        = 'NodeId',
+    SchemaId      = 'SchemaId',
+    Unknown       = 'Unknown',
 }
 
 export const SchemaTypeList: SchemaType[] = [
@@ -80,6 +81,7 @@ export enum ActionType {
     TriggerWaitNode        = 'TriggerWaitNode',
     TriggerAnotherWorkflow = 'TriggerAnotherWorkflow',
     SendMessage            = 'SendMessage',
+    SendMultipleMessages   = 'SendMultipleMessages',
     SendEmail              = 'SendEmail',
     SendSms                = 'SendSms',
     RestApiCall            = 'RestApiCall',
@@ -281,6 +283,7 @@ export const ExecutionStatusList: ExecutionStatus[] = [
 export enum InputSourceType {
     UserEvent    = "UserEvent",
     SystemEvent  = "SystemEvent",
+    SystemData   = "SystemData",
     Database     = "Database",
     Almanac      = "Almanac",
     ApiEndpoint  = "ApiEndpoint",

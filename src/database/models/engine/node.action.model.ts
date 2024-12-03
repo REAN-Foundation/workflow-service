@@ -37,10 +37,10 @@ export class NodeAction {
     @Column({ type: 'varchar', length: 512, nullable: true })
     Description : string;
 
-    @Column({ type: 'simple-json', nullable: false })
+    @Column({ type: 'json', nullable: true })
     Input : ActionInputParams;
 
-    @Column({ type: 'simple-json', nullable: true })
+    @Column({ type: 'json', nullable: true })
     Output : ActionOutputParams;
 
     @CreateDateColumn()

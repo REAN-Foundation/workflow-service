@@ -80,18 +80,18 @@ export class NodeValidator extends BaseValidator {
                     Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
+                    Output      : joi.object().optional(),
                 })).optional(),
                 RuleId       : joi.string().uuid().optional(),
                 DelaySeconds : joi.number().integer().optional(),
                 RawData      : joi.object().allow(null).optional(),
                 Input        : joi.object({
                     Params : joi.array().items(joi.object({
-                        ActionType : joi.string().valid(...Object.values(ActionType)).optional(),
-                        Type       : joi.string().valid(...Object.values(ParamType)).required(),
-                        Value      : joi.any().allow(null).required(),
-                        Source     : joi.string().valid(...Object.values(InputSourceType)).optional(),
-                        Key        : joi.string().max(256).optional(),
-                        Required   : joi.boolean().optional(),
+                        Type     : joi.string().valid(...Object.values(ParamType)).required(),
+                        Value    : joi.any().allow(null).required(),
+                        Source   : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                        Key      : joi.string().max(256).optional(),
+                        Required : joi.boolean().optional(),
                     })).required(),
                 }).optional(),
                 YesAction : joi.object({
@@ -99,14 +99,16 @@ export class NodeValidator extends BaseValidator {
                     Name        : joi.string().max(64).required(),
                     Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
-                    Input       : joi.object().optional(),
+                    Input       : joi.object().allow(null).optional(),
+                    Output      : joi.object().allow(null).optional(),
                 }).required(),
                 NoAction : joi.object({
                     Type        : joi.string().valid(...Object.values(ActionType)).required(),
                     Name        : joi.string().max(64).required(),
                     Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
-                    Input       : joi.object().optional(),
+                    Input       : joi.object().allow(null).optional(),
+                    Output      : joi.object().allow(null).optional(),
                 }).required(),
             });
             await node.validateAsync(request.body);
@@ -156,12 +158,6 @@ export class NodeValidator extends BaseValidator {
                 RuleId       : joi.string().uuid().optional(),
                 DelaySeconds : joi.number().integer().optional(),
                 RawData      : joi.object().allow(null).optional(),
-                // Paths : joi.array().items(joi.object({
-                //     Name     : joi.string().max(512).required(),
-                //     Code : joi.string().max(16).optional(),
-                //     Sequence : joi.number().integer().max(10).optional(),
-                //     Metadata : joi.string().max(1024).optional(),
-                // })).optional(),
             });
             await node.validateAsync(request.body);
             return {

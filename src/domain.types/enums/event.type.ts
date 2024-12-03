@@ -1,6 +1,6 @@
 export enum EventType {
-    UserMessage = 'User Message',
-    TerminateWorkflow = 'Terminate Workflow',
+    UserMessage = 'UserMessage',
+    TerminateWorkflow = 'TerminateWorkflow',
 }
 
 export const EventTypeList: EventType[] = [

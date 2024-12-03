@@ -22,7 +22,7 @@ export class RuleMapper {
                 Description : rule.ParentNode.Description,
             }          : null,
             Condition : condition ?? null,
-            NodePath  : {
+            NodePath  : rule.NodePath ? {
                 id          : rule.NodePath.id,
                 Name        : rule.NodePath.Name,
                 Description : rule.NodePath.Description,
@@ -32,7 +32,7 @@ export class RuleMapper {
                     Code        : rule.NodePath.NextNode.Code,
                     Description : rule.NodePath.NextNode.Description,
                 }
-            },
+            } : null,
             CreatedAt : rule.CreatedAt,
             UpdatedAt : rule.UpdatedAt,
         };

@@ -1,11 +1,11 @@
 meta {
-  name: Create child condition - find consecutive days
+  name: Send reporter message - 2 - Text
   type: http
-  seq: 3
+  seq: 2
 }
 
 post {
-  url: {{BASE_URL}}/engine/conditions
+  url: {{BASE_URL}}/engine/events
   body: json
   auth: none
 }
@@ -18,22 +18,23 @@ headers {
 
 body:json {
   {
-      "RuleId": "{{RULE_ID}}",
-      "Name": "Atleast one instance 7 consecutive days of medication adherence found",
-      "Description": "From the list of medication consumption records, atleast 1 consecutive 7 days.",
-      "ParentNodeId": "{{SCHEMA_ROOT_NODE_ID}}",
-      "Action": {
-          "ActionType": "{{AWARD_BADGE_EVENT_TYPE}}",
-          "Name": "Medication 7-Days Badge",
-          "Description": "This rule represents logical steps involved in awarding a badge for consecutive 7 days.",
-          "Params": {
-              "Message": "Award medication 7-days badge.",
-              "Action": "{{AWARD_BADGE_EVENT_TYPE}}",
-              "NextNodeId": null,
-              "Extra": {}
-          }
-      }
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "+91-9123456789",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "Text",
+      "MessageChannel": "WhatsApp",
+      "TextMessage": "Emergency"
+    }
   }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
 }
 
 tests {

@@ -88,10 +88,12 @@ export class NodeService extends BaseService {
         }
 
         var nodeActions: NodeActionResponseDto[] = [];
-        for await (const action of createModel.Actions) {
-            var actionRecord = await this.createAction(action);
-            var actionDto = NodeActionMapper.toResponseDto(actionRecord);
-            nodeActions.push(actionDto);
+        if (createModel.Actions && createModel.Actions?.length > 0) {
+            for await (const action of createModel.Actions) {
+                var actionRecord = await this.createAction(action);
+                var actionDto = NodeActionMapper.toResponseDto(actionRecord);
+                nodeActions.push(actionDto);
+            }
         }
         const yesActionDto = yesAction ? NodeActionMapper.toResponseDto(yesAction) : null;
         const noActionDto = noAction ? NodeActionMapper.toResponseDto(noAction) : null;

@@ -6,7 +6,7 @@ import {
     uuid
 } from "../miscellaneous/system.types";
 import { NodeType, SchemaType } from "./engine.enums";
-import { ContextParams } from "./intermediate.types/intermediate.types";
+import { ContextParams } from "./intermediate.types/schema.types";
 import { NodeActionResponseDto } from "./node.action.types";
 import { NodeCreateModel } from "./node.types";
 

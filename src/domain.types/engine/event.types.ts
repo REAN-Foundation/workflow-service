@@ -4,7 +4,7 @@ import {
     BaseSearchResults
 } from "../miscellaneous/base.search.types";
 import { uuid } from "../miscellaneous/system.types";
-import { UserMessageEvent } from "./intermediate.types/intermediate.types";
+import { UserMessageEvent } from "./intermediate.types/schema.types";
 
 ////////////////////////////////////////////////////////////
 

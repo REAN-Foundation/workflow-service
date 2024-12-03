@@ -7,12 +7,11 @@ import { SchemaService } from "../../database/services/engine/schema.service";
 import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
 import { NodeInstanceResponseDto } from '../../domain.types/engine/node.instance.types';
 import { formatDateToYYMMDD } from './engine.utils';
-import { uuid } from '../../domain.types/miscellaneous/system.types';
 import { NodeInstance } from '../../database/models/engine/node.instance.model';
 import { logger } from '../../logger/logger';
-import { XExecutionNode, XQuestionNode, XListeningNode, XWaitNode, XNodeInstance } from '../../domain.types/engine/intermediate.types/intermediate.types';
 import { NodeInstanceService } from '../../database/services/engine/node.instance.service';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
+import { XNodeInstance } from '../../domain.types/engine/intermediate.types/node.types';
 
 ///////////////////////////////////////////////////////////////////////////////
 

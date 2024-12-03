@@ -54,6 +54,7 @@ export class SchemaInstanceService extends BaseService {
 
         record.RootNodeInstance = rootNodeInstanceRecord;
         record.CurrentNodeInstance = rootNodeInstanceRecord;
+        record.AlmanacObjects = [];
         record = await this._schemaInstanceRepository.save(record);
 
         const rootNodeId = schema.RootNodeId;
@@ -195,7 +196,7 @@ export class SchemaInstanceService extends BaseService {
         }
     };
 
-    public delete = async (id: string): Promise<boolean> => {
+    public delete = async (id: uuid): Promise<boolean> => {
         try {
             var record = await this._schemaInstanceRepository.findOne({
                 where : {
@@ -204,6 +205,41 @@ export class SchemaInstanceService extends BaseService {
             });
             var result = await this._schemaInstanceRepository.remove(record);
             return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public updateAlmanac = async (schemaInstanceId: uuid, almanac: any): Promise<void> => {
+        try {
+            var schemaInstance = await this._schemaInstanceRepository.findOne({
+                where : {
+                    id : schemaInstanceId
+                }
+            });
+            if (!schemaInstance) {
+                ErrorHandler.throwNotFoundError('SchemaInstance not found!');
+            }
+            schemaInstance.AlmanacObjects = almanac;
+            await this._schemaInstanceRepository.save(schemaInstance);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getAlmanac = async (schemaInstanceId: uuid): Promise<any> => {
+        try {
+            var schemaInstance = await this._schemaInstanceRepository.findOne({
+                where : {
+                    id : schemaInstanceId
+                }
+            });
+            if (!schemaInstance) {
+                ErrorHandler.throwNotFoundError('SchemaInstance not found!');
+            }
+            return schemaInstance.AlmanacObjects;
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

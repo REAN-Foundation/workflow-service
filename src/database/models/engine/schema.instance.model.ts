@@ -13,7 +13,8 @@ import {
 } from 'typeorm';
 import { Schema } from "./schema.model";
 import { NodeInstance } from "./node.instance.model";
-import { Almanac, ContextParams } from "../../../domain.types/engine/intermediate.types/intermediate.types";
+import { AlmanacObject } from "../../../modules/engine.execution/almanac";
+import { ContextParams } from "../../../domain.types/engine/intermediate.types/params.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -54,7 +55,7 @@ export class SchemaInstance {
     ExecutionStartedTimestamp: Date;
 
     @Column({ type: 'simple-json', nullable: true })
-    Almanac: Almanac;
+    AlmanacObjects: AlmanacObject[];
 
     @CreateDateColumn()
     CreatedAt : Date;

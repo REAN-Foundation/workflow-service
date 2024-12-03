@@ -3,7 +3,7 @@ import express from 'express';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
 import { ConditionCreateModel, ConditionUpdateModel, ConditionSearchFilters } from '../../../domain.types/engine/condition.types';
-import { CompositionOperator, LogicalOperator, MathematicalOperator, OperandDataType, OperatorType } from '../../../domain.types/engine/engine.enums';
+import { CompositionOperatorType, InputSourceType, LogicalOperatorType, OperandDataType, OperatorType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -13,31 +13,51 @@ export class ConditionValidator extends BaseValidator {
         : Promise<ConditionCreateModel> => {
         try {
             const condition = joi.object({
-                Name                 : joi.string().max(32).required(),
-                Description          : joi.string().max(256).optional(),
-                RuleId               : joi.string().uuid().required(),
-                ParentConditionId    : joi.string().uuid().required(),
-                Operator             : joi.string().valid(...Object.values(OperatorType)).optional(),
-                Fact                 : joi.string().max(32).optional(),
-                Value                : joi.any().optional(),
-                DataType             : joi.string().valid(...Object.values(OperandDataType)).optional(),
-                LogicalOperator      : joi.string().valid(...Object.values(LogicalOperator)).optional(),
-                MathematicalOperator : joi.string().valid(...Object.values(MathematicalOperator)).optional(),
-                CompositionOperator  : joi.string().valid(...Object.values(CompositionOperator)).optional(),
+                Name                    : joi.string().max(32).required(),
+                Description             : joi.string().max(256).optional(),
+                ParentRuleId            : joi.string().uuid().required(),
+                ParentConditionId       : joi.string().allow(null).uuid().required(),
+                NodePathId              : joi.string().allow(null).uuid().optional(),
+                ParentNodeId            : joi.string().allow(null).uuid().optional(),
+                OperatorType            : joi.string().valid(...Object.values(OperatorType)).optional(),
+                LogicalOperatorType     : joi.string().valid(...Object.values(LogicalOperatorType)).optional(),
+                CompositionOperatorType : joi.string().valid(...Object.values(CompositionOperatorType)).optional(),
+                FirstOperand            : joi.object({
+                    DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
+                    Name     : joi.string().max(32).optional(),
+                    Value    : joi.any().allow(null).optional(),
+                    Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
+                    Key      : joi.string().allow(null).max(256).optional(),
+                }).optional(),
+                SecondOperand : joi.object({
+                    DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
+                    Name     : joi.string().max(32).optional(),
+                    Value    : joi.any().allow(null).optional(),
+                    Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
+                    Key      : joi.string().allow(null).max(256).optional(),
+                }).optional(),
+                ThirdOperand : joi.object({
+                    DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
+                    Name     : joi.string().max(32).optional(),
+                    Value    : joi.any().allow(null).optional(),
+                    Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
+                    Key      : joi.string().allow(null).max(256).optional(),
+                }).optional(),
             });
             await condition.validateAsync(request.body);
             return {
-                Name                 : request.body.Name,
-                Description          : request.body.Description ?? null,
-                RuleId               : request.body.RuleId,
-                ParentConditionId    : request.body.ParentConditionId,
-                Operator             : request.body.Operator ?? OperatorType.Composition,
-                Fact                 : request.body.Name ?? null,
-                Value                : request.body.Name ?? null,
-                DataType             : request.body.Name ?? OperandDataType.Text,
-                LogicalOperator      : request.body.Name ?? LogicalOperator.None,
-                MathematicalOperator : request.body.Name ?? MathematicalOperator.None,
-                CompositionOperator  : request.body.Name ?? CompositionOperator.None,
+                Name                    : request.body.Name,
+                Description             : request.body.Description ?? null,
+                ParentRuleId            : request.body.ParentRuleId,
+                ParentConditionId       : request.body.ParentConditionId,
+                NodePathId              : request.body.NodePathId ?? null,
+                ParentNodeId            : request.body.ParentNodeId ?? null,
+                OperatorType            : request.body.OperatorType ?? OperatorType.Logical,
+                LogicalOperatorType     : request.body.LogicalOperatorType ?? LogicalOperatorType.Equal,
+                CompositionOperatorType : request.body.CompositionOperatorType ?? CompositionOperatorType.And,
+                FirstOperand            : request.body.FirstOperand ?? null,
+                SecondOperand           : request.body.SecondOperand ?? null,
+                ThirdOperand            : request.body.ThirdOperand ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -48,31 +68,51 @@ export class ConditionValidator extends BaseValidator {
         : Promise<ConditionUpdateModel> => {
         try {
             const condition = joi.object({
-                Name                 : joi.string().max(32).optional(),
-                Description          : joi.string().max(256).optional(),
-                RuleId               : joi.string().uuid().optional(),
-                ParentConditionId    : joi.string().uuid().optional(),
-                Operator             : joi.string().valid(...Object.values(OperatorType)).optional(),
-                Fact                 : joi.string().max(32).optional(),
-                Value                : joi.any().optional(),
-                DataType             : joi.string().valid(...Object.values(OperandDataType)).optional(),
-                LogicalOperator      : joi.string().valid(...Object.values(LogicalOperator)).optional(),
-                MathematicalOperator : joi.string().valid(...Object.values(MathematicalOperator)).optional(),
-                CompositionOperator  : joi.string().valid(...Object.values(CompositionOperator)).optional(),
+                Name                    : joi.string().max(32).optional(),
+                Description             : joi.string().max(256).optional(),
+                ParentRuleId            : joi.string().uuid().optional(),
+                ParentConditionId       : joi.string().allow(null).uuid().optional(),
+                NodePathId              : joi.string().allow(null).uuid().optional(),
+                ParentNodeId            : joi.string().allow(null).uuid().optional(),
+                OperatorType            : joi.string().valid(...Object.values(OperatorType)).optional(),
+                LogicalOperatorType     : joi.string().valid(...Object.values(LogicalOperatorType)).optional(),
+                CompositionOperatorType : joi.string().valid(...Object.values(CompositionOperatorType)).optional(),
+                FirstOperand            : joi.object({
+                    DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
+                    Name     : joi.string().max(32).optional(),
+                    Value    : joi.any().allow(null).optional(),
+                    Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
+                    Key      : joi.string().allow(null).max(256).optional(),
+                }).optional(),
+                SecondOperand : joi.object({
+                    DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
+                    Name     : joi.string().max(32).optional(),
+                    Value    : joi.any().allow(null).optional(),
+                    Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
+                    Key      : joi.string().allow(null).max(256).optional(),
+                }).optional(),
+                ThirdOperand : joi.object({
+                    DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
+                    Name     : joi.string().max(32).optional(),
+                    Value    : joi.any().allow(null).optional(),
+                    Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
+                    Key      : joi.string().allow(null).max(256).optional(),
+                }).optional(),
             });
             await condition.validateAsync(request.body);
             return {
-                Name                 : request.body.Name ?? null,
-                Description          : request.body.Description ?? null,
-                RuleId               : request.body.RuleId ?? null,
-                ParentConditionId    : request.body.ParentConditionId ?? null,
-                Operator             : request.body.Operator ?? null,
-                Fact                 : request.body.Name ?? null,
-                Value                : request.body.Name ?? null,
-                DataType             : request.body.Name ?? null,
-                LogicalOperator      : request.body.Name ?? null,
-                MathematicalOperator : request.body.Name ?? null,
-                CompositionOperator  : request.body.Name ?? null,
+                Name                    : request.body.Name ?? null,
+                Description             : request.body.Description ?? null,
+                ParentRuleId            : request.body.ParentRuleId ?? null,
+                ParentConditionId       : request.body.ParentConditionId ?? null,
+                NodePathId              : request.body.NodePathId ?? null,
+                ParentNodeId            : request.body.ParentNodeId ?? null,
+                OperatorType            : request.body.OperatorType ?? null,
+                LogicalOperatorType     : request.body.LogicalOperatorType ?? null,
+                CompositionOperatorType : request.body.CompositionOperatorType ?? null,
+                FirstOperand            : request.body.FirstOperand ?? null,
+                SecondOperand           : request.body.SecondOperand ?? null,
+                ThirdOperand            : request.body.ThirdOperand ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -84,7 +124,7 @@ export class ConditionValidator extends BaseValidator {
         try {
             const condition = joi.object({
                 parentConditionId : joi.string().uuid().optional(),
-                ruleId            : joi.string().uuid().optional(),
+                parentRuleId      : joi.string().uuid().optional(),
                 name              : joi.string().max(64).optional(),
             });
             await condition.validateAsync(request.query);
@@ -111,9 +151,9 @@ export class ConditionValidator extends BaseValidator {
         if (parentConditionId != null) {
             filters['ParentConditionId'] = parentConditionId;
         }
-        var ruleId = query.ruleId ? query.ruleId : null;
-        if (ruleId != null) {
-            filters['RuleId'] = ruleId;
+        var parentRuleId = query.parentRuleId ? query.parentRuleId : null;
+        if (parentRuleId != null) {
+            filters['ParentRuleId'] = parentRuleId;
         }
         return filters;
     };

@@ -1,3 +1,4 @@
+import { AlmanacObject } from "../../modules/engine.execution/almanac";
 import {
     BaseSearchFilters,
     BaseSearchResults
@@ -6,7 +7,7 @@ import {
     uuid
 } from "../miscellaneous/system.types";
 import { NodeType } from "./engine.enums";
-import { Almanac, ContextParams } from "./intermediate.types/intermediate.types";
+import { ContextParams } from "./intermediate.types/params.types";
 
 //////////////////////////////////////////////////////////////
 
@@ -37,6 +38,7 @@ export interface SchemaInstanceResponseDto {
         Node: {
             id: uuid;
             Name: string;
+            Type: NodeType;
         }
     };
     CurrentNodeInstance : {
@@ -56,7 +58,7 @@ export interface SchemaInstanceResponseDto {
             Active?: boolean;
         }
     }[];
-    Almanac: Almanac;
+    AlmanacObjects: AlmanacObject[];
     ExecutionStarted: boolean;
     ExecutionStartedTimestamp: Date;
     CreatedAt: Date;

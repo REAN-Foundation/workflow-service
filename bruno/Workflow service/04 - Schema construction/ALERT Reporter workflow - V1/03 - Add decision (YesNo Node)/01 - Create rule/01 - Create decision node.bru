@@ -46,37 +46,7 @@ body:json {
     "YesAction": {
       "Type": "Continue",
       "Name": "Continue to next node. This will set the next node as current node"
-    },
-    "PreEvaluationActions": [
-      {
-        "Type": "ExistsInAlmanac",
-        "Name": "Check if location exists in almanac",
-        "Input": {
-          "Params": [
-            {
-              "ActionType": "ExistsInAlmanac",
-              "Name": "Location-check",
-              "Type": "Location",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:Location"
-            }
-          ]
-        },
-        "Output": {
-          "Params": [
-            {
-              "ActionType": "ExistsInAlmanac",
-              "Name": "Location-Exists-True/False",
-              "Type": "Boolean",
-              "Value": null,
-              "Destination": "Almanac",
-              "Key": "ContextParams:LocationExists"
-            }
-          ]
-        }
-      }
-    ]
+    }
   }
 }
 

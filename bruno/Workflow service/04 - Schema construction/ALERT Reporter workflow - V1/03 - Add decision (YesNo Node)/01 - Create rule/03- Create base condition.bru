@@ -20,11 +20,10 @@ body:json {
   {
     "Name": "Base condition for location check",
     "Description": "This is the base condition for the location check",
-    "RuleId": "{{LOCATION_YES_NO_NODE_RULE_ID}}",
+    "ParentRuleId": "{{LOCATION_YES_NO_NODE_RULE_ID}}",
     "ParentConditionId": null,
-    "Operator": "Logical",
-    "DataType": "Boolean",
-    "LogicalOperator": "Exists",
+    "OperatorType": "Logical",
+    "LogicalOperatorType": "Equal",
     "FirstOperand": {
       "DataType": "Boolean",
       "Name": "Location Exists Expected",
@@ -33,7 +32,9 @@ body:json {
     "SecondOperand": {
       "DataType": "Boolean",
       "Name": "Does location exists?",
-      "Value": null
+      "Value": null,
+      "Source": "Almanac",
+      "Key": "ContextParams:Location"
     }
   }
 }

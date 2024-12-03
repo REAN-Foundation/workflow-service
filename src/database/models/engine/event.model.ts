@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
 import { EventType } from "../../../domain.types/enums/event.type";
-import { UserMessageEvent } from "../../../domain.types/engine/intermediate.types/intermediate.types";
+import { UserMessageEvent } from "../../../domain.types/engine/intermediate.types/schema.types";
 
 ////////////////////////////////////////////////////////////////////////
 

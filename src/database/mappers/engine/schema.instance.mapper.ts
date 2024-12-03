@@ -25,6 +25,7 @@ export class SchemaInstanceMapper {
                 Node : instance.RootNodeInstance.Node ? {
                     id   : instance.RootNodeInstance.Node.id,
                     Name : instance.RootNodeInstance.Node.Name,
+                    Type : instance.RootNodeInstance.Node.Type,
                 } : null,
             } : null,
             CurrentNodeInstance : instance.CurrentNodeInstance ? {
@@ -32,6 +33,7 @@ export class SchemaInstanceMapper {
                 Node : instance.CurrentNodeInstance.Node ? {
                     id   : instance.CurrentNodeInstance.Node.id,
                     Name : instance.CurrentNodeInstance.Node.Name,
+                    Type : instance.CurrentNodeInstance.Node.Type,
                 } : null,
             } : null,
             NodeInstances : instance.NodeInstances ? instance.NodeInstances.map(x => {
@@ -40,10 +42,11 @@ export class SchemaInstanceMapper {
                     Node : x.Node ? {
                         id   : x.Node.id,
                         Name : x.Node.Name,
+                        Type : x.Node.Type,
                     } : null
                 };
             }) : [],
-            Almanac                   : instance.Almanac,
+            AlmanacObjects            : instance.AlmanacObjects,
             ContextParams             : instance.ContextParams,
             ExecutionStarted          : instance.ExecutionStarted,
             ExecutionStartedTimestamp : instance.ExecutionStartedTimestamp,

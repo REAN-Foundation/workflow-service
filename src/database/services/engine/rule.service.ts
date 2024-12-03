@@ -14,7 +14,7 @@ import {
     RuleSearchFilters,
     RuleSearchResults,
     RuleUpdateModel } from '../../../domain.types/engine/rule.domain.types';
-import { CompositionOperator, OperatorType } from '../../../domain.types/engine/engine.enums';
+import { CompositionOperatorType, OperatorType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -46,7 +46,7 @@ export class RuleService extends BaseService {
             Name                : `Rule-${rule.Name}-RootCondition`,
             Rule                : record,
             Operator            : OperatorType.Composition,
-            CompositionOperator : CompositionOperator.And,
+            CompositionOperator : CompositionOperatorType.And,
         });
         var conditionRecord = await this._conditionRepository.save(condition);
 

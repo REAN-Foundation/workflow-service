@@ -173,20 +173,20 @@ export const OperatorList: OperatorType[] = [
     OperatorType.Iterate,
 ];
 
-export enum CompositionOperator {
+export enum CompositionOperatorType {
     And  = 'And',
     Or   = 'Or',
     Xor  = 'Xor',
     None = 'None'
 }
 
-export const CompositionOperatorList: CompositionOperator[] = [
-    CompositionOperator.And,
-    CompositionOperator.Or,
-    CompositionOperator.None,
+export const CompositionOperatorList: CompositionOperatorType[] = [
+    CompositionOperatorType.And,
+    CompositionOperatorType.Or,
+    CompositionOperatorType.None,
 ];
 
-export enum LogicalOperator {
+export enum LogicalOperatorType {
     Equal                     = 'Equal',
     NotEqual                  = 'NotEqual',
     GreaterThan               = 'GreaterThan',
@@ -206,27 +206,27 @@ export enum LogicalOperator {
     None                      = 'None',
 }
 
-export const LogicalOperatorList: LogicalOperator[] = [
-    LogicalOperator.Equal,
-    LogicalOperator.NotEqual,
-    LogicalOperator.GreaterThan,
-    LogicalOperator.GreaterThanOrEqual,
-    LogicalOperator.LessThan,
-    LogicalOperator.LessThanOrEqual,
-    LogicalOperator.In,
-    LogicalOperator.NotIn,
-    LogicalOperator.Contains,
-    LogicalOperator.DoesNotContain,
-    LogicalOperator.Between,
-    LogicalOperator.IsTrue,
-    LogicalOperator.IsFalse,
-    LogicalOperator.Exists,
-    LogicalOperator.HasConsecutiveOccurrences,
-    LogicalOperator.RangesOverlap,
-    LogicalOperator.None,
+export const LogicalOperatorList: LogicalOperatorType[] = [
+    LogicalOperatorType.Equal,
+    LogicalOperatorType.NotEqual,
+    LogicalOperatorType.GreaterThan,
+    LogicalOperatorType.GreaterThanOrEqual,
+    LogicalOperatorType.LessThan,
+    LogicalOperatorType.LessThanOrEqual,
+    LogicalOperatorType.In,
+    LogicalOperatorType.NotIn,
+    LogicalOperatorType.Contains,
+    LogicalOperatorType.DoesNotContain,
+    LogicalOperatorType.Between,
+    LogicalOperatorType.IsTrue,
+    LogicalOperatorType.IsFalse,
+    LogicalOperatorType.Exists,
+    LogicalOperatorType.HasConsecutiveOccurrences,
+    LogicalOperatorType.RangesOverlap,
+    LogicalOperatorType.None,
 ];
 
-export enum MathematicalOperator {
+export enum MathematicalOperatorType {
     Add        = 'Add',
     Subtract   = 'Subtract',
     Divide     = 'Divide',
@@ -235,13 +235,13 @@ export enum MathematicalOperator {
     None       = 'None',
 }
 
-export const MathematicalOperatorList: MathematicalOperator[] = [
-    MathematicalOperator.Add,
-    MathematicalOperator.Subtract,
-    MathematicalOperator.Divide,
-    MathematicalOperator.Multiply,
-    MathematicalOperator.Percentage,
-    MathematicalOperator.None,
+export const MathematicalOperatorList: MathematicalOperatorType[] = [
+    MathematicalOperatorType.Add,
+    MathematicalOperatorType.Subtract,
+    MathematicalOperatorType.Divide,
+    MathematicalOperatorType.Multiply,
+    MathematicalOperatorType.Percentage,
+    MathematicalOperatorType.None,
 ];
 
 export enum OperandDataType {
@@ -308,6 +308,7 @@ export enum OutputDestinationType {
     Database    = "Database",
     Almanac     = "Almanac",
     ApiEndpoint = "ApiEndpoint",
+    None        = "None",
 }
 
 export const OutputSourceTypeList: OutputDestinationType[] = [

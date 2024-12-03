@@ -7,7 +7,7 @@ import {
 } from "../miscellaneous/system.types";
 import { NodeType, QuestionResponseType } from "./engine.enums";
 import { XAction } from "./intermediate.types/action.types";
-import { XConditionOperand, XQuestionOption } from "./intermediate.types/intermediate.types";
+import { XConditionOperand, XQuestionOption } from "./intermediate.types/schema.types";
 import { ActionInputParams } from "./intermediate.types/params.types";
 import { NodeActionResponseDto } from "./node.action.types";
 

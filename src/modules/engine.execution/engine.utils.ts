@@ -1,4 +1,4 @@
-import { Location, TimestampUnit, DistanceUnit } from "../../domain.types/engine/intermediate.types/intermediate.types";
+import { Location, TimestampUnit, DistanceUnit } from "../../domain.types/engine/intermediate.types/schema.types";
 import { logger } from "../../logger/logger";
 
 /**

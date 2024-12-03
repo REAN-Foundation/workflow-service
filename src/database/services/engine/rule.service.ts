@@ -14,7 +14,8 @@ import {
     RuleSearchFilters,
     RuleSearchResults,
     RuleUpdateModel } from '../../../domain.types/engine/rule.domain.types';
-import { CompositionOperatorType, OperatorType } from '../../../domain.types/engine/engine.enums';
+import { ConditionMapper } from '../../../database/mappers/engine/condition.mapper';
+import { ConditionResponseDto } from '../../../domain.types/engine/condition.types';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -41,16 +42,6 @@ export class RuleService extends BaseService {
             Description : createModel.Description,
         });
         var record = await this._ruleRepository.save(rule);
-
-        const condition = await this._conditionRepository.create({
-            Name                : `Rule-${rule.Name}-RootCondition`,
-            Rule                : record,
-            Operator            : OperatorType.Composition,
-            CompositionOperator : CompositionOperatorType.And,
-        });
-        var conditionRecord = await this._conditionRepository.save(condition);
-
-        rule.Condition = conditionRecord;
         record = await this._ruleRepository.save(rule);
 
         return RuleMapper.toResponseDto(record);
@@ -61,26 +52,18 @@ export class RuleService extends BaseService {
             var rule = await this._ruleRepository.findOne({
                 where : {
                     id : id
-                },
-                select : {
-                    id          : true,
-                    Name        : true,
-                    Description : true,
-                    ParentNode  : {
-                        id          : true,
-                        Name        : true,
-                        Description : true,
-                    },
-                    Condition : {
-                        id       : true,
-                        Name     : true,
-                        Operator : true,
-                    },
-                    CreatedAt : true,
-                    UpdatedAt : true,
                 }
             });
-            return RuleMapper.toResponseDto(rule);
+            var conditionDto: ConditionResponseDto = null;
+            if (rule.ConditionId) {
+                var condition = await this._conditionRepository.findOne({
+                    where : {
+                        id : rule.ConditionId
+                    }
+                });
+                conditionDto = ConditionMapper.toResponseDto(condition);
+            }
+            return RuleMapper.toResponseDto(rule, conditionDto);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
@@ -131,7 +114,16 @@ export class RuleService extends BaseService {
                 rule.Description = model.Description;
             }
             var record = await this._ruleRepository.save(rule);
-            return RuleMapper.toResponseDto(record);
+            var conditionDto: ConditionResponseDto = null;
+            if (rule.ConditionId) {
+                var condition = await this._conditionRepository.findOne({
+                    where : {
+                        id : rule.ConditionId
+                    }
+                });
+                conditionDto = ConditionMapper.toResponseDto(condition);
+            }
+            return RuleMapper.toResponseDto(record, conditionDto);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
@@ -161,23 +153,6 @@ export class RuleService extends BaseService {
             relations : {
             },
             where : {
-            },
-            select : {
-                id          : true,
-                Name        : true,
-                Description : true,
-                ParentNode  : {
-                    id          : true,
-                    Name        : true,
-                    Description : true,
-                },
-                Condition : {
-                    id       : true,
-                    Name     : true,
-                    Operator : true,
-                },
-                CreatedAt : true,
-                UpdatedAt : true,
             }
         };
 

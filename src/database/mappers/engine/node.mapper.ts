@@ -3,12 +3,17 @@ import {
     NodeResponseDto
 } from '../../../domain.types/engine/node.types';
 import { Question } from '../../../database/models/engine/question.model';
+import { NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class NodeMapper {
 
-    static toResponseDto = (node: Node, question?: Question): NodeResponseDto => {
+    static toResponseDto = (
+        node: Node,
+        question?: Question,
+        yesActionDto?: NodeActionResponseDto,
+        noActionDto?: NodeActionResponseDto): NodeResponseDto => {
         if (node == null) {
             return null;
         }
@@ -47,11 +52,14 @@ export class NodeMapper {
                     };
                 }) : null,
             } : null,
-            ExecutionDelaySeconds : node.ExecutionDelaySeconds,
-            ExecutionRuleId       : node.ExecutionRuleId,
-            RawData               : node.RawData,
-            CreatedAt             : node.CreatedAt,
-            UpdatedAt             : node.UpdatedAt,
+            Actions      : [],
+            DelaySeconds : node.DelaySeconds,
+            RuleId       : node.RuleId,
+            YesAction    : yesActionDto,
+            NoAction     : noActionDto,
+            RawData      : node.RawData,
+            CreatedAt    : node.CreatedAt,
+            UpdatedAt    : node.UpdatedAt,
         };
         return dto;
     };

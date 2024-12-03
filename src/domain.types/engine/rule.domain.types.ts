@@ -5,6 +5,7 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
+import { ConditionResponseDto } from "./condition.types";
 import { OperatorType } from "./engine.enums";
 
 //////////////////////////////////////////////////////////////
@@ -34,11 +35,7 @@ export interface RuleResponseDto {
         Name       : string;
         Description: string;
     }
-    Condition : {
-        id      : uuid;
-        Name    : string;
-        Operator: OperatorType;
-    };
+    Condition : ConditionResponseDto;
     NodePath : {
         id          : uuid,
         Name        : string,

@@ -7,9 +7,9 @@ import {
 } from "../miscellaneous/system.types";
 import { NodeType, QuestionResponseType } from "./engine.enums";
 import { XAction } from "./intermediate.types/action.types";
-import { XConditionOperand, XQuestionOption } from "./intermediate.types/schema.types";
+import { XQuestionOption } from "./intermediate.types/node.types";
 import { ActionInputParams } from "./intermediate.types/params.types";
-import { NodeActionResponseDto } from "./node.action.types";
+import { NodeActionCreateModel, NodeActionResponseDto } from "./node.action.types";
 
 //////////////////////////////////////////////////////////////
 
@@ -19,8 +19,16 @@ export interface NodeCreateModel {
     Description?          : string;
     ParentNodeId          : uuid;
     SchemaId              : uuid;
-    Actions              ?: XAction[];
+    Actions              ?: NodeActionCreateModel[];
     RawData              ?: any;
+    DelaySeconds         ?: number;
+    RuleId               ?: uuid;
+    Input                ?: ActionInputParams;
+}
+
+export interface YesNoNodeCreateModel extends NodeCreateModel {
+    YesAction : NodeActionCreateModel,
+    NoAction  : NodeActionCreateModel,
 }
 
 export interface QuestionNodeCreateModel extends NodeCreateModel {
@@ -29,30 +37,17 @@ export interface QuestionNodeCreateModel extends NodeCreateModel {
     Options      : XQuestionOption[];
 }
 
-export interface ListeningNodeCreateModel extends NodeCreateModel {
-    Input : ActionInputParams;
-}
-
-export interface YesNoNodeCreateModel extends NodeCreateModel {
-    //These are the actions executed before the evaluation of the decision rule
-    PreEvaluationActions : NodeActionResponseDto[];
-    //Once the actions are executed, the input operands are calculated and stored
-    InputOperandValues : XConditionOperand[];
-    //The decision rule is evaluated based on the input operands.
-    //Input operands are identified by their names in the decision rule
-    DecisionRuleId : uuid;
-}
-
 export interface NodeUpdateModel {
-    Type                 ?: NodeType;
-    Name                 ?: string;
-    Description          ?: string;
-    ParentNodeId         ?: uuid;
-    SchemaId             ?: uuid;
-    Actions              ?: XAction[];
-    ExecutionDelaySeconds?: number;
-    ExecutionRuleId      ?: uuid;
-    RawData              ?: any;
+    Type        ?: NodeType;
+    Name        ?: string;
+    Description ?: string;
+    ParentNodeId?: uuid;
+    SchemaId    ?: uuid;
+    Actions     ?: XAction[];
+    DelaySeconds?: number;
+    RuleId      ?: uuid;
+    RawData     ?: any;
+    Input       ?: ActionInputParams;
 }
 
 export interface NodeResponseDto {
@@ -76,15 +71,19 @@ export interface NodeResponseDto {
         Description: string;
     };
     Question ? : {
-        ResponseType  : QuestionResponseType;
-        QuestionText? : string;
-        Options?      : XQuestionOption[];
+        ResponseType : QuestionResponseType;
+        QuestionText?: string;
+        Options?     : XQuestionOption[];
     },
-    ExecutionDelaySeconds?: number;
-    ExecutionRuleId?      : uuid;
-    RawData?              : any;
-    CreatedAt: Date;
-    UpdatedAt: Date;
+    Actions      : NodeActionResponseDto[];
+    YesAction   ?: NodeActionResponseDto;
+    NoAction    ?: NodeActionResponseDto;
+    DelaySeconds?: number;
+    RuleId?      : uuid;
+    RawData?     : any;
+    Input?       : ActionInputParams;
+    CreatedAt    : Date;
+    UpdatedAt    : Date;
 }
 
 export interface NodeSearchFilters extends BaseSearchFilters {

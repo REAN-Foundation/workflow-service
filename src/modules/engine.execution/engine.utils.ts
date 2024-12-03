@@ -1,5 +1,7 @@
-import { Location, TimestampUnit, DistanceUnit } from "../../domain.types/engine/intermediate.types/schema.types";
+import { Location, TimestampUnit, DistanceUnit } from "../../domain.types/engine/intermediate.types/common.types";
 import { logger } from "../../logger/logger";
+
+////////////////////////////////////////////////////////////////
 
 /**
      * Compare two locations and check if they are within the given threshold distance.

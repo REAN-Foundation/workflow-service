@@ -29,6 +29,7 @@ export class SchemaInstanceValidator extends BaseValidator {
             });
             await schema.validateAsync(request.body);
             return {
+                TenantId      : request.body.TenantId,
                 SchemaId      : request.body.SchemaId,
                 ContextParams : request.body.ContextParams
             };

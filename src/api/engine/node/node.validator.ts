@@ -5,7 +5,6 @@ import {
     NodeUpdateModel,
     NodeSearchFilters,
     QuestionNodeCreateModel,
-    ListeningNodeCreateModel,
     YesNoNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
@@ -32,21 +31,96 @@ export class NodeValidator extends BaseValidator {
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
                 })).optional(),
-                ExecutionRuleId       : joi.string().uuid().optional(),
-                ExecutionDelaySeconds : joi.number().integer().optional(),
-                RawData               : joi.object().allow(null).optional(),
+                RuleId       : joi.string().uuid().optional(),
+                DelaySeconds : joi.number().integer().optional(),
+                RawData      : joi.object().allow(null).optional(),
+                Input        : joi.object({
+                    Params : joi.array().items(joi.object({
+                        ActionType : joi.string().valid(...Object.values(ActionType)).optional(),
+                        Type       : joi.string().valid(...Object.values(ParamType)).required(),
+                        Value      : joi.any().allow(null).required(),
+                        Source     : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                        Key        : joi.string().max(256).optional(),
+                        Required   : joi.boolean().optional(),
+                    })).required(),
+                }).optional(),
             });
             await node.validateAsync(request.body);
             return {
-                Type                  : request.body.Type,
-                Name                  : request.body.Name,
-                Description           : request.body.Description ?? null,
-                ParentNodeId          : request.body.ParentNodeId,
-                SchemaId              : request.body.SchemaId,
-                Actions               : request.body.Actions ?? null,
-                ExecutionDelaySeconds : request.body.ExecutionDelaySeconds ?? null,
-                ExecutionRuleId       : request.body.ExecutionRuleId ?? null,
-                RawData               : request.body.RawData ?? null,
+                Type         : request.body.Type,
+                Name         : request.body.Name,
+                Description  : request.body.Description ?? null,
+                ParentNodeId : request.body.ParentNodeId,
+                SchemaId     : request.body.SchemaId,
+                Actions      : request.body.Actions ?? null,
+                DelaySeconds : request.body.DelaySeconds ?? null,
+                RuleId       : request.body.RuleId ?? null,
+                RawData      : request.body.RawData ?? null,
+                Input        : request.body.Input ?? null,
+            };
+        } catch (error) {
+            ErrorHandler.handleValidationError(error);
+        }
+    };
+
+    public validateCreateYesNoNodeRequest = async (request: express.Request)
+    : Promise<YesNoNodeCreateModel> => {
+        try {
+            const node = joi.object({
+                Type         : joi.string().valid(...Object.values(NodeType)).required(),
+                Name         : joi.string().max(32).required(),
+                Description  : joi.string().max(256).optional(),
+                ParentNodeId : joi.string().uuid().required(),
+                SchemaId     : joi.string().uuid().required(),
+                Actions      : joi.array().items(joi.object({
+                    Type        : joi.string().valid(...Object.values(ActionType)).required(),
+                    Name        : joi.string().max(32).required(),
+                    Description : joi.string().max(256).optional(),
+                    RawInput    : joi.any().optional(),
+                    Input       : joi.object().optional(),
+                })).optional(),
+                RuleId       : joi.string().uuid().optional(),
+                DelaySeconds : joi.number().integer().optional(),
+                RawData      : joi.object().allow(null).optional(),
+                Input        : joi.object({
+                    Params : joi.array().items(joi.object({
+                        ActionType : joi.string().valid(...Object.values(ActionType)).optional(),
+                        Type       : joi.string().valid(...Object.values(ParamType)).required(),
+                        Value      : joi.any().allow(null).required(),
+                        Source     : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                        Key        : joi.string().max(256).optional(),
+                        Required   : joi.boolean().optional(),
+                    })).required(),
+                }).optional(),
+                YesAction : joi.object({
+                    Type        : joi.string().valid(...Object.values(ActionType)).required(),
+                    Name        : joi.string().max(32).required(),
+                    Description : joi.string().max(256).optional(),
+                    RawInput    : joi.any().optional(),
+                    Input       : joi.object().optional(),
+                }).required(),
+                NoAction : joi.object({
+                    Type        : joi.string().valid(...Object.values(ActionType)).required(),
+                    Name        : joi.string().max(32).required(),
+                    Description : joi.string().max(256).optional(),
+                    RawInput    : joi.any().optional(),
+                    Input       : joi.object().optional(),
+                }).required(),
+            });
+            await node.validateAsync(request.body);
+            return {
+                Type         : request.body.Type,
+                Name         : request.body.Name,
+                Description  : request.body.Description ?? null,
+                ParentNodeId : request.body.ParentNodeId,
+                SchemaId     : request.body.SchemaId,
+                Actions      : request.body.Actions ?? null,
+                DelaySeconds : request.body.DelaySeconds ?? null,
+                RuleId       : request.body.RuleId ?? null,
+                RawData      : request.body.RawData ?? null,
+                Input        : request.body.Input ?? null,
+                YesAction    : request.body.YesAction ?? null,
+                NoAction     : request.body.NoAction ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -77,9 +151,9 @@ export class NodeValidator extends BaseValidator {
                     Sequence : joi.number().integer().allow(null).max(10).optional(),
                     Metadata : joi.string().allow(null).max(1024).optional(),
                 })).optional(),
-                ExecutionRuleId       : joi.string().uuid().optional(),
-                ExecutionDelaySeconds : joi.number().integer().optional(),
-                RawData               : joi.object().allow(null).optional(),
+                RuleId       : joi.string().uuid().optional(),
+                DelaySeconds : joi.number().integer().optional(),
+                RawData      : joi.object().allow(null).optional(),
                 // Paths : joi.array().items(joi.object({
                 //     Name     : joi.string().max(512).required(),
                 //     Code : joi.string().max(16).optional(),
@@ -89,105 +163,18 @@ export class NodeValidator extends BaseValidator {
             });
             await node.validateAsync(request.body);
             return {
-                Type                  : request.body.Type,
-                Name                  : request.body.Name,
-                Description           : request.body.Description ?? null,
-                ParentNodeId          : request.body.ParentNodeId,
-                SchemaId              : request.body.SchemaId,
-                Actions               : request.body.Actions ?? null,
-                QuestionText          : request.body.QuestionText ?? null,
-                ResponseType          : request.body.ResponseType ?? null,
-                Options               : request.body.Options ?? [],
-                ExecutionDelaySeconds : request.body.ExecutionDelaySeconds ?? null,
-                ExecutionRuleId       : request.body.ExecutionRuleId ?? null,
-                RawData               : request.body.RawData ?? null,
-            };
-        } catch (error) {
-            ErrorHandler.handleValidationError(error);
-        }
-    };
-
-    public validateCreateListeningNodeRequest = async (request: express.Request)
-    : Promise<ListeningNodeCreateModel> => {
-        try {
-            const node = joi.object({
-                Type         : joi.string().valid(...Object.values(NodeType)).required(),
-                Name         : joi.string().max(32).required(),
-                Description  : joi.string().max(256).optional(),
-                ParentNodeId : joi.string().uuid().required(),
-                SchemaId     : joi.string().uuid().required(),
-                Actions      : joi.array().items(joi.object({
-                    Type        : joi.string().valid(...Object.values(ActionType)).required(),
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
-                    RawInput    : joi.any().optional(),
-                    Input       : joi.object().optional(),
-                })).optional(),
-                Input : joi.object({
-                    Params : joi.array().items(joi.object({
-                        ActionType : joi.string().valid(...Object.values(ActionType)).optional(),
-                        Type       : joi.string().valid(...Object.values(ParamType)).required(),
-                        Value      : joi.any().allow(null).required(),
-                        Source     : joi.string().valid(...Object.values(InputSourceType)).optional(),
-                        Key        : joi.string().max(256).optional(),
-                        Required   : joi.boolean().optional(),
-                    })).required(),
-                }).required(),
-                ExecutionRuleId       : joi.string().uuid().optional(),
-                ExecutionDelaySeconds : joi.number().integer().optional(),
-                RawData               : joi.object().allow(null).optional(),
-            });
-            await node.validateAsync(request.body);
-            return {
-                Type                  : request.body.Type,
-                Name                  : request.body.Name,
-                Description           : request.body.Description ?? null,
-                ParentNodeId          : request.body.ParentNodeId,
-                SchemaId              : request.body.SchemaId,
-                Input                 : request.body.Input,
-                Actions               : request.body.Actions ?? null,
-                ExecutionDelaySeconds : request.body.ExecutionDelaySeconds ?? null,
-                ExecutionRuleId       : request.body.ExecutionRuleId ?? null,
-                RawData               : request.body.RawData ?? null,
-            };
-        } catch (error) {
-            ErrorHandler.handleValidationError(error);
-        }
-    };
-
-    public validateCreateYesNoNodeRequest = async (request: express.Request)
-    : Promise<YesNoNodeCreateModel> => {
-        try {
-            const node = joi.object({
-                Type         : joi.string().valid(...Object.values(NodeType)).required(),
-                Name         : joi.string().max(32).required(),
-                Description  : joi.string().max(256).optional(),
-                ParentNodeId : joi.string().uuid().required(),
-                SchemaId     : joi.string().uuid().required(),
-                Actions      : joi.array().items(joi.object({
-                    Type        : joi.string().valid(...Object.values(ActionType)).required(),
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
-                    RawInput    : joi.any().optional(),
-                    Input       : joi.object().optional(),
-                })).optional(),
-                DecisionRuleId        : joi.string().uuid().required(),
-                ExecutionRuleId       : joi.string().uuid().optional(),
-                ExecutionDelaySeconds : joi.number().integer().optional(),
-                RawData               : joi.object().allow(null).optional(),
-            });
-            await node.validateAsync(request.body);
-            return {
-                Type                  : request.body.Type,
-                Name                  : request.body.Name,
-                Description           : request.body.Description ?? null,
-                ParentNodeId          : request.body.ParentNodeId,
-                SchemaId              : request.body.SchemaId,
-                Actions               : request.body.Actions ?? null,
-                DecisionRuleId        : request.body.DecisionRuleId ?? null,
-                ExecutionDelaySeconds : request.body.ExecutionDelaySeconds ?? null,
-                ExecutionRuleId       : request.body.ExecutionRuleId ?? null,
-                RawData               : request.body.RawData ?? null,
+                Type         : request.body.Type,
+                Name         : request.body.Name,
+                Description  : request.body.Description ?? null,
+                ParentNodeId : request.body.ParentNodeId,
+                SchemaId     : request.body.SchemaId,
+                Actions      : request.body.Actions ?? null,
+                QuestionText : request.body.QuestionText ?? null,
+                ResponseType : request.body.ResponseType ?? null,
+                Options      : request.body.Options ?? [],
+                DelaySeconds : request.body.ExecutionDelaySeconds ?? null,
+                RuleId       : request.body.ExecutionRuleId ?? null,
+                RawData      : request.body.RawData ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -208,14 +195,14 @@ export class NodeValidator extends BaseValidator {
             });
             await node.validateAsync(request.body);
             return {
-                Type                  : request.body.Type ?? null,
-                Name                  : request.body.Name ?? null,
-                Description           : request.body.Description ?? null,
-                ParentNodeId          : request.body.ParentNodeId ?? null,
-                SchemaId              : request.body.SchemaId ?? null,
-                ExecutionRuleId       : request.body.ExecutionRuleId ?? null,
-                ExecutionDelaySeconds : request.body.ExecutionDelaySeconds ?? null,
-                RawData               : request.body.RawData ?? null,
+                Type         : request.body.Type ?? null,
+                Name         : request.body.Name ?? null,
+                Description  : request.body.Description ?? null,
+                ParentNodeId : request.body.ParentNodeId ?? null,
+                SchemaId     : request.body.SchemaId ?? null,
+                RuleId       : request.body.RuleId ?? null,
+                DelaySeconds : request.body.DelaySeconds ?? null,
+                RawData      : request.body.RawData ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

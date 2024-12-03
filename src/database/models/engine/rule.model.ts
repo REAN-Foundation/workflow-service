@@ -10,10 +10,10 @@ import {
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
-import { Condition } from "./condition.model";
 import { Node } from "./node.model";
 import { Schema } from "./schema.model";
 import { NodePath } from "./node.path.model";
+import { uuid } from "../../../domain.types/miscellaneous/system.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -40,9 +40,8 @@ export class Rule {
     @JoinColumn()
     NodePath: NodePath;
 
-    @OneToOne(() => Condition, (condition) => condition.Rule, { nullable: true, cascade: true })
-    @JoinColumn()
-    Condition: Condition;
+    @Column({ type: 'uuid', nullable: true })
+    ConditionId: uuid;
 
     @CreateDateColumn()
     CreatedAt : Date;

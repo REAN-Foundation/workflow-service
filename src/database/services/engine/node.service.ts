@@ -11,7 +11,6 @@ import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import {
     YesNoNodeCreateModel,
-    ListeningNodeCreateModel,
     NodeCreateModel,
     NodeResponseDto,
     NodeSearchFilters,
@@ -22,6 +21,8 @@ import { CommonUtilsService } from './common.utils.service';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 import { Question } from '../../../database/models/engine/question.model';
 import { StringUtils } from '../../../common/utilities/string.utils';
+import { NodeActionCreateModel, NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
+import { NodeActionMapper } from '../../../database/mappers/engine/node.action.mapper';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -43,21 +44,28 @@ export class NodeService extends BaseService {
 
     //#endregion
 
-    public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel | ListeningNodeCreateModel | YesNoNodeCreateModel)
+    public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel | YesNoNodeCreateModel)
         : Promise<NodeResponseDto> => {
         const schema = await this._commonUtils.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
         const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+
+        var yesAction = await this.createAction(createModel.Type === NodeType.YesNoNode ? (createModel as YesNoNodeCreateModel).YesAction : null);
+        var noAction = await this.createAction(createModel.Type === NodeType.YesNoNode ? (createModel as YesNoNodeCreateModel).NoAction : null);
+
         const node = this._nodeRepository.create({
-            Code                  : StringUtils.generateDisplayCode_RandomChars(12, prefix),
-            Type                  : createModel.Type,
-            Schema                : schema,
-            ParentNode            : parentNode,
-            Name                  : createModel.Name,
-            Description           : createModel.Description,
-            ExecutionDelaySeconds : createModel.ExecutionDelaySeconds,
-            ExecutionRuleId       : createModel.ExecutionRuleId,
-            RawData               : createModel.RawData,
+            Code         : StringUtils.generateDisplayCode_RandomChars(12, prefix),
+            Type         : createModel.Type,
+            Schema       : schema,
+            ParentNode   : parentNode,
+            Name         : createModel.Name,
+            Description  : createModel.Description,
+            DelaySeconds : createModel.DelaySeconds,
+            RuleId       : createModel.RuleId,
+            RawData      : createModel.RawData,
+            Input        : createModel.Input,
+            YesActionId  : yesAction ? yesAction.id : null,
+            NoActionId   : noAction ? noAction.id : null,
         });
         var record = await this._nodeRepository.save(node);
         if (record == null)
@@ -97,7 +105,34 @@ export class NodeService extends BaseService {
                     DefaultNodePath : true,
                 }
             });
-            return NodeMapper.toResponseDto(node);
+
+            var yesActionDto: NodeActionResponseDto = null;
+            var noActionDto: NodeActionResponseDto = null;
+            var question: Question = null;
+            if (node && node.YesActionId) {
+                var yesAction = await this._actionRepository.findOne({
+                    where : {
+                        id : node.YesActionId
+                    }
+                });
+                yesActionDto = NodeActionMapper.toResponseDto(yesAction);
+            }
+            if (node && node.NoActionId) {
+                var noAction = await this._actionRepository.findOne({
+                    where : {
+                        id : node.NoActionId
+                    }
+                });
+                noActionDto = NodeActionMapper.toResponseDto(noAction);
+            }
+            if (node && node.Type === NodeType.QuestionNode) {
+                question = await this._questionRepository.findOne({
+                    where : {
+                        id : id
+                    }
+                });
+            }
+            return NodeMapper.toResponseDto(node, question, yesActionDto, noActionDto);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
@@ -209,6 +244,30 @@ export class NodeService extends BaseService {
         }
     };
 
+    public getNodeActions = async (nodeId: uuid): Promise<NodeActionResponseDto[]> => {
+        try {
+            var node = await this._nodeRepository.findOne({
+                where : {
+                    id : nodeId
+                }
+            });
+            if (!node) {
+                ErrorHandler.throwNotFoundError('Node not found!');
+            }
+            var actions = await this._actionRepository.find({
+                where : {
+                    ParentNode : {
+                        id : nodeId
+                    }
+                }
+            });
+            return actions.map(x => NodeActionMapper.toResponseDto(x));
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     //#region Privates
 
     private getSearchModel = (filters: NodeSearchFilters) => {
@@ -265,6 +324,15 @@ export class NodeService extends BaseService {
             ErrorHandler.throwNotFoundError('Node cannot be found');
         }
         return node;
+    }
+
+    private async createAction(actionModel?: NodeActionCreateModel): Promise<NodeAction> {
+        if (actionModel == null) {
+            return null;
+        }
+        var action = await this._actionRepository.create(actionModel);
+        var actionRecord = await this._actionRepository.save(action);
+        return actionRecord;
     }
 
 }

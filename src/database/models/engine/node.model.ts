@@ -15,6 +15,7 @@ import { NodeAction } from "./node.action.model";
 import { Schema } from "./schema.model";
 import { NodePath } from "./node.path.model";
 import { NodeType } from "../../../domain.types/engine/engine.enums";
+import { ActionInputParams } from "../../../domain.types/engine/intermediate.types/params.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -52,17 +53,26 @@ export class Node {
     @OneToMany(() => NodeAction, (path) => path.ParentNode, { cascade: true })
     Actions: NodeAction[];
 
-    @Column({ type: 'simple-json', nullable: true })
+    @Column({ type: 'uuid', nullable: true })
+    YesActionId: string;
+
+    @Column({ type: 'uuid', nullable: true })
+    NoActionId: string;
+
+    @Column({ type: 'json', nullable: true })
     RawData : any;
+
+    @Column({ type: 'json', nullable: true })
+    Input : ActionInputParams;
 
     @OneToOne(() => NodePath, (path) => path.ParentNode, { nullable: true })
     DefaultNodePath: NodePath;
 
     @Column({ type: 'uuid', nullable: true })
-    ExecutionRuleId: string;
+    RuleId: string;
 
     @Column({ type: 'int', nullable: true })
-    ExecutionDelaySeconds: number;
+    DelaySeconds: number;
 
     @Column({ type: 'uuid', nullable: true })
     NextNodeId: string;

@@ -62,6 +62,20 @@ export class ConditionService extends BaseService {
         }
     };
 
+    public getChildrenConditions = async (conditionId: uuid): Promise<ConditionResponseDto[]> => {
+        try {
+            var conditions = await this._conditionRepository.find({
+                where : {
+                    ParentConditionId : conditionId
+                }
+            });
+            return conditions.map(x => ConditionMapper.toResponseDto(x));
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public getConditionsForRule = async (ruleId: uuid): Promise<ConditionResponseDto[]> => {
         try {
             var conditions = await this._conditionRepository.find({

@@ -193,9 +193,6 @@ export class NodePathService extends BaseService {
                     id          : true,
                     Name        : true,
                     Description : true,
-                    Condition   : {
-                        id : true,
-                    }
                 },
                 CreatedAt : true,
                 UpdatedAt : true,

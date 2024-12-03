@@ -1,35 +1,65 @@
-import { inject, injectable } from "tsyringe";
-import { IAssessmentHelperRepo } from "../../../database/repository.interfaces/clinical/assessment/assessment.helper.repo.interface";
-import { ConditionOperand,
-    ConditionOperandDataType,
-    ConditionOperatorType,
-    CAssessmentPathCondition } from "../../../domain.types/clinical/assessment/assessment.types";
+import { ConditionOperand } from "../../domain.types/engine/intermediate.types/rule.types";
+import { ConditionService } from "../../database/services/engine/condition.service";
+import { RuleService } from "../../database/services/engine/rule.service";
+import { uuid } from "../../domain.types/miscellaneous/system.types";
+import { CompositionOperatorType, LogicalOperatorType, OperandDataType, OperatorType } from "../../domain.types/engine/engine.enums";
+import { ConditionResponseDto } from "../../domain.types/engine/condition.types";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@injectable()
 export class ConditionProcessor {
 
-    constructor(
-        @inject('IAssessmentHelperRepo') private _assessmentHelperRepo: IAssessmentHelperRepo
-    ) {
+    private _schemaInstanceId: uuid = null;
+
+    private _conditionService: ConditionService = new ConditionService();
+
+    private _ruleService: RuleService = new RuleService();
+
+    constructor(schemaInstanceId: uuid) {
+        this._schemaInstanceId = schemaInstanceId;
     }
 
-    public processCondition = async (condition: CAssessmentPathCondition, argument: any): Promise<boolean> => {
+    public processCondition = async (condition: ConditionResponseDto, argument: any): Promise<boolean> => {
 
         if (!condition || !argument) {
             throw new Error(`Invalid condition to process!`);
         }
 
-        if (!condition.IsCompositeCondition) {
+        if (condition.OperatorType === OperatorType.Logical) {
             var first = condition.FirstOperand;
             first.Value = argument;
-            return this.operate(condition.OperatorType, first, condition.SecondOperand, condition.ThirdOperand);
+            return this.operate(condition.LogicalOperatorType, first, condition.SecondOperand, condition.ThirdOperand);
         }
-        // else {
-        //     const childrenConditions: SAssessmentPathCondition[] =
-        //         await this._assessmentHelperRepo.getChildrenConditions(condition.id);
-        // }
+        else {
+            const childrenConditions: ConditionResponseDto[] =
+                await this._conditionService.getChildrenConditions(condition.id);
+            if (childrenConditions.length === 0) {
+                return false;
+            }
+            if (condition.CompositionOperatorType === CompositionOperatorType.None) {
+                return false;
+            }
+            if (condition.CompositionOperatorType === CompositionOperatorType.And) {
+                for (var i = 0; i < childrenConditions.length; i++) {
+                    var childCondition = childrenConditions[i];
+                    var result = await this.processCondition(childCondition, argument);
+                    if (!result) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            else if (condition.CompositionOperatorType === CompositionOperatorType.Or) {
+                for (var i = 0; i < childrenConditions.length; i++) {
+                    var childCondition = childrenConditions[i];
+                    var result = await this.processCondition(childCondition, argument);
+                    if (result) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
 
         return false;
     };
@@ -37,7 +67,7 @@ export class ConditionProcessor {
     //#region Privates
 
     private operate(
-        operator: ConditionOperatorType,
+        operator: LogicalOperatorType,
         first: ConditionOperand,
         second: ConditionOperand,
         third?: ConditionOperand): boolean {
@@ -45,43 +75,43 @@ export class ConditionProcessor {
         var resolved = false;
 
         switch (operator) {
-            case ConditionOperatorType.EqualTo: {
+            case LogicalOperatorType.Equal: {
                 resolved = this.isEqualTo(first, second);
                 break;
             }
-            case ConditionOperatorType.NotEqualTo: {
+            case LogicalOperatorType.NotEqual: {
                 resolved = this.isNotEqualTo(first, second);
                 break;
             }
-            case ConditionOperatorType.In: {
+            case LogicalOperatorType.In: {
                 resolved = this.in(first, second);
                 break;
             }
-            case ConditionOperatorType.IsFalse: {
+            case LogicalOperatorType.IsFalse: {
                 resolved = this.isFalse(first);
                 break;
             }
-            case ConditionOperatorType.IsTrue: {
+            case LogicalOperatorType.IsTrue: {
                 resolved = this.isTrue(first);
                 break;
             }
-            case ConditionOperatorType.GreaterThan: {
+            case LogicalOperatorType.GreaterThan: {
                 resolved = this.greaterThan(first, second);
                 break;
             }
-            case ConditionOperatorType.LessThan: {
+            case LogicalOperatorType.LessThan: {
                 resolved = this.lessThan(first, second);
                 break;
             }
-            case ConditionOperatorType.GreaterThanEqualTo: {
+            case LogicalOperatorType.GreaterThanOrEqual: {
                 resolved = this.greaterThanEqualTo(first, second);
                 break;
             }
-            case ConditionOperatorType.LessThanEqualTo: {
+            case LogicalOperatorType.LessThanOrEqual: {
                 resolved = this.lessThanEqualTo(first, second);
                 break;
             }
-            case ConditionOperatorType.Between: {
+            case LogicalOperatorType.Between: {
                 resolved = this.between(first, second, third);
                 break;
             }
@@ -114,15 +144,15 @@ export class ConditionProcessor {
         if (first.DataType !== second.DataType) {
             return false;
         }
-        if (first.DataType === ConditionOperandDataType.Float ||
-            first.DataType === ConditionOperandDataType.Integer ||
-            first.DataType === ConditionOperandDataType.Boolean) {
+        if (first.DataType === OperandDataType.Float ||
+            first.DataType === OperandDataType.Integer ||
+            first.DataType === OperandDataType.Boolean) {
             return first.Value === second.Value;
         }
-        if (first.DataType === ConditionOperandDataType.Array) {
+        if (first.DataType === OperandDataType.Array) {
             return this.compareArray(first, second);
         }
-        if (first.DataType === ConditionOperandDataType.Text) {
+        if (first.DataType === OperandDataType.Text) {
             const firstValue = first.Value.toString().toLowerCase();
             const secondValue = second.Value.toString().toLowerCase();
             if (firstValue === secondValue) {

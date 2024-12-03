@@ -14,6 +14,7 @@ import {
     NodeInstanceSearchResults,
     NodeInstanceUpdateModel } from '../../../domain.types/engine/node.instance.types';
 import { SchemaInstance } from '../../models/engine/schema.instance.model';
+import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -127,6 +128,25 @@ export class NodeInstanceService extends BaseService {
             });
             var result = await this._nodeInstanceRepository.remove(record);
             return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public setExecutionStatus = async (nodeInstanceId: uuid, status: ExecutionStatus): Promise<boolean> => {
+        try {
+            var record = await this._nodeInstanceRepository.findOne({
+                where : {
+                    id : nodeInstanceId
+                }
+            });
+            if (!record) {
+                ErrorHandler.throwNotFoundError(`NodeInstance with ID ${nodeInstanceId} not found`);
+            }
+            record.ExecutionStatus = status;
+            await this._nodeInstanceRepository.save(record);
+            return true;
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

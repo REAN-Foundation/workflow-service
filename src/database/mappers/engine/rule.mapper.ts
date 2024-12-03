@@ -2,12 +2,13 @@ import { Rule } from '../../models/engine/rule.model';
 import {
     RuleResponseDto
 } from '../../../domain.types/engine/rule.domain.types';
+import { ConditionResponseDto } from '../../../domain.types/engine/condition.types';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class RuleMapper {
 
-    static toResponseDto = (rule: Rule): RuleResponseDto => {
+    static toResponseDto = (rule: Rule, condition?: ConditionResponseDto): RuleResponseDto => {
         if (rule == null) {
             return null;
         }
@@ -20,12 +21,8 @@ export class RuleMapper {
                 Name        : rule.ParentNode.Name,
                 Description : rule.ParentNode.Description,
             }          : null,
-            Condition : {
-                id       : rule.Condition.id,
-                Name     : rule.Condition.Name,
-                Operator : rule.Condition.Operator,
-            },
-            NodePath : {
+            Condition : condition ?? null,
+            NodePath  : {
                 id          : rule.NodePath.id,
                 Name        : rule.NodePath.Name,
                 Description : rule.NodePath.Description,

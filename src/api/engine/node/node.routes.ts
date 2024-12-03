@@ -13,8 +13,7 @@ export const register = (app: express.Application): void => {
     const contextBase = 'Node';
 
     router.post('/question-node', Auth.handle(`${contextBase}.CreateQuestionNode`, true, true, true), controller.createQuestionNode);
-    router.post('/listening-node', Auth.handle(`${contextBase}.CreateListeningNode`, true, true, true), controller.createListeningNode);
-    router.post('/decision-node', Auth.handle(`${contextBase}.CreateYesNoNode`, true, true, true), controller.createYesNoNode);
+    router.post('/yes-no-node', Auth.handle(`${contextBase}.CreateYesNoNode`, true, true, true), controller.createYesNoNode);
 
     router.post('/', Auth.handle(`${contextBase}.Create`, true, true, true), controller.create);
     router.put('/:id/next-node/:nextNodeId', Auth.handle(`${contextBase}.SetNextNode`, true, true, true), controller.setNextNode);

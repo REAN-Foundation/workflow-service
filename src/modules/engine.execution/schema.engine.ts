@@ -47,13 +47,12 @@ export class SchemaEngine {
         else {
             currentNodeInstance = schemaInstance.CurrentNodeInstance as NodeInstanceResponseDto;
         }
-        var currentNode = currentNodeInstance.Node;
+        var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
 
         if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
-            const executed = await this._executeNodeActions(schema, schemaInstance, currentNode, currentNodeInstance);
+            const executed = await this.executeNodeActions(schema, schemaInstance, currentNode, currentNodeInstance);
             if (executed) {
-                currentNodeInstance.ExecutionStatus = ExecutionStatus.Executed;
-                await this._nodeInstanceService.update(currentNodeInstance.id, currentNodeInstance);
+                await this._nodeInstanceService.setExecutionStatus(currentNodeInstance.id, ExecutionStatus.Executed);
             }
         }
 
@@ -108,7 +107,7 @@ export class SchemaEngine {
         schema: SchemaResponseDto,
         schemaInstance: SchemaInstanceResponseDto,
         currentNode: NodeResponseDto,
-        currentNodeInstance: XNodeInstance,
+        currentNodeInstance: NodeInstanceResponseDto,
         event: EventResponseDto
     ): Promise<NodeInstance> {
 
@@ -123,6 +122,28 @@ export class SchemaEngine {
             return await this.traverseYesNoNode(schemaInstance, currentNode);
         }
 
+    }
+
+    private async traverseQuestionNode(
+        schemaInstance: SchemaInstanceResponseDto,
+        currentNode: NodeResponseDto
+    ): Promise<NodeInstance> {
+        return null;
+    }
+
+    private async traverseYesNoNode(
+        schemaInstance: SchemaInstanceResponseDto,
+        currentNode: NodeResponseDto
+    ): Promise<NodeInstance> {
+        return null;
+    }
+
+    private async executeNodeActions(
+        schema: SchemaResponseDto,
+        schemaInstance: SchemaInstanceResponseDto,
+        currentNode: NodeResponseDto,
+        currentNodeInstance: NodeInstanceResponseDto): Promise<boolean> {
+        throw new Error('Method not implemented.');
     }
 
 }

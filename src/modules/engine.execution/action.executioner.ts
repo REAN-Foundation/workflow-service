@@ -1,7 +1,7 @@
 import { XNodeInstance } from "../../domain.types/engine/intermediate.types/node.types";
 import { XAction } from "../../domain.types/engine/intermediate.types/action.types";
-import { ActionType, InputSourceType, OutputDestinationType, ParamType } from "../../domain.types/engine/engine.enums";
-import { ActionInputParams, OutputParams } from "../../domain.types/engine/intermediate.types/params.types";
+import { ActionType, InputSourceType, ParamType } from "../../domain.types/engine/engine.enums";
+import { ActionInputParams } from "../../domain.types/engine/intermediate.types/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
 import { uuid } from "../../domain.types/miscellaneous/system.types";

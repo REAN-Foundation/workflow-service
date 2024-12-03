@@ -8,8 +8,8 @@ import {
     DeleteDateColumn,
 } from 'typeorm';
 import { ActionType } from "../../../domain.types/engine/engine.enums";
-import { ActionInputParams } from "../../../domain.types/engine/intermediate.types/schema.types";
-import { ActionOutputParams } from "../../../domain.types/engine/intermediate.types/schema.types";
+import { ActionInputParams } from "../../../domain.types/engine/intermediate.types/params.types";
+import { ActionOutputParams } from "../../../domain.types/engine/intermediate.types/params.types";
 
 ////////////////////////////////////////////////////////////////////////
 

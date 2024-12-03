@@ -13,22 +13,22 @@ export class SchemaValidator extends BaseValidator {
         try {
             const schema = joi.object({
                 TenantId      : joi.string().uuid().required(),
-                Name          : joi.string().max(32).required(),
+                Name          : joi.string().max(64).required(),
                 Type          : joi.string().valid(...Object.values(SchemaType)).required(),
-                Description   : joi.string().max(256).optional(),
+                Description   : joi.string().max(512).optional(),
                 ContextParams : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
                         Name        : joi.string().max(128).required(),
                         Type        : joi.string().valid(...Object.values(ParamType)).required(),
-                        Description : joi.string().max(256).optional(),
+                        Description : joi.string().max(512).optional(),
                         Value       : joi.any().required(),
                     })).required()
                 }).optional(),
                 RootNode : joi.object({
                     Type        : joi.string().valid(...Object.values(NodeType)).required(),
                     Name        : joi.string().max(128).required(),
-                    Description : joi.string().max(256).optional(),
+                    Description : joi.string().max(512).optional(),
                     Actions     : joi.array().items({
                         Type  : joi.string().valid(...Object.values(ActionType)).required(),
                         Name  : joi.string().max(128).required(),
@@ -73,15 +73,15 @@ export class SchemaValidator extends BaseValidator {
     public validateUpdateRequest = async (request: express.Request): Promise<SchemaUpdateModel|undefined> => {
         try {
             const schema = joi.object({
-                Name          : joi.string().max(32).optional(),
+                Name          : joi.string().max(64).optional(),
                 Type          : joi.string().valid(...Object.values(SchemaType)).optional(),
-                Description   : joi.string().max(256).optional(),
+                Description   : joi.string().max(512).optional(),
                 ContextParams : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
                         Name        : joi.string().max(128).required(),
                         Type        : joi.string().valid(...Object.values(ParamType)).required(),
-                        Description : joi.string().max(256).optional(),
+                        Description : joi.string().max(512).optional(),
                         Value       : joi.any().required(),
                     })).required()
                 }).optional(),

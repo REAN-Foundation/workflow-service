@@ -22,7 +22,7 @@ export class SchemaInstanceValidator extends BaseValidator {
                     Params : joi.array().items(joi.object({
                         Name        : joi.string().max(128).required(),
                         Type        : joi.string().valid(...Object.values(ParamType)).required(),
-                        Description : joi.string().max(256).optional(),
+                        Description : joi.string().max(512).optional(),
                         Value       : joi.any().required(),
                     })).required()
                 }).optional(),
@@ -46,7 +46,7 @@ export class SchemaInstanceValidator extends BaseValidator {
                     Params : joi.array().items(joi.object({
                         Name        : joi.string().max(128).required(),
                         Type        : joi.string().valid(...Object.values(ParamType)).required(),
-                        Description : joi.string().max(256).optional(),
+                        Description : joi.string().max(512).optional(),
                         Value       : joi.any().required(),
                     })).required()
                 }).optional(),

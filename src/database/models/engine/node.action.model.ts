@@ -24,6 +24,9 @@ export class NodeAction {
     @Column({ type: 'enum', enum: ActionType, nullable: false })
     Type : ActionType;
 
+    @Column({ type: 'int', nullable: false, default: 0 })
+    Sequence: number;
+
     @ManyToOne(() => Node, (node) => node.Actions, { nullable: true })
     @JoinColumn()
     ParentNode: Node;
@@ -34,7 +37,7 @@ export class NodeAction {
     @Column({ type: 'varchar', length: 512, nullable: true })
     Description : string;
 
-    @Column({ type: 'simple-json', nullable: true })
+    @Column({ type: 'simple-json', nullable: false })
     Input : ActionInputParams;
 
     @Column({ type: 'simple-json', nullable: true })

@@ -16,16 +16,16 @@ export class ClientValidator extends BaseValidator {
     public validateCreateRequest = async (request: express.Request): Promise<ClientCreateModel> => {
         try {
             const schema = joi.object({
-                Name        : joi.string().max(256).required(),
-                Code        : joi.string().max(256).optional(),
-                IsPrivileged: joi.boolean().optional(),
-                CountryCode : joi.string().max(5).optional(),
-                Phone       : joi.string().min(5).max(16).required(),
-                Email       : joi.string().email().required(),
-                Password    : joi.string().min(6).max(18).optional(),
-                ApiKey      : joi.string().max(32).optional(),
-                ValidFrom   : joi.date().optional(),
-                ValidTill   : joi.date().optional()
+                Name         : joi.string().max(64).required(),
+                Code         : joi.string().max(64).optional(),
+                IsPrivileged : joi.boolean().optional(),
+                CountryCode  : joi.string().max(5).optional(),
+                Phone        : joi.string().min(5).max(16).required(),
+                Email        : joi.string().email().required(),
+                Password     : joi.string().min(6).max(18).optional(),
+                ApiKey       : joi.string().max(64).optional(),
+                ValidFrom    : joi.date().optional(),
+                ValidTill    : joi.date().optional()
             });
             await schema.validateAsync(request.body) as ClientCreateModel;
             if (!request.body.ApiKey) {
@@ -38,16 +38,16 @@ export class ClientValidator extends BaseValidator {
                 request.body.ValidTill = TimeUtils.addDuration(new Date(), 180, DurationType.Day);
             }
             return {
-                Name        : request.body.Name,
-                Code        : request.body.Code ?? null,
-                IsPrivileged: request.body.IsPrivileged ?? null,
-                CountryCode : request.body.CountryCode ?? null,
-                Phone       : request.body.Phone,
-                Email       : request.body.Email,
-                Password    : request.body.Password ?? null,
-                ApiKey      : request.body.Name ?? null,
-                ValidFrom   : request.body.Name ?? null,
-                ValidTill   : request.body.Name ?? null,
+                Name         : request.body.Name,
+                Code         : request.body.Code ?? null,
+                IsPrivileged : request.body.IsPrivileged ?? null,
+                CountryCode  : request.body.CountryCode ?? null,
+                Phone        : request.body.Phone,
+                Email        : request.body.Email,
+                Password     : request.body.Password ?? null,
+                ApiKey       : request.body.Name ?? null,
+                ValidFrom    : request.body.Name ?? null,
+                ValidTill    : request.body.Name ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -57,8 +57,8 @@ export class ClientValidator extends BaseValidator {
     public validateUpdateRequest = async (request: any): Promise<ClientUpdateModel> => {
         try {
             const schema = joi.object({
-                Name : joi.string().max(256).optional(),
-                Code         : joi.string().max(256).optional(),
+                Name         : joi.string().max(64).optional(),
+                Code         : joi.string().max(64).optional(),
                 IsPrivileged : joi.boolean().optional(),
                 CountryCode  : joi.string().optional(),
                 Phone        : joi.string().optional(),
@@ -70,16 +70,16 @@ export class ClientValidator extends BaseValidator {
             });
             await schema.validateAsync(request.body);
             return {
-                Name        : request.body.Name ?? null,
-                Code        : request.body.Code ?? null,
-                IsPrivileged: request.body.IsPrivileged ?? null,
-                CountryCode : request.body.CountryCode ?? null,
-                Phone       : request.body.Phone ?? null,
-                Email       : request.body.Email ?? null,
-                Password    : request.body.Password ?? null,
-                ApiKey      : request.body.Name ?? null,
-                ValidFrom   : request.body.Name ?? null,
-                ValidTill   : request.body.Name ?? null,
+                Name         : request.body.Name ?? null,
+                Code         : request.body.Code ?? null,
+                IsPrivileged : request.body.IsPrivileged ?? null,
+                CountryCode  : request.body.CountryCode ?? null,
+                Phone        : request.body.Phone ?? null,
+                Email        : request.body.Email ?? null,
+                Password     : request.body.Password ?? null,
+                ApiKey       : request.body.Name ?? null,
+                ValidFrom    : request.body.Name ?? null,
+                ValidTill    : request.body.Name ?? null,
             };
 
         } catch (error) {
@@ -90,8 +90,8 @@ export class ClientValidator extends BaseValidator {
     public validateSearchRequest = async (request: express.Request): Promise<ClientSearchFilters> => {
         try {
             const schema = joi.object({
-                name         : joi.string().max(256).optional(),
-                code         : joi.string().max(256).optional(),
+                name         : joi.string().max(64).optional(),
+                code         : joi.string().max(64).optional(),
                 isPrivileged : joi.boolean().optional(),
                 countryCode  : joi.string().optional(),
                 phone        : joi.string().optional(),
@@ -151,11 +151,11 @@ export class ClientValidator extends BaseValidator {
         return filters;
     };
 
-    public getOrRenewApiKey = async ( request: express.Request): 
+    public getOrRenewApiKey = async ( request: express.Request):
         Promise<ClientVerificationModel|null> => {
         try {
             const authHeader = request.headers['authorization']?.toString();
-            let tokens = authHeader? authHeader.split(' ') : null;
+            let tokens = authHeader ? authHeader.split(' ') : null;
             if (!tokens || tokens.length < 1) {
                 ErrorHandler.throwInputValidationError('Ill-formated authorization header');
                 return null;

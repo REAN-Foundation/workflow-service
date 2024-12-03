@@ -26,9 +26,7 @@ export class NodeActionController {
             if (action == null) {
                 throw new ApiError(400, 'Cannot create record for action!');
             }
-            ResponseHandler.success(request, response, 'Path record created successfully!', 201, {
-                NodeAction : action,
-            });
+            ResponseHandler.success(request, response, 'Path record created successfully!', 201, action);
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }

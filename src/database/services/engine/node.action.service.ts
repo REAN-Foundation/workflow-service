@@ -42,6 +42,7 @@ export class NodeActionService extends BaseService {
 
         const node = this._actionRepository.create({
             ParentNode  : parentNode,
+            Type        : createModel.Type,
             Name        : createModel.Name,
             Description : createModel.Description,
             Input       : createModel.Input,

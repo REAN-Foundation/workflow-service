@@ -20,14 +20,14 @@ export class NodeValidator extends BaseValidator {
         try {
             const node = joi.object({
                 Type         : joi.string().valid(...Object.values(NodeType)).required(),
-                Name         : joi.string().max(32).required(),
-                Description  : joi.string().max(256).optional(),
-                ParentNodeId : joi.string().uuid().required(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
+                ParentNodeId : joi.string().allow(null).uuid().required(),
                 SchemaId     : joi.string().uuid().required(),
                 Actions      : joi.array().items(joi.object({
                     Type        : joi.string().valid(...Object.values(ActionType)).required(),
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
+                    Name        : joi.string().max(64).required(),
+                    Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
                 })).optional(),
@@ -36,12 +36,14 @@ export class NodeValidator extends BaseValidator {
                 RawData      : joi.object().allow(null).optional(),
                 Input        : joi.object({
                     Params : joi.array().items(joi.object({
-                        ActionType : joi.string().valid(...Object.values(ActionType)).optional(),
-                        Type       : joi.string().valid(...Object.values(ParamType)).required(),
-                        Value      : joi.any().allow(null).required(),
-                        Source     : joi.string().valid(...Object.values(InputSourceType)).optional(),
-                        Key        : joi.string().max(256).optional(),
-                        Required   : joi.boolean().optional(),
+                        Name        : joi.string().max(128).required(),
+                        Description : joi.string().max(512).optional(),
+                        ActionType  : joi.string().valid(...Object.values(ActionType)).optional(),
+                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
+                        Value       : joi.any().allow(null).required(),
+                        Source      : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                        Key         : joi.string().max(256).optional(),
+                        Required    : joi.boolean().optional(),
                     })).required(),
                 }).optional(),
             });
@@ -68,14 +70,14 @@ export class NodeValidator extends BaseValidator {
         try {
             const node = joi.object({
                 Type         : joi.string().valid(...Object.values(NodeType)).required(),
-                Name         : joi.string().max(32).required(),
-                Description  : joi.string().max(256).optional(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
                 ParentNodeId : joi.string().uuid().required(),
                 SchemaId     : joi.string().uuid().required(),
                 Actions      : joi.array().items(joi.object({
                     Type        : joi.string().valid(...Object.values(ActionType)).required(),
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
+                    Name        : joi.string().max(64).required(),
+                    Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
                 })).optional(),
@@ -94,15 +96,15 @@ export class NodeValidator extends BaseValidator {
                 }).optional(),
                 YesAction : joi.object({
                     Type        : joi.string().valid(...Object.values(ActionType)).required(),
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
+                    Name        : joi.string().max(64).required(),
+                    Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
                 }).required(),
                 NoAction : joi.object({
                     Type        : joi.string().valid(...Object.values(ActionType)).required(),
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
+                    Name        : joi.string().max(64).required(),
+                    Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
                 }).required(),
@@ -132,14 +134,14 @@ export class NodeValidator extends BaseValidator {
         try {
             const node = joi.object({
                 Type         : joi.string().valid(...Object.values(NodeType)).required(),
-                Name         : joi.string().max(32).required(),
-                Description  : joi.string().max(256).optional(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
                 ParentNodeId : joi.string().uuid().required(),
                 SchemaId     : joi.string().uuid().required(),
                 Actions      : joi.array().items(joi.object({
                     Type        : joi.string().valid(...Object.values(ActionType)).required(),
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
+                    Name        : joi.string().max(64).required(),
+                    Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
                 })).optional(),
@@ -185,8 +187,8 @@ export class NodeValidator extends BaseValidator {
         try {
             const node = joi.object({
                 Type                  : joi.string().valid(...Object.values(NodeType)).optional(),
-                Name                  : joi.string().max(32).optional(),
-                Description           : joi.string().max(256).optional(),
+                Name                  : joi.string().max(64).optional(),
+                Description           : joi.string().max(512).optional(),
                 ParentNodeId          : joi.string().uuid().optional(),
                 SchemaId              : joi.string().uuid().optional(),
                 ExecutionRuleId       : joi.string().uuid().optional(),

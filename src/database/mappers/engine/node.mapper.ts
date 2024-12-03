@@ -11,6 +11,7 @@ export class NodeMapper {
 
     static toResponseDto = (
         node: Node,
+        actions?: NodeActionResponseDto[],
         question?: Question,
         yesActionDto?: NodeActionResponseDto,
         noActionDto?: NodeActionResponseDto): NodeResponseDto => {
@@ -52,12 +53,13 @@ export class NodeMapper {
                     };
                 }) : null,
             } : null,
-            Actions      : [],
+            Actions      : actions,
             DelaySeconds : node.DelaySeconds,
             RuleId       : node.RuleId,
             YesAction    : yesActionDto,
             NoAction     : noActionDto,
             RawData      : node.RawData,
+            Input        : node.Input,
             CreatedAt    : node.CreatedAt,
             UpdatedAt    : node.UpdatedAt,
         };

@@ -12,8 +12,8 @@ export class RuleValidator extends BaseValidator {
         : Promise<RuleCreateModel> => {
         try {
             const rule = joi.object({
-                Name         : joi.string().max(32).required(),
-                Description  : joi.string().max(256).optional(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
                 ParentNodeId : joi.string().uuid().required(),
                 SchemaId     : joi.string().uuid().required(),
                 ConditionId  : joi.string().uuid().required(),
@@ -34,8 +34,8 @@ export class RuleValidator extends BaseValidator {
     public validateUpdateRequest = async (request: express.Request): Promise<RuleUpdateModel> => {
         try {
             const rule = joi.object({
-                Name         : joi.string().max(32).optional(),
-                Description  : joi.string().max(256).optional(),
+                Name         : joi.string().max(64).optional(),
+                Description  : joi.string().max(512).optional(),
                 ParentNodeId : joi.string().uuid().optional(),
                 SchemaId     : joi.string().uuid().optional(),
                 ConditionId  : joi.string().uuid().optional(),

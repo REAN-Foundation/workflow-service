@@ -71,7 +71,7 @@ export class SchemaService extends BaseService {
         }
         var rootNodeRecord = await this._nodeRepository.save(rootNode);
 
-        if (createModel.RootNode.Actions) {
+        if (rootNode.Actions) {
             for (var action of createModel.RootNode.Actions) {
                 var actionRecord = await this._actionRepository.create({
                     ParentNode : rootNodeRecord,

@@ -13,8 +13,8 @@ export class ConditionValidator extends BaseValidator {
         : Promise<ConditionCreateModel> => {
         try {
             const condition = joi.object({
-                Name                    : joi.string().max(32).required(),
-                Description             : joi.string().max(256).optional(),
+                Name                    : joi.string().max(64).required(),
+                Description             : joi.string().max(512).optional(),
                 ParentRuleId            : joi.string().uuid().required(),
                 ParentConditionId       : joi.string().allow(null).uuid().required(),
                 NodePathId              : joi.string().allow(null).uuid().optional(),
@@ -24,21 +24,21 @@ export class ConditionValidator extends BaseValidator {
                 CompositionOperatorType : joi.string().valid(...Object.values(CompositionOperatorType)).optional(),
                 FirstOperand            : joi.object({
                     DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
-                    Name     : joi.string().max(32).optional(),
+                    Name     : joi.string().max(64).optional(),
                     Value    : joi.any().allow(null).optional(),
                     Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
                     Key      : joi.string().allow(null).max(256).optional(),
                 }).optional(),
                 SecondOperand : joi.object({
                     DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
-                    Name     : joi.string().max(32).optional(),
+                    Name     : joi.string().max(64).optional(),
                     Value    : joi.any().allow(null).optional(),
                     Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
                     Key      : joi.string().allow(null).max(256).optional(),
                 }).optional(),
                 ThirdOperand : joi.object({
                     DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
-                    Name     : joi.string().max(32).optional(),
+                    Name     : joi.string().max(64).optional(),
                     Value    : joi.any().allow(null).optional(),
                     Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
                     Key      : joi.string().allow(null).max(256).optional(),
@@ -68,8 +68,8 @@ export class ConditionValidator extends BaseValidator {
         : Promise<ConditionUpdateModel> => {
         try {
             const condition = joi.object({
-                Name                    : joi.string().max(32).optional(),
-                Description             : joi.string().max(256).optional(),
+                Name                    : joi.string().max(64).optional(),
+                Description             : joi.string().max(512).optional(),
                 ParentRuleId            : joi.string().uuid().optional(),
                 ParentConditionId       : joi.string().allow(null).uuid().optional(),
                 NodePathId              : joi.string().allow(null).uuid().optional(),
@@ -79,21 +79,21 @@ export class ConditionValidator extends BaseValidator {
                 CompositionOperatorType : joi.string().valid(...Object.values(CompositionOperatorType)).optional(),
                 FirstOperand            : joi.object({
                     DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
-                    Name     : joi.string().max(32).optional(),
+                    Name     : joi.string().max(64).optional(),
                     Value    : joi.any().allow(null).optional(),
                     Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
                     Key      : joi.string().allow(null).max(256).optional(),
                 }).optional(),
                 SecondOperand : joi.object({
                     DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
-                    Name     : joi.string().max(32).optional(),
+                    Name     : joi.string().max(64).optional(),
                     Value    : joi.any().allow(null).optional(),
                     Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
                     Key      : joi.string().allow(null).max(256).optional(),
                 }).optional(),
                 ThirdOperand : joi.object({
                     DataType : joi.string().valid(...Object.values(OperandDataType)).required(),
-                    Name     : joi.string().max(32).optional(),
+                    Name     : joi.string().max(64).optional(),
                     Value    : joi.any().allow(null).optional(),
                     Source   : joi.string().allow(null).valid(...Object.values(InputSourceType)).optional(),
                     Key      : joi.string().allow(null).max(256).optional(),

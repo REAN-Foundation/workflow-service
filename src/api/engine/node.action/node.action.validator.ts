@@ -17,17 +17,19 @@ export class NodeActionValidator extends BaseValidator {
         : Promise<NodeActionCreateModel> => {
         try {
             const node = joi.object({
-                ActionType   : joi.string().valid(...Object.values(ActionType)).required(),
-                Name         : joi.string().max(32).required(),
-                Description  : joi.string().max(256).optional(),
+                Type         : joi.string().valid(...Object.values(ActionType)).required(),
+                Sequence     : joi.number().integer().min(0).optional(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
                 ParentNodeId : joi.string().uuid().required(),
                 Input        : joi.object().required(),
-                Output       : joi.object().required(),
+                Output       : joi.object().optional(),
             });
             await node.validateAsync(request.body);
             return {
                 Type         : request.body.Type,
                 Name         : request.body.Name,
+                Sequence     : request.body.Sequence ?? 0,
                 Description  : request.body.Description ?? null,
                 ParentNodeId : request.body.ParentNodeId,
                 Input        : request.body.Input,
@@ -41,9 +43,9 @@ export class NodeActionValidator extends BaseValidator {
     public validateUpdateRequest = async (request: express.Request): Promise<NodeActionUpdateModel|undefined> => {
         try {
             const node = joi.object({
-                ActionType   : joi.string().valid(...Object.values(ActionType)).optional(),
-                Name         : joi.string().max(32).optional(),
-                Description  : joi.string().max(256).optional(),
+                Type         : joi.string().valid(...Object.values(ActionType)).optional(),
+                Name         : joi.string().max(64).optional(),
+                Description  : joi.string().max(512).optional(),
                 ParentNodeId : joi.string().uuid().optional(),
                 Input        : joi.object().optional(),
                 Output       : joi.object().optional(),
@@ -68,7 +70,7 @@ export class NodeActionValidator extends BaseValidator {
             const node = joi.object({
                 parentNodeId : joi.string().uuid().optional(),
                 name         : joi.string().max(64).optional(),
-                actionType   : joi.string().valid(...Object.values(ActionType)).optional(),
+                type         : joi.string().valid(...Object.values(ActionType)).optional(),
             });
             await node.validateAsync(request.query);
             const filters = this.getSearchFilters(request.query);
@@ -94,9 +96,9 @@ export class NodeActionValidator extends BaseValidator {
         if (parentNodeId != null) {
             filters['ParentNodeId'] = parentNodeId;
         }
-        var actionType = query.actionType ? query.actionType : null;
-        if (actionType != null) {
-            filters['ActionType'] = actionType;
+        var type = query.type ? query.type : null;
+        if (type != null) {
+            filters['Type'] = type;
         }
 
         return filters;

@@ -87,7 +87,16 @@ export class NodeService extends BaseService {
             logger.info(JSON.stringify(questionRecord, null, 2));
         }
 
-        return NodeMapper.toResponseDto(record);
+        var nodeActions: NodeActionResponseDto[] = [];
+        for await (const action of createModel.Actions) {
+            var actionRecord = await this.createAction(action);
+            var actionDto = NodeActionMapper.toResponseDto(actionRecord);
+            nodeActions.push(actionDto);
+        }
+        const yesActionDto = yesAction ? NodeActionMapper.toResponseDto(yesAction) : null;
+        const noActionDto = noAction ? NodeActionMapper.toResponseDto(noAction) : null;
+
+        return NodeMapper.toResponseDto(record, nodeActions, question, yesActionDto, noActionDto);
     };
 
     public getById = async (id: uuid): Promise<NodeResponseDto> => {
@@ -132,7 +141,8 @@ export class NodeService extends BaseService {
                     }
                 });
             }
-            return NodeMapper.toResponseDto(node, question, yesActionDto, noActionDto);
+            var nodeActions = await this.getNodeActions(id);
+            return NodeMapper.toResponseDto(node, nodeActions, question, yesActionDto, noActionDto);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

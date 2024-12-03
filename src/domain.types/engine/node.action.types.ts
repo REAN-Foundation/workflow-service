@@ -7,15 +7,17 @@ import { ActionInputParams, ActionOutputParams } from "./intermediate.types/para
 
 export interface NodeActionCreateModel {
     Type        : ActionType;
+    Sequence    : number;
     ParentNodeId: uuid;
     Name        : string;
     Description?: string;
     Input       : ActionInputParams;
-    Output      : ActionOutputParams;
+    Output     ?: ActionOutputParams;
 }
 
 export interface NodeActionUpdateModel {
     Type        ?: ActionType;
+    Sequence    ?: number;
     ParentNodeId?: uuid;
     Name        ?: string;
     Description ?: string;
@@ -26,6 +28,7 @@ export interface NodeActionUpdateModel {
 export interface NodeActionResponseDto {
     id         : uuid;
     Type       : ActionType;
+    Sequence   : number;
     Name       : string;
     Description: string;
     ParentNode : {

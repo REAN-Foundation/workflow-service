@@ -8,6 +8,7 @@ import { NodeInstanceMapper } from '../../mappers/engine/node.instance.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import {
+    NodeActionInstanceResponseDto,
     NodeInstanceCreateModel,
     NodeInstanceResponseDto,
     NodeInstanceSearchFilters,
@@ -15,6 +16,8 @@ import {
     NodeInstanceUpdateModel } from '../../../domain.types/engine/node.instance.types';
 import { SchemaInstance } from '../../models/engine/schema.instance.model';
 import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
+import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
+import { CommonUtilsService } from './common.utils.service';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -24,9 +27,13 @@ export class NodeInstanceService extends BaseService {
 
     _nodeInstanceRepository: Repository<NodeInstance> = Source.getRepository(NodeInstance);
 
+    _nodeActionInstanceRepository: Repository<NodeActionInstance> = Source.getRepository(NodeActionInstance);
+
     _nodeRepository: Repository<Node> = Source.getRepository(Node);
 
     _schemaInstanceRepository: Repository<SchemaInstance> = Source.getRepository(SchemaInstance);
+
+    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
 
     //#endregion
 
@@ -63,7 +70,11 @@ export class NodeInstanceService extends BaseService {
                     }
                 },
             });
-            return NodeInstanceMapper.toResponseDto(nodeInstance);
+            if (!nodeInstance) {
+                return null;
+            }
+            var actionInstances = await this._commonUtilsService.getNodeActionInstances(id);
+            return NodeInstanceMapper.toResponseDto(nodeInstance, actionInstances);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

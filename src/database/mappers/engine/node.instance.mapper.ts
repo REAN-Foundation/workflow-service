@@ -1,13 +1,19 @@
 import { NodeInstance } from '../../models/engine/node.instance.model';
 import {
+    NodeActionInstanceResponseDto,
     NodeInstanceResponseDto
 } from '../../../domain.types/engine/node.instance.types';
+import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class NodeInstanceMapper {
 
-    static toResponseDto = (instance: NodeInstance): NodeInstanceResponseDto => {
+    static toResponseDto = (
+        instance: NodeInstance,
+        actionInstances?: NodeActionInstanceResponseDto[])
+        : NodeInstanceResponseDto => {
+
         if (instance == null) {
             return null;
         }
@@ -45,8 +51,31 @@ export class NodeInstanceMapper {
                     } : null
                 };
             }) : [],
-            CreatedAt : instance.CreatedAt,
-            UpdatedAt : instance.UpdatedAt,
+            ActionInstances : actionInstances,
+            CreatedAt       : instance.CreatedAt,
+            UpdatedAt       : instance.UpdatedAt,
+        };
+        return dto;
+    };
+
+    static toNodeActionInstanceResponseDto = (instance: NodeActionInstance): NodeActionInstanceResponseDto => {
+        if (instance == null) {
+            return null;
+        }
+        const dto: NodeActionInstanceResponseDto = {
+            id                 : instance.id,
+            ActionType         : instance.ActionType,
+            Sequence           : instance.Sequence,
+            NodeId             : instance.NodeId,
+            NodeInstanceId     : instance.NodeInstanceId,
+            ActionId           : instance.ActionId,
+            SchemaInstanceId   : instance.SchemaInstanceId,
+            Executed           : instance.Executed,
+            ExecutionTimestamp : instance.ExecutionTimestamp,
+            Input              : instance.Input,
+            Output             : instance.Output,
+            CreatedAt          : instance.CreatedAt,
+            UpdatedAt          : instance.UpdatedAt,
         };
         return dto;
     };

@@ -5,7 +5,8 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { ExecutionStatus, NodeType } from "./engine.enums";
+import { ActionType, ExecutionStatus, NodeType } from "./engine.enums";
+import { ActionInputParams, ActionOutputParams } from "./intermediate.types/params.types";
 
 //////////////////////////////////////////////////////////////
 
@@ -52,6 +53,7 @@ export interface NodeInstanceResponseDto {
             Name: string;
         };
     }[];
+    ActionInstances?: NodeActionInstanceResponseDto[];
     CreatedAt: Date;
     UpdatedAt: Date;
 }
@@ -63,4 +65,20 @@ export interface NodeInstanceSearchFilters extends BaseSearchFilters {
 
 export interface NodeInstanceSearchResults extends BaseSearchResults {
     Items: NodeInstanceResponseDto[];
+}
+
+export interface NodeActionInstanceResponseDto {
+    id                : uuid;
+    ActionType        : ActionType;
+    Sequence          : number;
+    NodeId            : uuid;
+    NodeInstanceId    : uuid;
+    ActionId          : uuid;
+    SchemaInstanceId  : uuid;
+    Executed          : boolean;
+    ExecutionTimestamp: Date;
+    Input             : ActionInputParams;
+    Output            : ActionOutputParams;
+    CreatedAt         : Date;
+    UpdatedAt         : Date;
 }

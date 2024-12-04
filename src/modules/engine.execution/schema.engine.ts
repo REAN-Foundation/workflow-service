@@ -84,7 +84,7 @@ export class SchemaEngine {
             if (p.Type === ParamType.Location) {
                 p.Value = event.UserMessage.Location;
             }
-            if (p.Type === ParamType.Date) {
+            if (p.Type === ParamType.DateTime) {
                 p.Value = new Date();
             }
             if (p.Type === ParamType.Text) {

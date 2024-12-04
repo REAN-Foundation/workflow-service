@@ -40,11 +40,6 @@ export class UserMessageEventHandler {
                 return false;
             }
         }
-        var schemas = await this._schemaService.getByTenantId(tenantId);
-        if (schemas.length === 0) {
-            return false;
-        }
-        var schema = schemas[0];
 
         // 2. Identify the schema instance - By context params comparison
 
@@ -128,7 +123,7 @@ export class UserMessageEventHandler {
                     matchingParams.push(p);
                 }
             }
-            if (p.Type === ParamType.Date) {
+            if (p.Type === ParamType.DateTime) {
                 var timeUnit = p.ComparisonUnit as TimestampUnit ?? 'm';
                 if (!compareTimestamps(p.Value, new Date(), p.ComparisonThreshold, timeUnit)) {
                     if (p.Required) {
@@ -139,7 +134,7 @@ export class UserMessageEventHandler {
                     matchingParams.push(p);
                 }
             }
-            if (p.Type === ParamType.Text && p.Key === 'SchemaInstanceCode') {
+            if (p.Type === ParamType.Text && p.Key === 'ContextParams:SchemaInstanceCode') {
                 if (event.SchemaInstanceCode &&
                     event.SchemaInstanceCode.length > 0 &&
                     p.Value !== event.SchemaInstanceCode) {

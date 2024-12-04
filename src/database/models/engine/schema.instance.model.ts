@@ -31,7 +31,7 @@ export class SchemaInstance {
     @JoinColumn()
     Schema: Schema;
 
-    @Column({ type: 'varchar', length: 10, nullable: false })
+    @Column({ type: 'varchar', length: 64, nullable: false })
     Code : string;
 
     @Column({ type: 'simple-json', nullable: true })

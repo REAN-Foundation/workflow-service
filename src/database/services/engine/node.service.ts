@@ -40,13 +40,13 @@ export class NodeService extends BaseService {
 
     _actionRepository: Repository<NodeAction> = Source.getRepository(NodeAction);
 
-    _commonUtils: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
 
     //#endregion
 
     public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel | YesNoNodeCreateModel)
         : Promise<NodeResponseDto> => {
-        const schema = await this._commonUtils.getSchema(createModel.SchemaId);
+        const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
         const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
 
@@ -143,7 +143,7 @@ export class NodeService extends BaseService {
                     }
                 });
             }
-            var nodeActions = await this.getNodeActions(id);
+            var nodeActions = await this._commonUtilsService.getNodeActions(id);
             return NodeMapper.toResponseDto(node, nodeActions, question, yesActionDto, noActionDto);
         } catch (error) {
             logger.error(error.message);
@@ -193,7 +193,7 @@ export class NodeService extends BaseService {
                 ErrorHandler.throwNotFoundError('Node not found!');
             }
             if (model.SchemaId != null) {
-                const schema = await this._commonUtils.getSchema(model.SchemaId);
+                const schema = await this._commonUtilsService.getSchema(model.SchemaId);
                 node.Schema = schema;
             }
             if (model.ParentNodeId != null) {
@@ -250,30 +250,6 @@ export class NodeService extends BaseService {
             node.NextNodeId = nextNodeId;
             var result = await this._nodeRepository.save(node);
             return result != null;
-        } catch (error) {
-            logger.error(error.message);
-            ErrorHandler.throwInternalServerError(error.message, 500);
-        }
-    };
-
-    public getNodeActions = async (nodeId: uuid): Promise<NodeActionResponseDto[]> => {
-        try {
-            var node = await this._nodeRepository.findOne({
-                where : {
-                    id : nodeId
-                }
-            });
-            if (!node) {
-                ErrorHandler.throwNotFoundError('Node not found!');
-            }
-            var actions = await this._actionRepository.find({
-                where : {
-                    ParentNode : {
-                        id : nodeId
-                    }
-                }
-            });
-            return actions.map(x => NodeActionMapper.toResponseDto(x));
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

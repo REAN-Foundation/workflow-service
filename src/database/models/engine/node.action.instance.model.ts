@@ -22,6 +22,9 @@ export class NodeActionInstance {
     @Column({ type: 'enum', enum: ActionType, nullable: false })
     ActionType : ActionType;
 
+    @Column({ type: 'int', nullable: false, default: 0 })
+    Sequence: number;
+
     @Column({ type: 'uuid', nullable: false })
     NodeId: string;
 

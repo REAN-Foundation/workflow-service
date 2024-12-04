@@ -119,6 +119,9 @@ export class SchemaService extends BaseService {
                     Nodes : true,
                 }
             });
+            if (!schema) {
+                ErrorHandler.throwNotFoundError('Schema not found!');
+            }
             const rootNode = await this._commonUtils.getNode(schema.RootNodeId);
             return SchemaMapper.toResponseDto(schema, rootNode);
         } catch (error) {

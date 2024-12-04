@@ -16,6 +16,7 @@ import {
 import { NodeInstance } from '../../models/engine/node.instance.model';
 import { Node } from '../../models/engine/node.model';
 import { CommonUtilsService } from './common.utils.service';
+import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -31,46 +32,40 @@ export class SchemaInstanceService extends BaseService {
 
     _nodeInstanceRepository: Repository<NodeInstance> = Source.getRepository(NodeInstance);
 
-    _commonUtils: CommonUtilsService = new CommonUtilsService();
+    _nodeActionInstanceRepository: Repository<NodeActionInstance> = Source.getRepository(NodeActionInstance);
+
+    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
 
     //#endregion
 
     public create = async (createModel: SchemaInstanceCreateModel)
         : Promise<SchemaInstanceResponseDto> => {
 
-        const schema = await this._commonUtils.getSchema(createModel.SchemaId);
-        const rootNode = await this._commonUtils.getNode(schema.RootNodeId);
+        const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
+        const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
 
         const schemaInstance = this._schemaInstanceRepository.create({
-            Schema : schema,
+            TenantId      : createModel.TenantId,
+            Code          : createModel.Code,
+            ContextParams : createModel.ContextParams,
+            Schema        : schema,
         });
         var record = await this._schemaInstanceRepository.save(schemaInstance);
+
+        //Create root node instance
         const rootNodeInstance = await this._nodeInstanceRepository.create({
             Node           : rootNode,
             SchemaInstance : schemaInstance
-        }
-        );
+        });
         const rootNodeInstanceRecord = await this._nodeInstanceRepository.save(rootNodeInstance);
+
+        //Add action instances to the root node instance
+        await this._commonUtilsService.createNodeActionInstances(rootNodeInstanceRecord.id);
 
         record.RootNodeInstance = rootNodeInstanceRecord;
         record.CurrentNodeInstance = rootNodeInstanceRecord;
         record.AlmanacObjects = [];
         record = await this._schemaInstanceRepository.save(record);
-
-        const rootNodeId = schema.RootNodeId;
-
-        if (schema.Nodes && schema.Nodes.length > 0) {
-            for await (var node of schema.Nodes) {
-                if (node.id !== rootNodeId) {
-                    var nodeInstance = await this._nodeInstanceRepository.create({
-                        Node           : node,
-                        SchemaInstance : schemaInstance
-                    });
-                    const nodeInstanceRecord = await this._nodeInstanceRepository.save(nodeInstance);
-                    logger.info(`Node Instance created: ${nodeInstanceRecord.id}`);
-                }
-            }
-        }
 
         return await this.getById(record.id);
     };

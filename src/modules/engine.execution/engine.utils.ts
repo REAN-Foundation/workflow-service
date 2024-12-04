@@ -18,6 +18,10 @@ export function compareLocations(
     threshold: number,
     unit: DistanceUnit = 'm'
 ): boolean {
+    if (location1 == null || location2 == null) {
+        logger.error("Both locations must be valid.");
+        return false;
+    }
     if (
         location1.Lattitude == null ||
             location1.Longitude == null ||

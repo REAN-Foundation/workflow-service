@@ -15,7 +15,7 @@ export interface EventCreateModel {
     SchemaInstanceId?: uuid;
     UserMessage     ?: UserMessageEvent;
     Payload         ?: any;
-    EventTimeStamp   : Date;
+    EventTimestamp   : Date;
 }
 
 export interface EventUpdateModel {
@@ -32,7 +32,7 @@ export interface EventResponseDto {
     SchemaInstanceCode?: string;
     UserMessage       ?: UserMessageEvent;
     Payload           ?: any;
-    EventTimeStamp     : Date;
+    EventTimestamp     : Date;
     Handled           ?: boolean;
     HandledTimestamp  ?: Date;
     CreatedAt          : Date;

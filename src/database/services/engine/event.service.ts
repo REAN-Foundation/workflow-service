@@ -27,10 +27,11 @@ export class EventService extends BaseService {
         : Promise<EventResponseDto> => {
 
         var eventModel = {
+            TenantId         : createModel.TenantId,
             EventType        : createModel.EventType,
             SchemaId         : createModel.SchemaId,
             SchemaInstanceId : createModel.SchemaInstanceId,
-            EventTimeStamp   : createModel.EventTimeStamp,
+            EventTimestamp   : createModel.EventTimestamp,
             UserMessage      : createModel.UserMessage,
             Payload          : createModel.Payload,
         };

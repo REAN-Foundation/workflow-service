@@ -25,6 +25,7 @@ import { NodePath } from "./models/engine/node.path.model";
 import { NodeActionInstance } from "./models/engine/node.action.instance.model";
 import { Question } from "./models/engine/question.model";
 import { QuestionOption } from "./models/engine/question.option.model";
+import { Event } from "./models/engine/event.model";
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +63,7 @@ class DatabaseConnector {
             Rule,
             Schema,
             SchemaInstance,
+            Event,
             FileResource,
             Person,
             User,

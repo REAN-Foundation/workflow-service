@@ -26,10 +26,12 @@ export class NodeValidator extends BaseValidator {
                 SchemaId     : joi.string().uuid().required(),
                 Actions      : joi.array().items(joi.object({
                     Type        : joi.string().valid(...Object.values(ActionType)).required(),
+                    Sequence    : joi.number().integer().optional(),
                     Name        : joi.string().max(64).required(),
                     Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
+                    Output      : joi.object().optional(),
                 })).optional(),
                 RuleId       : joi.string().uuid().optional(),
                 DelaySeconds : joi.number().integer().optional(),
@@ -76,6 +78,7 @@ export class NodeValidator extends BaseValidator {
                 SchemaId     : joi.string().uuid().required(),
                 Actions      : joi.array().items(joi.object({
                     Type        : joi.string().valid(...Object.values(ActionType)).required(),
+                    Sequence    : joi.number().integer().optional(),
                     Name        : joi.string().max(64).required(),
                     Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
@@ -142,10 +145,12 @@ export class NodeValidator extends BaseValidator {
                 SchemaId     : joi.string().uuid().required(),
                 Actions      : joi.array().items(joi.object({
                     Type        : joi.string().valid(...Object.values(ActionType)).required(),
+                    Sequence    : joi.number().integer().optional(),
                     Name        : joi.string().max(64).required(),
                     Description : joi.string().max(512).optional(),
                     RawInput    : joi.any().optional(),
                     Input       : joi.object().optional(),
+                    Output      : joi.object().optional(),
                 })).optional(),
                 QuestionText : joi.string().max(512).required(),
                 ResponseType : joi.string().valid(...Object.values(QuestionResponseType)).required(),

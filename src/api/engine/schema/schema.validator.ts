@@ -22,7 +22,8 @@ export class SchemaValidator extends BaseValidator {
                         Name        : joi.string().max(128).required(),
                         Type        : joi.string().valid(...Object.values(ParamType)).required(),
                         Description : joi.string().max(512).optional(),
-                        Value       : joi.any().required(),
+                        Value       : joi.any().allow(null).optional(),
+                        Key         : joi.string().max(256).optional(),
                     })).required()
                 }).optional(),
                 RootNode : joi.object({
@@ -34,16 +35,14 @@ export class SchemaValidator extends BaseValidator {
                         Name  : joi.string().max(128).required(),
                         Input : joi.object({
                             Params : joi.array().items(joi.object({
-                                ActionType : joi.string().valid(...Object.values(ActionType)).optional(),
-                                Type       : joi.string().valid(...Object.values(ParamType)).required(),
-                                Value      : joi.any().allow(null).required(),
-                                Source     : joi.string().valid(...Object.values(InputSourceType)).optional(),
-                                Key        : joi.string().max(256).optional(),
+                                Type   : joi.string().valid(...Object.values(ParamType)).required(),
+                                Value  : joi.any().allow(null).required(),
+                                Source : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                                Key    : joi.string().max(256).optional(),
                             })).required(),
                         }).required(),
                         Output : joi.object({
                             Params : joi.array().items(joi.object({
-                                ActionType  : joi.string().valid(...Object.values(ActionType)).optional(),
                                 Type        : joi.string().valid(...Object.values(ParamType)).required(),
                                 Value       : joi.any().allow(null).required(),
                                 Destination : joi.string().valid(...Object.values(OutputDestinationType)).optional(),

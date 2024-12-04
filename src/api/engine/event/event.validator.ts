@@ -21,7 +21,7 @@ export class EventValidator extends BaseValidator {
                     Phone          : joi.string().required(),
                     MessageType    : joi.string().valid(...Object.values(UserMessageType)).required(),
                     MessageChannel : joi.string().valid(...Object.values(MessageChannelType)).required(),
-                    EventTimeStamp : joi.date().required(),
+                    EventTimestamp : joi.date().required(),
                     TextMessage    : joi.string().optional(),
                     ImageUrl       : joi.string().optional(),
                     VideoUrl       : joi.string().optional(),
@@ -46,8 +46,8 @@ export class EventValidator extends BaseValidator {
                         PreviousNodeId       : joi.string().allow(null).uuid().optional(),
                     }).optional(),
                 }).optional(),
-                EventTimeStamp : joi.date().required(),
-                Payload        : joi.object().required(),
+                EventTimestamp : joi.date().required(),
+                Payload        : joi.object().allow(null).optional(),
             });
             await event.validateAsync(request.body);
             const model: EventCreateModel = {
@@ -56,7 +56,7 @@ export class EventValidator extends BaseValidator {
                 SchemaId         : request.body.SchemaId ?? null,
                 SchemaInstanceId : request.body.SchemaInstanceId ?? null,
                 UserMessage      : request.body.UserMessage ?? null,
-                EventTimeStamp   : request.body.EventTimeStamp,
+                EventTimestamp   : request.body.EventTimestamp,
                 Payload          : request.body.Payload,
             };
             return model;

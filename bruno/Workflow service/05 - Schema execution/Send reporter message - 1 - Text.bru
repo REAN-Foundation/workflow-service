@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{BASE_URL}}/engine/events
+  url: {{BASE_URL}}/engine/events/user-message
   body: json
   auth: none
 }
@@ -37,32 +37,25 @@ script:pre-request {
   bru.setEnvVar("TIMESTAMP", nowStr);
 }
 
-tests {
-  try {
-      var jsonRes = res.getBody();
-      bru.setEnvVar("RULE_ID", jsonRes.Data.id);
-      bru.setEnvVar("ROOT_CONDITION_ID", jsonRes.Data.Condition.id);
-      bru.setEnvVar("RULE_ACTION_ID", jsonRes.Data.Action.id);
-  }
-  catch (error) {
-      console.log(error.message);
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("USER_MESSAGE_EVENT_1_ID", res.body.Data.id);
   }
   
+}
+
+tests {
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(201);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
   
-  test("Schema is created", function () {
+  test("Event is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
-      expect(jsonRes.Data).to.have.property('Client');
-      expect(jsonRes.Data.Client).to.have.property('id');
-      expect(jsonRes.Data).to.have.property('Name');
-      expect(jsonRes.Data).to.have.property('Description');
-      expect(jsonRes.Data).to.have.property('ValidFrom');
-      expect(jsonRes.Data).to.have.property('RootNodeId');
   });
   
 }

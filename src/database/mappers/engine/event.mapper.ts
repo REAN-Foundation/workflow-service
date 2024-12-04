@@ -15,7 +15,7 @@ export class EventMapper {
             SchemaId         : event.SchemaId,
             SchemaInstanceId : event.SchemaInstanceId,
             UserMessage      : event.UserMessage,
-            EventTimeStamp   : event.EventTimeStamp,
+            EventTimestamp   : event.EventTimestamp,
             TenantId         : event.TenantId,
             Handled          : event.Handled,
             HandledTimestamp : event.HandledTimestamp,

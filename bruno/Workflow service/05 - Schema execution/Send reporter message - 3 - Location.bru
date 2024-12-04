@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{BASE_URL}}/engine/events
+  url: {{BASE_URL}}/engine/events/user-message
   body: json
   auth: none
 }
@@ -28,8 +28,8 @@ body:json {
       "MessageType": "Location",
       "MessageChannel": "WhatsApp",
       "Location": {
-        "Lattitude": "18.5186",
-        "Longitude": "73.856"
+        "Lattitude": 18.5186,
+        "Longitude": 73.856
       }
     }
   }
@@ -38,6 +38,15 @@ body:json {
 script:pre-request {
   const nowStr = new Date().toISOString();
   bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("USER_MESSAGE_EVENT_3_ID", res.body.Data.id);
+  }
+  
 }
 
 tests {

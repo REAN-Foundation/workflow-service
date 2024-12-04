@@ -38,7 +38,7 @@ export class Event {
     Payload: any;
 
     @Column({ type: 'timestamp', nullable: false })
-    EventTimeStamp: Date;
+    EventTimestamp: Date;
 
     @Column({ type: 'boolean', nullable: false, default: false })
     Handled: boolean;

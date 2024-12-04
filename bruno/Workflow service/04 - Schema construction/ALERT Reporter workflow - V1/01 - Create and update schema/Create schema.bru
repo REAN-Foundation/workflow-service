@@ -64,7 +64,7 @@ body:json {
 script:post-response {
   let status = res.getStatus();
   console.log(status)
-  if (status == 200) {
+  if (status == 201) {
     bru.setEnvVar("SCHEMA_ID", res.body.Data.id);
   }
   

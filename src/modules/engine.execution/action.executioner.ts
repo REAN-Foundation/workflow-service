@@ -1,5 +1,5 @@
 import { ExecutionStatus, InputSourceType, ParamType } from "../../domain.types/engine/engine.enums";
-import { ActionInputParams } from "../../domain.types/engine/intermediate.types/params.types";
+import { ActionInputParams, ActionOutputParams } from "../../domain.types/engine/intermediate.types/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
 import { ChatbotMessageService } from "../communication/chatbot.message.service";
@@ -13,6 +13,7 @@ import { SchemaResponseDto } from "../../domain.types/engine/schema.domain.types
 import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.instance.types";
 import { EventResponseDto } from "../../domain.types/engine/event.types";
 import { NodeActionResult } from "../../domain.types/engine/node.action.types";
+import needle = require('needle');
 
 ////////////////////////////////////////////////////////////////
 
@@ -297,6 +298,89 @@ export class ActionExecutioner {
         return {
             Success : result !== null,
             Result  : result !== null
+        };
+    };
+
+    public executeRestApiCallAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        const p = input.Params.find(x => x.Type === ParamType.RestApiParams);
+        if (!p) {
+            logger.error('Input parameters not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        if (!p.Value) {
+            logger.error('Value not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        const restApiParams = p.Value;
+        const url = restApiParams.Url;
+        const method = restApiParams.Method ?? 'GET';
+        const headers = restApiParams.Headers;
+        const queryParams = restApiParams.QueryParams;
+        const responseField = restApiParams.ResponseField;
+        // const responseType = restApiParams.ResponseType;
+
+        var responseBody = null;
+        // Execute the action
+        try {
+            const options = {
+                headers : headers,
+                json    : true
+            };
+            var updatedUrl = url;
+            if (queryParams && queryParams.length > 0) {
+                updatedUrl = url + '?';
+                var paramList = [];
+                queryParams.forEach((param) => {
+                    paramList.push(`${param.Key}=${param.Value}`);
+                });
+                updatedUrl += paramList.join('&');
+            }
+            var methodToUse = method.toLowerCase();
+            var response = await needle(methodToUse, updatedUrl, options);
+            if (response.statusCode === 200) {
+                responseBody = response.body;
+            }
+        }
+        catch (error) {
+            logger.error(`Error occurred while retrieving award event types!': ${error.message}`);
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var data = null;
+        if (responseBody && responseField && responseField.length > 0) {
+            data = responseBody[responseField];
+        }
+        if (data === null) {
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+        if (output && output.Params && output.Params.length > 0) {
+            var op = output.Params[0];
+            if (op) {
+                await this._almanac.addFact(op.Key, data);
+            }
+        }
+        return {
+            Success : true,
+            Result  : data
         };
     };
 

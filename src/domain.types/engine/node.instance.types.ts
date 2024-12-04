@@ -56,7 +56,9 @@ export interface NodeInstanceResponseDto {
             Name: string;
         };
     }[];
-    ActionInstances?: NodeActionInstanceResponseDto[];
+
+    ActionInstances  ?: NodeActionInstanceResponseDto[];
+
     CreatedAt: Date;
     UpdatedAt: Date;
 }

@@ -171,6 +171,47 @@ export class CommonUtilsService {
         }
     };
 
+    public createNodeActionInstance = async (nodeInstanceId: uuid, actionId: uuid): Promise<NodeActionInstanceResponseDto> => {
+        try {
+            var nodeInstance = await this._nodeInstanceRepository.findOne({
+                where : {
+                    id : nodeInstanceId
+                },
+                relations : {
+                    Node           : true,
+                    SchemaInstance : true
+                }
+            });
+            if (!nodeInstance) {
+                ErrorHandler.throwNotFoundError('NodeInstance not found');
+            }
+            var action = await this._actionRepository.findOne({
+                where : {
+                    id : actionId
+                }
+            });
+            if (!action) {
+                ErrorHandler.throwNotFoundError('Action not found');
+            }
+            var actionInstance = await this._nodeActionInstanceRepository.create({
+                ActionType       : action.Type,
+                Sequence         : action.Sequence,
+                ActionId         : action.id,
+                NodeId           : nodeInstance.Node.id,
+                NodeInstanceId   : nodeInstanceId,
+                SchemaInstanceId : nodeInstance.SchemaInstance.id,
+                Executed         : false,
+                Input            : action.Input,
+                Output           : action.Output,
+            });
+            var nodeActionInstance = await this._nodeActionInstanceRepository.save(actionInstance);
+            return NodeInstanceMapper.toNodeActionInstanceResponseDto(nodeActionInstance);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public getNodeActionInstances = async (nodeInstanceId: uuid): Promise<NodeActionInstanceResponseDto[]> => {
         try {
             var nodeInstance = await this._nodeInstanceRepository.findOne({
@@ -238,6 +279,25 @@ export class CommonUtilsService {
             actionInstance.ExecutionTimestamp = new Date();
             var updatedActionInstance = await this._nodeActionInstanceRepository.save(actionInstance);
             return NodeInstanceMapper.toNodeActionInstanceResponseDto(updatedActionInstance);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getActionInstance = async (actionId: uuid, schemaInstanceId:uuid)
+        : Promise<NodeActionInstanceResponseDto> => {
+        try {
+            var actionInstance = await this._nodeActionInstanceRepository.findOne({
+                where : {
+                    ActionId         : actionId,
+                    SchemaInstanceId : schemaInstanceId
+                }
+            });
+            if (!actionInstance) {
+                ErrorHandler.throwNotFoundError('ActionInstance not found');
+            }
+            return NodeInstanceMapper.toNodeActionInstanceResponseDto(actionInstance);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

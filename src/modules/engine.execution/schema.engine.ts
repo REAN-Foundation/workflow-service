@@ -5,7 +5,7 @@ import { SchemaResponseDto } from '../../domain.types/engine/schema.domain.types
 import { NodeService } from "../../database/services/engine/node.service";
 import { SchemaService } from "../../database/services/engine/schema.service";
 import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
-import { NodeInstanceResponseDto } from '../../domain.types/engine/node.instance.types';
+import { NodeActionInstanceResponseDto, NodeInstanceResponseDto } from '../../domain.types/engine/node.instance.types';
 import { formatDateToYYMMDD } from './engine.utils';
 import { NodeInstance } from '../../database/models/engine/node.instance.model';
 import { logger } from '../../logger/logger';
@@ -15,6 +15,8 @@ import { CommonUtilsService } from '../../database/services/engine/common.utils.
 import { ActionExecutioner } from './action.executioner';
 import { Almanac } from './almanac';
 import { NodeActionResult } from "../../domain.types/engine/node.action.types";
+import { RuleService } from '../../database/services/engine/rule.service';
+import { ConditionProcessor } from './condition.processor';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +31,8 @@ export class SchemaEngine {
     _event: EventResponseDto | null = null;
 
     _nodeService: NodeService = new NodeService();
+
+    _ruleService: RuleService = new RuleService();
 
     _nodeInstanceService: NodeInstanceService = new NodeInstanceService();
 
@@ -131,28 +135,102 @@ export class SchemaEngine {
         else if (currentNode.Type === NodeType.ExecutionNode) {
             return await this.traverseExecutionNode(currentNode, currentNodeInstance);
         }
-
+        return currentNodeInstance;
     }
 
     private async traverseQuestionNode(
         currentNode: NodeResponseDto,
         currentNodeInstance: NodeInstanceResponseDto
-    ): Promise<NodeInstance> {
-        return null;
+    ): Promise<NodeInstanceResponseDto> {
+
+        logger.info(`Traversing Question Node: ${currentNode.Name}`);
+        logger.info(`Question Node instance: ${currentNodeInstance.id}`);
+
+        return currentNodeInstance;
     }
 
     private async traverseYesNoNode(
         currentNode: NodeResponseDto,
         currentNodeInstance: NodeInstanceResponseDto
-    ): Promise<NodeInstance> {
-        return null;
+    ): Promise<NodeInstanceResponseDto> {
+
+        var yesActionId = await currentNode.YesAction?.id;
+        var noActionId = await currentNode.NoAction?.id;
+
+        var yesAction = await this._nodeService.getById(yesActionId);
+        var noAction = await this._nodeService.getById(noActionId);
+
+        var yesActionInstance = await this._commonUtilsService.getActionInstance(yesAction.id, this._schemaInstance.id);
+        var noActionInstance = await this._commonUtilsService.getActionInstance(noAction.id, this._schemaInstance.id);
+
+        if (!yesActionInstance) {
+            yesActionInstance = await this._commonUtilsService.createNodeActionInstance(currentNodeInstance.id, yesAction.id);
+        }
+        if (!noActionInstance) {
+            noActionInstance = await this._commonUtilsService.createNodeActionInstance(currentNodeInstance.id, noAction.id);
+        }
+
+        var ruleId = currentNode.RuleId;
+        var rule = await this._ruleService.getById(ruleId);
+        if (!rule) {
+            logger.error(`Rule not found for Node ${currentNode.Name}`);
+            return null;
+        }
+        const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
+        var condition = rule.Condition;
+        var processor = new ConditionProcessor(this._almanac);
+        var conditionResult = await processor.processCondition(condition, null);
+        logger.info(`Yes/No Node ${currentNode.Name} Condition Result: ${conditionResult}`);
+        var result: NodeActionResult = {
+            Success : false,
+            Result  : null,
+        };
+        if (conditionResult) {
+            result = await this.executeAction(yesActionInstance, actionExecutioner);
+        }
+        else {
+            result = await this.executeAction(noActionInstance, actionExecutioner);
+        }
+        logger.info(`Yes/No Node Action Result: ${JSON.stringify(result)}`);
+
+        return currentNodeInstance;
     }
 
     private async traverseExecutionNode(
         currentNode: NodeResponseDto,
         currentNodeInstance: NodeInstanceResponseDto
-    ): Promise<NodeInstance> {
-        return null;
+    ): Promise<NodeInstanceResponseDto> {
+
+        if (currentNodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
+            var nextNodeId = currentNode.NextNodeId;
+            if (!nextNodeId) {
+                logger.info(`End of the workflow. Existing...`);
+                return currentNodeInstance;
+            }
+            var nextNode = await this._nodeService.getById(nextNodeId);
+            if (!nextNode) {
+                logger.error(`Next node not found for Node ${currentNode.Name}`);
+                return currentNodeInstance;
+            }
+            var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
+            var nextNodeInstance = await this._nodeInstanceService.getByNodeIdAndSchemaInstance(nextNodeId, schemaInstanceId);
+            if (!nextNodeInstance) {
+                nextNodeInstance = await this._nodeInstanceService.create({
+                    Type             : nextNode.Type,
+                    Input            : nextNode.Input,
+                    NodeId           : nextNode.id,
+                    SchemaInstanceId : schemaInstanceId,
+                    ExecutionStatus  : ExecutionStatus.Pending,
+                });
+            }
+            if (!nextNodeInstance) {
+                logger.error(`Unable to get next node! ...`);
+                return currentNodeInstance;
+            }
+            currentNodeInstance = nextNodeInstance;
+            currentNode = nextNode;
+        }
+        return currentNodeInstance;
     }
 
     private async executeNodeActions(
@@ -176,33 +254,9 @@ export class SchemaEngine {
         var results = new Map<string, NodeActionResult>();
 
         for (var actionInstance of actionInstances) {
-
             if (actionInstance.Executed !== true) {
-
-                if (actionInstance.ActionType === ActionType.TriggerListeningNode) {
-                    var result = await actionExecutioner.ExecuteTriggerListeningNodeAction(actionInstance);
-                    results.set(actionInstance.id, result);
-                }
-                else if (actionInstance.ActionType === ActionType.SendMessage) {
-                    var result = await actionExecutioner.executeSendMessageAction(actionInstance);
-                    results.set(actionInstance.id, result);
-                }
-                else if (actionInstance.ActionType === ActionType.SendMultipleMessages) {
-                    var result = await actionExecutioner.executeSendMultipleMessagesAction(actionInstance);
-                    results.set(actionInstance.id, result);
-                }
-                else if (actionInstance.ActionType === ActionType.GetFromAlmanac) {
-                    var result = await actionExecutioner.executeStoreToAlmanacAction(actionInstance);
-                    results.set(actionInstance.id, result);
-                }
-                else if (actionInstance.ActionType === ActionType.StoreToAlmanac) {
-                    var result = await actionExecutioner.executeGetFromAlmanacAction(actionInstance);
-                    results.set(actionInstance.id, result);
-                }
-                else if (actionInstance.ActionType === ActionType.ExistsInAlmanac) {
-                    var result = await actionExecutioner.executeExistsInAlmanacAction(actionInstance);
-                    results.set(actionInstance.id, result);
-                }
+                var result: NodeActionResult = await this.executeAction(actionInstance, actionExecutioner);
+                results.set(actionInstance.id, result);
             }
         }
 
@@ -212,6 +266,42 @@ export class SchemaEngine {
             await this._nodeInstanceService.setExecutionStatus(currentNodeInstance.id, ExecutionStatus.Executed);
         }
         return allExecuted;
+    }
+
+    private async executeAction(actionInstance: NodeActionInstanceResponseDto, actionExecutioner: ActionExecutioner) {
+        var result: NodeActionResult = {
+            Success : false,
+            Result  : null,
+        };
+
+        if (actionInstance.ActionType === ActionType.TriggerListeningNode) {
+            result = await actionExecutioner.ExecuteTriggerListeningNodeAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.SendMessage) {
+            result = await actionExecutioner.executeSendMessageAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.SendMultipleMessages) {
+            result = await actionExecutioner.executeSendMultipleMessagesAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.GetFromAlmanac) {
+            result = await actionExecutioner.executeStoreToAlmanacAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.StoreToAlmanac) {
+            result = await actionExecutioner.executeGetFromAlmanacAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.ExistsInAlmanac) {
+            result = await actionExecutioner.executeExistsInAlmanacAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.Continue) {
+            return {
+                Success : true,
+                Result  : true,
+            };
+        }
+        else if (actionInstance.ActionType === ActionType.RestApiCall) {
+            result = await actionExecutioner.executeRestApiCallAction(actionInstance);
+        }
+        return result;
     }
 
 }

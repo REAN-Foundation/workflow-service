@@ -2,8 +2,9 @@ import { ConditionOperand } from "../../domain.types/engine/intermediate.types/r
 import { ConditionService } from "../../database/services/engine/condition.service";
 import { RuleService } from "../../database/services/engine/rule.service";
 import { uuid } from "../../domain.types/miscellaneous/system.types";
-import { CompositionOperatorType, LogicalOperatorType, OperandDataType, OperatorType } from "../../domain.types/engine/engine.enums";
+import { CompositionOperatorType, InputSourceType, LogicalOperatorType, OperandDataType, OperatorType } from "../../domain.types/engine/engine.enums";
 import { ConditionResponseDto } from "../../domain.types/engine/condition.types";
+import { Almanac } from "./almanac";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -15,11 +16,13 @@ export class ConditionProcessor {
 
     private _ruleService: RuleService = new RuleService();
 
-    constructor(schemaInstanceId: uuid) {
-        this._schemaInstanceId = schemaInstanceId;
+    private _almanac: Almanac = null;
+
+    constructor(almanac: Almanac) {
+        this._almanac = almanac;
     }
 
-    public processCondition = async (condition: ConditionResponseDto, argument: any): Promise<boolean> => {
+    public processCondition = async (condition: ConditionResponseDto, argument?: any): Promise<boolean> => {
 
         if (!condition || !argument) {
             throw new Error(`Invalid condition to process!`);
@@ -27,7 +30,9 @@ export class ConditionProcessor {
 
         if (condition.OperatorType === OperatorType.Logical) {
             var first = condition.FirstOperand;
-            first.Value = argument;
+            if (argument) {
+                first.Value = argument;
+            }
             return this.operate(condition.LogicalOperatorType, first, condition.SecondOperand, condition.ThirdOperand);
         }
         else {
@@ -66,11 +71,31 @@ export class ConditionProcessor {
 
     //#region Privates
 
-    private operate(
+    private async operate(
         operator: LogicalOperatorType,
         first: ConditionOperand,
         second: ConditionOperand,
-        third?: ConditionOperand): boolean {
+        third?: ConditionOperand): Promise<boolean> {
+
+        if (!first.Value) {
+            if (first.Source === InputSourceType.Almanac) {
+                first.Value = await this._almanac.getFact(first.Key);
+                if (first.DataType === OperandDataType.Boolean) {
+                    var isBoolean = typeof first.Value === 'boolean';
+                    first.Value = isBoolean ? first.Value : first.Value !== null && first.Value !== undefined;
+                }
+
+            }
+        }
+        if (!second.Value) {
+            if (second.Source === InputSourceType.Almanac) {
+                second.Value = await this._almanac.getFact(second.Key);
+                if (second.DataType === OperandDataType.Boolean) {
+                    var isBoolean = typeof second.Value === 'boolean';
+                    second.Value = isBoolean ? second.Value : second.Value !== null && second.Value !== undefined;
+                }
+            }
+        }
 
         var resolved = false;
 

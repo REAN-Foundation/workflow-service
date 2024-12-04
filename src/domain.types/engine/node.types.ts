@@ -75,6 +75,7 @@ export interface NodeResponseDto {
         QuestionText?: string;
         Options?     : XQuestionOption[];
     },
+    NextNodeId  ?: uuid;
     Actions      : NodeActionResponseDto[];
     YesAction   ?: NodeActionResponseDto;
     NoAction    ?: NodeActionResponseDto;

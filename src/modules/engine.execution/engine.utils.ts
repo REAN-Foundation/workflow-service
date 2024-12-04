@@ -75,56 +75,62 @@ export function compareLocations(
      *
      * @param timestamp1 - The first timestamp to compare
      * @param timestamp2 - The second timestamp to compare
-     * @param threshold - The maximum allowable time difference
-     * @param unit - The unit of time ('ms', 's', 'min', 'h', or 'd')
+     * @param thresholdInMin - The maximum allowable time difference in minutes
      * @returns True if the timestamps are within the threshold, otherwise false
      */
 export function compareTimestamps(
     timestamp1: Date,
     timestamp2: Date,
-    threshold: number,
-    unit: TimestampUnit = 'm'
+    thresholdInMin = 5
 ): boolean {
+    if (timestamp1 == null || timestamp2 == null) {
+        logger.error("Both timestamps must be valid.");
+        return false;
+    }
+    const dt1 = new Date(timestamp1);
+    const dt2 = new Date(timestamp2);
+
     // Convert timestamps to milliseconds
-    const time1 = timestamp1.getTime();
-    const time2 = timestamp2.getTime();
+    const time1 = dt1.getTime();
+    const time2 = dt2.getTime();
 
     // Calculate absolute difference in milliseconds
     const diffInMs = Math.abs(time1 - time2);
 
     // Convert threshold into milliseconds based on the unit
-    let thresholdInMs: number = 1000 * 60 * 60 * 24;
-    switch (unit) {
-        case 'ms': // Milliseconds
-            thresholdInMs = threshold;
-            break;
-        case 's': // Seconds
-            thresholdInMs = threshold * 1000;
-            break;
-        case 'm': // Minutes
-            thresholdInMs = threshold * 1000 * 60;
-            break;
-        case 'h': // Hours
-            thresholdInMs = threshold * 1000 * 60 * 60;
-            break;
-        case 'd': // Days
-            thresholdInMs = threshold * 1000 * 60 * 60 * 24;
-            break;
-        case 'w': // Weeks
-            thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 7;
-            break;
-        case 'mo': // Months
-            thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 30;
-            break;
-        case 'y': // Years
-            thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 365;
-            break;
-        default:
-            logger.error("Unsupported unit. Use 'ms', 's', 'min', 'h', or 'd'.");
-    }
+    const threshold: number = 1000 * 60 * thresholdInMin; // Default to minutes
+
+    // switch (unit) {
+    //     case 'ms': // Milliseconds
+    //         thresholdInMs = threshold;
+    //         break;
+    //     case 's': // Seconds
+    //         thresholdInMs = threshold * 1000;
+    //         break;
+    //     case 'm': // Minutes
+    //         thresholdInMs = threshold * 1000 * 60;
+    //         break;
+    //     case 'h': // Hours
+    //         thresholdInMs = threshold * 1000 * 60 * 60;
+    //         break;
+    //     case 'd': // Days
+    //         thresholdInMs = threshold * 1000 * 60 * 60 * 24;
+    //         break;
+    //     case 'w': // Weeks
+    //         thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 7;
+    //         break;
+    //     case 'mo': // Months
+    //         thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 30;
+    //         break;
+    //     case 'y': // Years
+    //         thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 365;
+    //         break;
+    //     default:
+    //         logger.error("Unsupported unit. Use 'ms', 's', 'min', 'h', or 'd'.");
+    // }
 
     // Check if the difference is within the threshold
-    return diffInMs <= thresholdInMs;
+    return diffInMs <= threshold;
 }
 
 export function formatDateToYYMMDD(date: Date): string {

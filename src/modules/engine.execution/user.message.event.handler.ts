@@ -124,8 +124,8 @@ export class UserMessageEventHandler {
                 }
             }
             if (p.Type === ParamType.DateTime) {
-                var timeUnit = p.ComparisonUnit as TimestampUnit ?? 'm';
-                if (!compareTimestamps(p.Value, new Date(), p.ComparisonThreshold, timeUnit)) {
+                // var timeUnit = p.ComparisonUnit as TimestampUnit ?? 'm';
+                if (!compareTimestamps(p.Value, new Date(), p.ComparisonThreshold)) {
                     if (p.Required) {
                         return [];
                     }

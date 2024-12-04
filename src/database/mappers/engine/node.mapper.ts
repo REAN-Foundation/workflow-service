@@ -53,6 +53,7 @@ export class NodeMapper {
                     };
                 }) : null,
             } : null,
+            NextNodeId   : node.NextNodeId,
             Actions      : actions,
             DelaySeconds : node.DelaySeconds,
             RuleId       : node.RuleId,

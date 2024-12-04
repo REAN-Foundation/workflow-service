@@ -5,7 +5,7 @@ import { Client } from '../../../database/models/client/client.model';
 import { NodeAction } from '../../models/engine/node.action.model';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { Source } from '../../database.connector';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { NodeActionCreateModel, NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
 import { SchemaInstance } from '../../../database/models/engine/schema.instance.model';
@@ -15,6 +15,8 @@ import { NodeInstanceMapper } from '../../../database/mappers/engine/node.instan
 import { logger } from '../../../logger/logger';
 import { NodeActionInstanceResponseDto } from '../../../domain.types/engine/node.instance.types';
 import { NodeActionMapper } from '../../../database/mappers/engine/node.action.mapper';
+import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
+import { NodeType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -298,6 +300,31 @@ export class CommonUtilsService {
                 ErrorHandler.throwNotFoundError('ActionInstance not found');
             }
             return NodeInstanceMapper.toNodeActionInstanceResponseDto(actionInstance);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getActiveListeningNodeInstances = async (schemaInstanceId: uuid) => {
+        try {
+            var nodeInstances = await this._nodeInstanceRepository.find({
+                where : {
+                    Type           : NodeType.ListeningNode,
+                    SchemaInstance : {
+                        id : schemaInstanceId
+                    },
+                    ExecutionStatus : Not(ExecutionStatus.Executed)
+                },
+                select : {
+                    Node : {
+                        id   : true,
+                        Name : true
+                    },
+                }
+            });
+            var dtos = nodeInstances.map(x => NodeInstanceMapper.toResponseDto(x));
+            return dtos;
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

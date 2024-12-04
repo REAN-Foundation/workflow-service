@@ -53,7 +53,7 @@ export class ActionExecutioner {
         const input = action.Input as ActionInputParams;
 
         // Get the input parameters
-        var nodeId = await this.getActionParamValue(input, ParamType.NodeId, 'NodeId');
+        var nodeId = await this.getActionParamValue(input, ParamType.NodeId);
         if (!nodeId) {
             logger.error('NodeId not found in input parameters');
             return {
@@ -393,7 +393,7 @@ export class ActionExecutioner {
             return null;
         }
 
-        const p = input.Params.find(x => x.Type === type && (!paramName || x.Name === paramName));
+        const p = input.Params.find(x => x.Type === type);
         if (!p) {
             return null;
         }

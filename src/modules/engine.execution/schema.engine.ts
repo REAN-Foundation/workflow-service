@@ -1,4 +1,4 @@
-import { ActionType, ExecutionStatus, NodeType, ParamType } from '../../domain.types/engine/engine.enums';
+import { ActionType, ExecutionStatus, InputSourceType, NodeType, ParamType } from '../../domain.types/engine/engine.enums';
 import { SchemaInstanceResponseDto } from '../../domain.types/engine/schema.instance.types';
 import { EventResponseDto } from '../../domain.types/engine/event.types';
 import { SchemaResponseDto } from '../../domain.types/engine/schema.domain.types';
@@ -46,7 +46,9 @@ export class SchemaEngine {
         this._schema = schema;
         this._schemaInstance = schemaInstance;
         this._event = event;
-        this._almanac = new Almanac(schemaInstance.id);
+        if (schemaInstance) {
+            this._almanac = new Almanac(schemaInstance.id);
+        }
     }
 
     public execute = async () => {
@@ -68,6 +70,9 @@ export class SchemaEngine {
             currentNodeInstance = await this._nodeInstanceService.getById(this._schemaInstance.CurrentNodeInstance.id);
         }
 
+        //Set up the almanac
+        this._almanac = new Almanac(this._schemaInstance.id);
+
         var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
 
         if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
@@ -78,9 +83,67 @@ export class SchemaEngine {
             logger.info(`Node ${currentNode.Name} All actions executed: ${allExecuted}`);
         }
 
+        await this.handleListeningNodes();
+
         var currentNodeInstance = await this.traverse(currentNode, currentNodeInstance);
+        if (!currentNodeInstance) {
+            logger.error(`Error while executing workflow. Cannot find the node!`);
+        }
+
+        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
+
         return currentNodeInstance;
     };
+
+    private async handleListeningNodes() {
+
+        var listeningNodeInstances = await this._commonUtilsService.getActiveListeningNodeInstances(this._schemaInstance.id);
+
+        for (var listeningNodeInstance of listeningNodeInstances) {
+            var listeningNode = await this._nodeService.getById(listeningNodeInstance.Node.id);
+            var input = listeningNode.Input;
+            var par = input.Params.length > 0 ? input.Params[0] : null;
+            if (!par) {
+                logger.error(`Error while executing workflow. Cannot find the input params!`);
+                continue;
+            }
+            var expectedType = par.Type;
+            var expectedSource = par.Source;
+            var inputsFulfilled = false;
+            var inputValue = null;
+            if (expectedSource === InputSourceType.UserEvent) {
+                if (expectedType === ParamType.Location) {
+                    if (this._event.UserMessage.Location) {
+                        inputValue = this._event.UserMessage.Location;
+                        inputsFulfilled = true;
+                    }
+                }
+            }
+            if (!inputsFulfilled) {
+                logger.error(`Error while executing workflow. Required inputs not fulfilled!`);
+                continue;
+            }
+            //Execute the actions
+            var actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
+            var actionInstances = await this._commonUtilsService.getNodeActionInstances(listeningNodeInstance.id);
+            var results = new Map<string, NodeActionResult>();
+            for (var actionInstance of actionInstances) {
+                if (actionInstance.Executed !== true) {
+                    var params = actionInstance.Input?.Params;
+                    if (params && params.length === 0) {
+                        continue;
+                    }
+                    for (var p of actionInstance.Input.Params) {
+                        if (p.Type === expectedType && p.Source === expectedSource) {
+                            p.Value = inputValue;
+                        }
+                    }
+                    var result: NodeActionResult = await this.executeAction(actionInstance, actionExecutioner);
+                    results.set(actionInstance.id, result);
+                }
+            }
+        }
+    }
 
     private async createSchemaInstance(schema: SchemaResponseDto, event: EventResponseDto) {
 

@@ -51,3 +51,8 @@ export interface NodeActionSearchFilters extends BaseSearchFilters {
 export interface NodeActionSearchResults extends BaseSearchResults {
     Items: NodeActionResponseDto[];
 }
+
+export interface NodeActionResult {
+    Success: boolean;
+    Result : any;
+}

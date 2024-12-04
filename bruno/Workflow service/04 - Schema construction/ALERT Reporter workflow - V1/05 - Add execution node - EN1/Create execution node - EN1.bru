@@ -73,7 +73,7 @@ body:json {
           "Params": [
             {
               "Name": "List of phonenumbers",
-              "Type": "Phonenumber",
+              "Type": "Array",
               "Value": null,
               "Source": "Almanac",
               "Key": "ContextParams:CFR:Phonenumbers"
@@ -81,7 +81,7 @@ body:json {
             {
               "Name": "MessageText",
               "Type": "Text",
-              "Value": "There is an emergency reported at {{Timestamp}}"
+              "Value": "There is an emergency reported at {{Timestamp}}."
             },
             {
               "Name": "Timestamp",
@@ -89,6 +89,28 @@ body:json {
               "Value": null,
               "Source": "SystemData",
               "Key": "Timestamp"
+            }
+          ]
+        }
+      },
+          {
+        "Type": "SendMultipleMessages",
+        "Name": "Send message to CFRs",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Name": "List of phonenumbers",
+              "Type": "Array",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:CFR:Phonenumbers"
+            },
+            {
+              "Name": "Location",
+              "Type": "Location",
+              "Source": "Almanac",
+              "Key": "ContextParams:Location"
             }
           ]
         }

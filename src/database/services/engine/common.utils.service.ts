@@ -122,6 +122,10 @@ export class CommonUtilsService {
             var nodeInstance = await this._nodeInstanceRepository.findOne({
                 where : {
                     id : nodeInstanceId
+                },
+                relations : {
+                    Node           : true,
+                    SchemaInstance : true,
                 }
             });
             if (!nodeInstance) {
@@ -135,9 +139,17 @@ export class CommonUtilsService {
             if (!node) {
                 ErrorHandler.throwNotFoundError('Node not found');
             }
+            var actionRecords = await this._actionRepository.find({
+                where : {
+                    ParentNode : {
+                        id : node.id
+                    }
+                }
+            });
+            var actions = actionRecords.map(x => NodeActionMapper.toResponseDto(x));
 
             var actionInstances: NodeActionInstanceResponseDto[] = [];
-            for await (var action of node.Actions) {
+            for (var action of actions) {
                 const actionInstance = await this._nodeActionInstanceRepository.create({
                     ActionType       : action.Type,
                     Sequence         : action.Sequence,
@@ -150,7 +162,7 @@ export class CommonUtilsService {
                     Output           : action.Output,
                 });
                 var nodeActionInstance = await this._nodeActionInstanceRepository.save(actionInstance);
-                actionInstances.push(NodeInstanceMapper.toNodeActionInstanceResponseDto(nodeActionInstance));
+                actionInstances.push(NodeInstanceMapper.toNodeActionInstanceResponseDto(nodeActionInstance, action));
             }
             return actionInstances;
         } catch (error) {
@@ -161,15 +173,71 @@ export class CommonUtilsService {
 
     public getNodeActionInstances = async (nodeInstanceId: uuid): Promise<NodeActionInstanceResponseDto[]> => {
         try {
-            var instances = await this._nodeActionInstanceRepository.find({
+            var nodeInstance = await this._nodeInstanceRepository.findOne({
                 where : {
-                    NodeInstanceId : nodeInstanceId
+                    id : nodeInstanceId
+                },
+                relations : {
+                    Node           : true,
+                    SchemaInstance : true
                 }
             });
-            if (!instances) {
+            if (!nodeInstance) {
                 ErrorHandler.throwNotFoundError('NodeInstance not found');
             }
-            return instances.map(x => NodeInstanceMapper.toNodeActionInstanceResponseDto(x));
+            var nodeActions = await this._actionRepository.find({
+                where : {
+                    ParentNode : {
+                        id : nodeInstance.Node.id
+                    }
+                }
+            });
+            var actions = nodeActions.map(x => NodeActionMapper.toResponseDto(x));
+            var actionInstances: NodeActionInstanceResponseDto[] = [];
+            for (var action of actions) {
+                var actionInstance = await this._nodeActionInstanceRepository.findOne({
+                    where : {
+                        NodeInstanceId : nodeInstanceId,
+                        ActionId       : action.id
+                    }
+                });
+                if (!actionInstance) {
+                    actionInstance = await this._nodeActionInstanceRepository.create({
+                        ActionType       : action.Type,
+                        Sequence         : action.Sequence,
+                        ActionId         : action.id,
+                        NodeId           : nodeInstance.Node.id,
+                        NodeInstanceId   : nodeInstanceId,
+                        SchemaInstanceId : nodeInstance.SchemaInstance.id,
+                        Executed         : false,
+                        Input            : action.Input,
+                        Output           : action.Output,
+                    });
+                }
+                actionInstances.push(NodeInstanceMapper.toNodeActionInstanceResponseDto(actionInstance, action));
+            }
+
+            return actionInstances;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public markActionInstanceAsExecuted = async (actionInstanceId: uuid): Promise<NodeActionInstanceResponseDto> => {
+        try {
+            var actionInstance = await this._nodeActionInstanceRepository.findOne({
+                where : {
+                    id : actionInstanceId
+                }
+            });
+            if (!actionInstance) {
+                ErrorHandler.throwNotFoundError('ActionInstance not found');
+            }
+            actionInstance.Executed = true;
+            actionInstance.ExecutionTimestamp = new Date();
+            var updatedActionInstance = await this._nodeActionInstanceRepository.save(actionInstance);
+            return NodeInstanceMapper.toNodeActionInstanceResponseDto(updatedActionInstance);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

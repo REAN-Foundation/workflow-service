@@ -7,10 +7,13 @@ import {
 } from "../miscellaneous/system.types";
 import { ActionType, ExecutionStatus, NodeType } from "./engine.enums";
 import { ActionInputParams, ActionOutputParams } from "./intermediate.types/params.types";
+import { NodeActionResponseDto } from "./node.action.types";
 
 //////////////////////////////////////////////////////////////
 
 export interface NodeInstanceCreateModel {
+    Type            : NodeType;
+    Input           : ActionInputParams;
     NodeId          : uuid;
     SchemaInstanceId: uuid;
     ExecutionStatus : ExecutionStatus;
@@ -79,6 +82,7 @@ export interface NodeActionInstanceResponseDto {
     ExecutionTimestamp: Date;
     Input             : ActionInputParams;
     Output            : ActionOutputParams;
+    Action           ?: NodeActionResponseDto;
     CreatedAt         : Date;
     UpdatedAt         : Date;
 }

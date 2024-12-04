@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { ExecutionStatus } from "../../../domain.types/engine/engine.enums";
+import { ExecutionStatus, NodeType } from "../../../domain.types/engine/engine.enums";
 import {
     Column,
     Entity,
@@ -16,6 +16,7 @@ import { Rule } from "./rule.model";
 import { Node } from './node.model';
 import { SchemaInstance } from "./schema.instance.model";
 import { NodePath } from "./node.path.model";
+import { ActionInputParams } from "../../../domain.types/engine/intermediate.types/params.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -24,6 +25,9 @@ export class NodeInstance {
 
     @PrimaryGeneratedColumn('uuid')
     id : string;
+
+    @Column({ type: 'enum', enum: NodeType, nullable: false, default: NodeType.ExecutionNode })
+    Type : NodeType;
 
     @ManyToOne(() => Node)
     @JoinColumn()
@@ -40,6 +44,9 @@ export class NodeInstance {
 
     @Column({ type: 'enum', enum: ExecutionStatus, nullable: false, default: ExecutionStatus.Pending })
     ExecutionStatus : ExecutionStatus;
+
+    @Column({ type: 'json', nullable: true })
+    Input : ActionInputParams;
 
     @Column({ type: 'timestamp', nullable: true })
     StatusUpdateTimestamp : Date;

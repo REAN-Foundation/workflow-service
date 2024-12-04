@@ -4,6 +4,7 @@ import {
     NodeInstanceResponseDto
 } from '../../../domain.types/engine/node.instance.types';
 import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
+import { NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -58,7 +59,7 @@ export class NodeInstanceMapper {
         return dto;
     };
 
-    static toNodeActionInstanceResponseDto = (instance: NodeActionInstance): NodeActionInstanceResponseDto => {
+    static toNodeActionInstanceResponseDto = (instance: NodeActionInstance, action?: NodeActionResponseDto): NodeActionInstanceResponseDto => {
         if (instance == null) {
             return null;
         }
@@ -74,6 +75,7 @@ export class NodeInstanceMapper {
             ExecutionTimestamp : instance.ExecutionTimestamp,
             Input              : instance.Input,
             Output             : instance.Output,
+            Action             : action ?? null,
             CreatedAt          : instance.CreatedAt,
             UpdatedAt          : instance.UpdatedAt,
         };

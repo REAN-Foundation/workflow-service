@@ -8,7 +8,6 @@ import { NodeInstanceMapper } from '../../mappers/engine/node.instance.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import {
-    NodeActionInstanceResponseDto,
     NodeInstanceCreateModel,
     NodeInstanceResponseDto,
     NodeInstanceSearchFilters,
@@ -44,11 +43,15 @@ export class NodeInstanceService extends BaseService {
         const schemaInstance = await this.getSchemaInstance(createModel.SchemaInstanceId);
 
         const nodeInstance = this._nodeInstanceRepository.create({
-            Node           : node,
-            SchemaInstance : schemaInstance,
+            Node            : node,
+            SchemaInstance  : schemaInstance,
+            ExecutionStatus : createModel.ExecutionStatus,
+            Type            : node.Type,
+            Input           : createModel.Input,
         });
         var record = await this._nodeInstanceRepository.save(nodeInstance);
-        return NodeInstanceMapper.toResponseDto(record);
+        var actionInstances = await this._commonUtilsService.getNodeActionInstances(record.id);
+        return NodeInstanceMapper.toResponseDto(record, actionInstances);
     };
 
     public getById = async (id: uuid): Promise<NodeInstanceResponseDto> => {
@@ -74,6 +77,39 @@ export class NodeInstanceService extends BaseService {
                 return null;
             }
             var actionInstances = await this._commonUtilsService.getNodeActionInstances(id);
+            return NodeInstanceMapper.toResponseDto(nodeInstance, actionInstances);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getByNodeIdAndSchemaInstance = async (nodeId: uuid, schemaInstanceId: uuid)
+        : Promise<NodeInstanceResponseDto> => {
+        try {
+            var nodeInstance = await this._nodeInstanceRepository.findOne({
+                where : {
+                    Node : {
+                        id : nodeId
+                    },
+                    SchemaInstance : {
+                        id : schemaInstanceId
+                    }
+                },
+                relations : {
+                    SchemaInstance : {
+                        Schema : true,
+                    },
+                    ChildrenNodeInstances : {
+                        Node : true
+                    },
+                    Node : true,
+                },
+            });
+            if (!nodeInstance) {
+                return null;
+            }
+            var actionInstances = await this._commonUtilsService.getNodeActionInstances(nodeInstance.id);
             return NodeInstanceMapper.toResponseDto(nodeInstance, actionInstances);
         } catch (error) {
             logger.error(error.message);

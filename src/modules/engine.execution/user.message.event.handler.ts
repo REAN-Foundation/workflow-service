@@ -74,8 +74,8 @@ export class UserMessageEventHandler {
 
         // 3. Start the schema instance execution
 
-        var engine = new SchemaEngine();
-        var currentNodeInstance = await engine.execute(schema, schemaInstance, event);
+        var engine = new SchemaEngine(schema, schemaInstance, event);
+        var currentNodeInstance = await engine.execute();
         logger.info(`Current Node: ${currentNodeInstance.Node.Name}`);
 
         return true;

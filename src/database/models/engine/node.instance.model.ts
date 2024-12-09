@@ -51,14 +51,11 @@ export class NodeInstance {
     @Column({ type: 'timestamp', nullable: true })
     StatusUpdateTimestamp : Date;
 
-    @OneToOne(() => Rule, { nullable: true })
-    ChosenNodePath: NodePath;
-
-    @Column({ type: 'boolean', nullable: false, default: false })
-    Executed: boolean;
-
     @Column({ type: 'simple-json', nullable: true })
     ExecutionResult : any;
+
+    @OneToOne(() => Rule, { nullable: true })
+    ChosenNodePath: NodePath;
 
     @CreateDateColumn()
     CreatedAt : Date;

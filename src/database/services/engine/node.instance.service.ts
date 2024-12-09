@@ -181,7 +181,7 @@ export class NodeInstanceService extends BaseService {
         }
     };
 
-    public setExecutionStatus = async (nodeInstanceId: uuid, status: ExecutionStatus): Promise<boolean> => {
+    public setExecutionStatus = async (nodeInstanceId: uuid, status: ExecutionStatus, executionResult?: any): Promise<boolean> => {
         try {
             var record = await this._nodeInstanceRepository.findOne({
                 where : {
@@ -192,6 +192,8 @@ export class NodeInstanceService extends BaseService {
                 ErrorHandler.throwNotFoundError(`NodeInstance with ID ${nodeInstanceId} not found`);
             }
             record.ExecutionStatus = status;
+            record.StatusUpdateTimestamp = new Date();
+            record.ExecutionResult = executionResult ? executionResult : null;
             await this._nodeInstanceRepository.save(record);
             return true;
         } catch (error) {
@@ -230,7 +232,6 @@ export class NodeInstanceService extends BaseService {
                 ExecutionResult       : true,
                 ExecutionStatus       : true,
                 StatusUpdateTimestamp : true,
-                Executed              : true,
                 SchemaInstance        : {
                     id     : true,
                     Schema : {

@@ -7,7 +7,6 @@ import { SchemaService } from "../../database/services/engine/schema.service";
 import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
 import { NodeActionInstanceResponseDto, NodeInstanceResponseDto } from '../../domain.types/engine/node.instance.types';
 import { formatDateToYYMMDD } from './engine.utils';
-import { NodeInstance } from '../../database/models/engine/node.instance.model';
 import { logger } from '../../logger/logger';
 import { NodeInstanceService } from '../../database/services/engine/node.instance.service';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
@@ -73,6 +72,8 @@ export class SchemaEngine {
         //Set up the almanac
         this._almanac = new Almanac(this._schemaInstance.id);
 
+        await this.handleListeningNodes();
+
         var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
 
         if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
@@ -82,8 +83,6 @@ export class SchemaEngine {
             }
             logger.info(`Node ${currentNode.Name} All actions executed: ${allExecuted}`);
         }
-
-        await this.handleListeningNodes();
 
         var currentNodeInstance = await this.traverse(currentNode, currentNodeInstance);
         if (!currentNodeInstance) {

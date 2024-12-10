@@ -208,6 +208,9 @@ export class SchemaEngine {
         logger.info(`Traversing Question Node: ${currentNode.Name}`);
         logger.info(`Question Node instance: ${currentNodeInstance.id}`);
 
+        // TODO: Implement the question node traversal logic
+
+        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
         return currentNodeInstance;
     }
 
@@ -247,15 +250,52 @@ export class SchemaEngine {
             Success : false,
             Result  : null,
         };
-        if (conditionResult) {
-            result = await this.executeAction(yesActionInstance, actionExecutioner);
+        const actionToExecute = conditionResult ? yesActionInstance : noActionInstance;
+
+        if (actionToExecute.ActionType === ActionType.Continue) {
+            var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
+            currentNode = res.currentNode;
+            currentNodeInstance = res.currentNodeInstance;
         }
         else {
-            result = await this.executeAction(noActionInstance, actionExecutioner);
+            result = await this.executeAction(actionToExecute, actionExecutioner);
         }
+
         logger.info(`Yes/No Node Action Result: ${JSON.stringify(result)}`);
 
         return currentNodeInstance;
+    }
+
+    private async setNextNodeInstance(currentNode: NodeResponseDto, currentNodeInstance: NodeInstanceResponseDto) {
+        var nextNodeId = currentNode.NextNodeId;
+        if (!nextNodeId) {
+            logger.info(`End of the workflow. Existing...`);
+            return { currentNode, currentNodeInstance };
+        }
+        var nextNode = await this._nodeService.getById(nextNodeId);
+        if (!nextNode) {
+            logger.error(`Next node not found for Node ${currentNode.Name}`);
+            return { currentNode, currentNodeInstance };
+        }
+        var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
+        var nextNodeInstance = await this._nodeInstanceService.getByNodeIdAndSchemaInstance(nextNodeId, schemaInstanceId);
+        if (!nextNodeInstance) {
+            nextNodeInstance = await this._nodeInstanceService.create({
+                Type             : nextNode.Type,
+                Input            : nextNode.Input,
+                NodeId           : nextNode.id,
+                SchemaInstanceId : schemaInstanceId,
+                ExecutionStatus  : ExecutionStatus.Pending,
+            });
+        }
+        if (!nextNodeInstance) {
+            logger.error(`Unable to get next node! ...`);
+            return { currentNode, currentNodeInstance };
+        }
+        currentNodeInstance = nextNodeInstance;
+        currentNode = nextNode;
+        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
+        return { currentNode, currentNodeInstance };
     }
 
     private async traverseExecutionNode(
@@ -264,33 +304,9 @@ export class SchemaEngine {
     ): Promise<NodeInstanceResponseDto> {
 
         if (currentNodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
-            var nextNodeId = currentNode.NextNodeId;
-            if (!nextNodeId) {
-                logger.info(`End of the workflow. Existing...`);
-                return currentNodeInstance;
-            }
-            var nextNode = await this._nodeService.getById(nextNodeId);
-            if (!nextNode) {
-                logger.error(`Next node not found for Node ${currentNode.Name}`);
-                return currentNodeInstance;
-            }
-            var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
-            var nextNodeInstance = await this._nodeInstanceService.getByNodeIdAndSchemaInstance(nextNodeId, schemaInstanceId);
-            if (!nextNodeInstance) {
-                nextNodeInstance = await this._nodeInstanceService.create({
-                    Type             : nextNode.Type,
-                    Input            : nextNode.Input,
-                    NodeId           : nextNode.id,
-                    SchemaInstanceId : schemaInstanceId,
-                    ExecutionStatus  : ExecutionStatus.Pending,
-                });
-            }
-            if (!nextNodeInstance) {
-                logger.error(`Unable to get next node! ...`);
-                return currentNodeInstance;
-            }
-            currentNodeInstance = nextNodeInstance;
-            currentNode = nextNode;
+            var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
+            currentNode = res.currentNode;
+            currentNodeInstance = res.currentNodeInstance;
         }
         return currentNodeInstance;
     }

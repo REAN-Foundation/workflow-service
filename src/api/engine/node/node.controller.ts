@@ -139,4 +139,16 @@ export class NodeController {
         }
     };
 
+    setBaseRuleToNode = async (request: express.Request, response: express.Response) => {
+        try {
+            const id = await this._validator.requestParamAsUUID(request, 'id');
+            const ruleId = await this._validator.requestParamAsUUID(request, 'ruleId');
+            const success = await this._service.setBaseRuleToNode(id, ruleId);
+            const message = 'Rule set to node successfully!';
+            ResponseHandler.success(request, response, message, 200, { Success: success });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 }

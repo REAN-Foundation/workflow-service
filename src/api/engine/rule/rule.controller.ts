@@ -16,7 +16,6 @@ export class RuleController {
 
     _validator: RuleValidator = new RuleValidator();
 
-
     //#endregion
 
     create = async (request: express.Request, response: express.Response) => {
@@ -72,6 +71,18 @@ export class RuleController {
             var id: uuid = await this._validator.requestParamAsUUID(request, 'id');
             const result = await this._service.delete(id);
             const message = 'Rule deleted successfully!';
+            ResponseHandler.success(request, response, message, 200, result);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    setBaseConditionToRule = async (request: express.Request, response: express.Response) => {
+        try {
+            const ruleId = await this._validator.requestParamAsUUID(request, 'id');
+            const conditionId = await this._validator.requestParamAsUUID(request, 'conditionId');
+            const result = await this._service.setBaseConditionToRule(ruleId, conditionId);
+            const message = 'Base condition set to rule successfully!';
             ResponseHandler.success(request, response, message, 200, result);
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

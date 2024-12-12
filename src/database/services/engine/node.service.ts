@@ -256,6 +256,33 @@ export class NodeService extends BaseService {
         }
     };
 
+    setBaseRuleToNode = async (nodeId: uuid, ruleId: uuid): Promise<boolean> => {
+        try {
+            var node = await this._nodeRepository.findOne({
+                where : {
+                    id : nodeId
+                }
+            });
+            if (!node) {
+                ErrorHandler.throwNotFoundError('Node not found!');
+            }
+            var rule = await this._ruleRepository.findOne({
+                where : {
+                    id : ruleId
+                }
+            });
+            if (!rule) {
+                ErrorHandler.throwNotFoundError('Rule not found!');
+            }
+            node.RuleId = ruleId;
+            var result = await this._nodeRepository.save(node);
+            return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     //#region Privates
 
     private getSearchModel = (filters: NodeSearchFilters) => {

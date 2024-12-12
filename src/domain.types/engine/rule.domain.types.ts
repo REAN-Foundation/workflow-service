@@ -36,6 +36,7 @@ export interface RuleResponseDto {
         Description: string;
     }
     Condition : ConditionResponseDto;
+    ConditionId: uuid;
     NodePath : {
         id          : uuid,
         Name        : string,

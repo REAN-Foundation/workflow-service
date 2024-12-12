@@ -16,6 +16,8 @@ export const register = (app: express.Application): void => {
     router.get('/search', Auth.handle(`${contextBase}.Search`, true, true, true), controller.search);
     router.get('/:id', Auth.handle(`${contextBase}.GetById`, true, true, true), controller.getById);
     router.put('/:id', Auth.handle(`${contextBase}.Update`, true, true, true), controller.update);
+    router.put('/:id/base-condition/:conditionId', Auth.handle(`${contextBase}.SetBaseConditionToRule`, true, true, true), controller.setBaseConditionToRule);
+
     router.delete('/:id', Auth.handle(`${contextBase}.Delete`, true, true, true), controller.delete);
 
     app.use('/api/v1/engine/rules', router);

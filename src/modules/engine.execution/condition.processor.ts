@@ -24,7 +24,7 @@ export class ConditionProcessor {
 
     public processCondition = async (condition: ConditionResponseDto, argument?: any): Promise<boolean> => {
 
-        if (!condition || !argument) {
+        if (!condition) {
             throw new Error(`Invalid condition to process!`);
         }
 

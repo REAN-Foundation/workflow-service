@@ -1,11 +1,11 @@
 meta {
-  name: 04 - Set next node of root node
+  name: 04 - Set location check rule to node
   type: http
   seq: 4
 }
 
 put {
-  url: {{BASE_URL}}/engine/nodes/{{SCHEMA_ROOT_NODE_ID}}/next-node/{{LOCATION_YES_NO_NODE_ID}}
+  url: {{BASE_URL}}/engine/nodes/{{LOCATION_YES_NO_NODE_ID}}/main-rule/{{LOCATION_YES_NO_NODE_RULE_ID}}
   body: json
   auth: none
 }

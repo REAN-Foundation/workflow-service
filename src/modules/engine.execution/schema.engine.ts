@@ -8,6 +8,7 @@ import { SchemaInstanceService } from "../../database/services/engine/schema.ins
 import { NodeActionInstanceResponseDto, NodeInstanceResponseDto } from '../../domain.types/engine/node.instance.types';
 import { logger } from '../../logger/logger';
 import { NodeInstanceService } from '../../database/services/engine/node.instance.service';
+import { ConditionService } from '../../database/services/engine/condition.service';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
 import { CommonUtilsService } from '../../database/services/engine/common.utils.service';
 import { ActionExecutioner } from './action.executioner';
@@ -43,6 +44,8 @@ export class SchemaEngine {
     _schemaInstanceService: SchemaInstanceService = new SchemaInstanceService();
 
     _actionService: NodeActionService = new NodeActionService();
+
+    _conditionService: ConditionService = new ConditionService();
 
     _commonUtilsService: CommonUtilsService = new CommonUtilsService();
 
@@ -251,6 +254,9 @@ export class SchemaEngine {
         }
         const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
         var condition = rule.Condition;
+        if (!condition) {
+            condition = await this._conditionService.getById(rule.ConditionId);
+        }
         var processor = new ConditionProcessor(this._almanac);
         var conditionResult = await processor.processCondition(condition, null);
         logger.info(`Yes/No Node ${currentNode.Name} Condition Result: ${conditionResult}`);

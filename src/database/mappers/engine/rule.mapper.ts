@@ -21,8 +21,9 @@ export class RuleMapper {
                 Name        : rule.ParentNode.Name,
                 Description : rule.ParentNode.Description,
             }          : null,
-            Condition : condition ?? null,
-            NodePath  : rule.NodePath ? {
+            ConditionId : rule.ConditionId,
+            Condition   : condition ?? null,
+            NodePath    : rule.NodePath ? {
                 id          : rule.NodePath.id,
                 Name        : rule.NodePath.Name,
                 Description : rule.NodePath.Description,

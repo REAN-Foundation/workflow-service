@@ -145,6 +145,33 @@ export class RuleService extends BaseService {
         }
     };
 
+    public setBaseConditionToRule = async (ruleId: uuid, conditionId: uuid): Promise<boolean> => {
+        try {
+            var rule = await this._ruleRepository.findOne({
+                where : {
+                    id : ruleId
+                }
+            });
+            if (!rule) {
+                ErrorHandler.throwNotFoundError('Rule not found!');
+            }
+            var condition = await this._conditionRepository.findOne({
+                where : {
+                    id : conditionId
+                }
+            });
+            if (!condition) {
+                ErrorHandler.throwNotFoundError('Condition not found!');
+            }
+            rule.ConditionId = condition.id;
+            var result = await this._ruleRepository.save(rule);
+            return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     //#region Privates
 
     private getSearchModel = (filters: RuleSearchFilters) => {

@@ -135,7 +135,7 @@ export class UserMessageEventHandler {
                     matchingParams.push(p);
                 }
             }
-            if (p.Type === ParamType.Text && p.Key === 'ContextParams:SchemaInstanceCode') {
+            if (p.Type === ParamType.Text && p.Key === 'SchemaInstanceCode') {
                 if (event.SchemaInstanceCode &&
                     event.SchemaInstanceCode.length > 0 &&
                     p.Value !== event.SchemaInstanceCode) {

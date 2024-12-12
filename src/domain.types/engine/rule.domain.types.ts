@@ -6,7 +6,6 @@ import {
     uuid
 } from "../miscellaneous/system.types";
 import { ConditionResponseDto } from "./condition.types";
-import { OperatorType } from "./engine.enums";
 
 //////////////////////////////////////////////////////////////
 

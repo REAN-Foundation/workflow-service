@@ -82,6 +82,10 @@ export class SchemaEngine {
         //Set up the almanac
         this._almanac = new Almanac(this._schemaInstance.id);
 
+        //Sync the almanac with the schema instance
+        await this.syncWithAlmanac(this._schemaInstance);
+
+        //If there are any listening nodes, handle them
         await this.handleListeningNodes();
 
         const currentNodeId: uuid = currentNodeInstance.Node.id;
@@ -186,7 +190,46 @@ export class SchemaEngine {
             SchemaId      : schema.id,
             ContextParams : schemaInstanceContextParams,
         });
+
+        if (!schemaInstance) {
+            logger.error(`Error while creating schema instance!`);
+            return null;
+        }
+
         return schemaInstance;
+    }
+
+    private async syncWithAlmanac(schemaInstance: SchemaInstanceResponseDto) {
+        var fact: any = null;
+        const params = schemaInstance.ContextParams.Params;
+        for await (var p of params) {
+            if (p.Type === ParamType.Phonenumber && p.Value) {
+                fact = await this._almanac.getFact(p.Key);
+                if (!fact) {
+                    await this._almanac.addFact(p.Key, p.Value);
+                }
+            }
+            if (p.Type === ParamType.Location && p.Value) {
+                fact = await this._almanac.getFact(p.Key);
+                if (!fact) {
+                    await this._almanac.addFact(p.Key, p.Value);
+                }
+            }
+            if (p.Type === ParamType.DateTime && p.Value) {
+                fact = await this._almanac.getFact(p.Key);
+                if (!fact) {
+                    await this._almanac.addFact(p.Key, p.Value);
+                }
+            }
+            if (p.Type === ParamType.Text && p.Value) {
+                if (p.Key === 'SchemaInstanceCode') {
+                    fact = await this._almanac.getFact(p.Key);
+                    if (!fact) {
+                        await this._almanac.addFact(p.Key, p.Value);
+                    }
+                }
+            }
+        }
     }
 
     // eslint-disable-next-line max-len

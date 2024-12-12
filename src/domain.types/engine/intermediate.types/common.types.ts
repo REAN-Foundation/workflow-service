@@ -1,7 +1,7 @@
 
 export interface Location {
     Name     ?: string;
-    Lattitude?: number;
+    Latitude ?: number;
     Longitude?: number;
 }
 

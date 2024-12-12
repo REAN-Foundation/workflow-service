@@ -30,7 +30,8 @@ export default class EventHandler {
                 logger.error(`Error handling incoming event: ${JSON.stringify(error.stack, null, 2)}`);
             }
             else {
-                logger.info(`Enqueued event: ${JSON.stringify(model, null, 2)}`);
+                logger.info(`Event received and enqueued`);
+                // logger.debug(`Enqueued event: ${JSON.stringify(model, null, 2)}`);
             }
         });
     };
@@ -50,7 +51,8 @@ export default class EventHandler {
     private static processEvent = async (event: EventResponseDto) => {
 
         try {
-            logger.info(JSON.stringify(event, null, 2));
+            // logger.info(JSON.stringify(event, null, 2));
+            logger.info(`Processing event: ${event.EventType}`);
 
             if (event.EventType === EventType.UserMessage) {
                 var handler = new UserMessageEventHandler();

@@ -26,9 +26,9 @@ export class MiscUtils {
             return false;
         }
         if (
-            location1.Lattitude == null ||
+            location1.Latitude == null ||
             location1.Longitude == null ||
-            location2.Lattitude == null ||
+            location2.Latitude == null ||
             location2.Longitude == null
         ) {
             logger.error("Both locations must have valid Latitude and Longitude.");
@@ -53,9 +53,9 @@ export class MiscUtils {
             return false;
         }
 
-        const lat1 = toRadians(location1.Lattitude);
+        const lat1 = toRadians(location1.Latitude);
         const lon1 = toRadians(location1.Longitude);
-        const lat2 = toRadians(location2.Lattitude);
+        const lat2 = toRadians(location2.Latitude);
         const lon2 = toRadians(location2.Longitude);
 
         const dLat = lat2 - lat1;

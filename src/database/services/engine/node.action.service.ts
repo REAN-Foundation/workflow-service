@@ -40,15 +40,16 @@ export class NodeActionService extends BaseService {
 
         const parentNode = await this.getNode(createModel.ParentNodeId);
 
-        const node = this._actionRepository.create({
+        const action = this._actionRepository.create({
             ParentNode  : parentNode,
+            Sequence    : createModel.Sequence,
             Type        : createModel.Type,
             Name        : createModel.Name,
             Description : createModel.Description,
             Input       : createModel.Input,
             Output      : createModel.Output,
         });
-        var record = await this._actionRepository.save(node);
+        var record = await this._actionRepository.save(action);
         return NodeActionMapper.toResponseDto(record);
     };
 

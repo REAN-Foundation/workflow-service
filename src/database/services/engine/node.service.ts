@@ -83,20 +83,24 @@ export class NodeService extends BaseService {
                 Options      : model.Options,
             };
             var question = await this._questionRepository.create(questionModel);
-            var questionRecord = await this._questionRepository.save(question);
-            logger.info(JSON.stringify(questionRecord, null, 2));
+            await this._questionRepository.save(question);
         }
 
         var nodeActions: NodeActionResponseDto[] = [];
         if (createModel.Actions && createModel.Actions?.length > 0) {
-            for await (const action of createModel.Actions) {
-                var actionRecord = await this.createAction(action);
+            for await (const actionModel of createModel.Actions) {
+                var actionRecord = await this.createAction(actionModel, node);
                 var actionDto = NodeActionMapper.toResponseDto(actionRecord);
                 nodeActions.push(actionDto);
             }
         }
         const yesActionDto = yesAction ? NodeActionMapper.toResponseDto(yesAction) : null;
         const noActionDto = noAction ? NodeActionMapper.toResponseDto(noAction) : null;
+
+        yesAction.ParentNode = record;
+        noAction.ParentNode = record;
+        await this._actionRepository.save(yesAction);
+        await this._actionRepository.save(noAction);
 
         return NodeMapper.toResponseDto(record, nodeActions, question, yesActionDto, noActionDto);
     };
@@ -341,11 +345,19 @@ export class NodeService extends BaseService {
         return node;
     }
 
-    private async createAction(actionModel?: NodeActionCreateModel): Promise<NodeAction> {
+    private async createAction(actionModel?: NodeActionCreateModel, nodeRecord?: Node): Promise<NodeAction> {
         if (actionModel == null) {
             return null;
         }
-        var action = await this._actionRepository.create(actionModel);
+        var action = await this._actionRepository.create({
+            Type        : actionModel.Type,
+            Sequence    : actionModel.Sequence,
+            Name        : actionModel.Name,
+            Description : actionModel.Description,
+            Input       : actionModel.Input,
+            Output      : actionModel.Output,
+            ParentNode  : nodeRecord,
+        });
         var actionRecord = await this._actionRepository.save(action);
         return actionRecord;
     }

@@ -245,7 +245,7 @@ export class CommonUtilsService {
                     }
                 });
                 if (!actionInstance) {
-                    var actionInstance_ = await this._nodeActionInstanceRepository.create({
+                    var instance = await this._nodeActionInstanceRepository.create({
                         ActionType       : action.Type,
                         Sequence         : action.Sequence,
                         ActionId         : action.id,
@@ -256,7 +256,7 @@ export class CommonUtilsService {
                         Input            : action.Input,
                         Output           : action.Output,
                     });
-                    actionInstance = await this._nodeActionInstanceRepository.save(actionInstance_);
+                    actionInstance = await this._nodeActionInstanceRepository.save(instance);
                 }
                 actionInstances.push(NodeInstanceMapper.toNodeActionInstanceResponseDto(actionInstance, action));
             }

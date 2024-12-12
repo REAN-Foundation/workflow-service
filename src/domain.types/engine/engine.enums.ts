@@ -95,6 +95,7 @@ export enum ActionType {
     StoreToAlmanac         = 'StoreToAlmanac',
     ExistsInAlmanac        = 'ExistsInAlmanac',
     GetFromAlmanac         = 'GetFromAlmanac',
+    UpdateContextParams    = 'UpdateContextParams',
     Exit                   = 'Exit',
     Continue               = 'Continue',
 }

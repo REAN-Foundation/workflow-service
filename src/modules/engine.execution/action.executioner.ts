@@ -235,6 +235,44 @@ export class ActionExecutioner {
         };
     };
 
+    public executeUpdateContextParamsAction = async (
+        actionInstance: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const schemaInstanceId = actionInstance.SchemaInstanceId;
+        const input = actionInstance.Input as ActionInputParams;
+
+        var schemaInstance = await this._schemaInstanceService.getById(schemaInstanceId);
+        if (!schemaInstance) {
+            logger.error(`Schema Instance not found for Id: ${schemaInstanceId}`);
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+        for await (var p of input.Params) {
+            if (!p.Key) {
+                logger.error('Key not found in input parameters');
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
+            if (!p.Value) {
+                logger.error('Value not found in input parameters');
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
+            await this._schemaInstanceService.updateContextParams(schemaInstanceId, p);
+        }
+
+        return {
+            Success : true,
+            Result  : true
+        };
+    };
+
     public executeGetFromAlmanacAction = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 

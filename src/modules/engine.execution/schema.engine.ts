@@ -409,6 +409,9 @@ export class SchemaEngine {
         else if (actionInstance.ActionType === ActionType.ExistsInAlmanac) {
             result = await actionExecutioner.executeExistsInAlmanacAction(actionInstance);
         }
+        else if (actionInstance.ActionType === ActionType.UpdateContextParams) {
+            result = await actionExecutioner.executeUpdateContextParamsAction(actionInstance);
+        }
         else if (actionInstance.ActionType === ActionType.Continue) {
             return {
                 Success : true,

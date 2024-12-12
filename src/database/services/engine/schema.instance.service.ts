@@ -17,6 +17,7 @@ import { NodeInstance } from '../../models/engine/node.instance.model';
 import { Node } from '../../models/engine/node.model';
 import { CommonUtilsService } from './common.utils.service';
 import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
+import { Params } from '../../../domain.types/engine/intermediate.types/params.types';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -279,6 +280,43 @@ export class SchemaInstanceService extends BaseService {
             }
             schemaInstance.ExecutionStarted = true;
             schemaInstance.ExecutionStartedTimestamp = new Date();
+            await this._schemaInstanceRepository.save(schemaInstance);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public updateContextParams = async (schemaInstanceId: uuid, params: Params): Promise<void> => {
+        try {
+            var schemaInstance = await this._schemaInstanceRepository.findOne({
+                where : {
+                    id : schemaInstanceId
+                }
+            });
+            if (!schemaInstance) {
+                ErrorHandler.throwNotFoundError('SchemaInstance not found!');
+            }
+            var tempParams = schemaInstance.ContextParams;
+            if (tempParams == null) {
+                tempParams = {
+                    Name   : 'ContextParams',
+                    Params : []
+                };
+            }
+            var updatedExisting = false;
+            for (let index = 0; index < tempParams.Params.length; index++) {
+                const element = tempParams.Params[index];
+                if (element.Key === params.Key) {
+                    tempParams.Params[index] = params;
+                    updatedExisting = true;
+                    break;
+                }
+            }
+            if (!updatedExisting) {
+                tempParams.Params.push(params);
+            }
+            schemaInstance.ContextParams = tempParams;
             await this._schemaInstanceRepository.save(schemaInstance);
         } catch (error) {
             logger.error(error.message);

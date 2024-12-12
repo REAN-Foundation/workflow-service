@@ -96,11 +96,14 @@ export class NodeService extends BaseService {
         }
         const yesActionDto = yesAction ? NodeActionMapper.toResponseDto(yesAction) : null;
         const noActionDto = noAction ? NodeActionMapper.toResponseDto(noAction) : null;
-
-        yesAction.ParentNode = record;
-        noAction.ParentNode = record;
-        await this._actionRepository.save(yesAction);
-        await this._actionRepository.save(noAction);
+        if (yesAction) {
+            yesAction.ParentNode = record;
+            await this._actionRepository.save(yesAction);
+        }
+        if (noAction) {
+            noAction.ParentNode = record;
+            await this._actionRepository.save(noAction);
+        }
 
         return NodeMapper.toResponseDto(record, nodeActions, question, yesActionDto, noActionDto);
     };

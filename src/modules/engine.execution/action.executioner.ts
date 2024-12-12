@@ -429,6 +429,10 @@ export class ActionExecutioner {
         type: ParamType,
         paramName?: string) => {
 
+        if (paramName) {
+            logger.info(`Getting value for parameter: ${paramName}`);
+        }
+
         if (!input || !input.Params || input.Params.length === 0) {
             return null;
         }

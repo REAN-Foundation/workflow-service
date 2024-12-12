@@ -6,7 +6,6 @@ import { NodeService } from "../../database/services/engine/node.service";
 import { SchemaService } from "../../database/services/engine/schema.service";
 import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
 import { NodeActionInstanceResponseDto, NodeInstanceResponseDto } from '../../domain.types/engine/node.instance.types';
-import { formatDateToYYMMDD } from './engine.utils';
 import { logger } from '../../logger/logger';
 import { NodeInstanceService } from '../../database/services/engine/node.instance.service';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
@@ -16,6 +15,10 @@ import { Almanac } from './almanac';
 import { NodeActionResult } from "../../domain.types/engine/node.action.types";
 import { RuleService } from '../../database/services/engine/rule.service';
 import { ConditionProcessor } from './condition.processor';
+import { NodeActionService } from '../../database/services/engine/node.action.service';
+import { uuid } from '../../domain.types/miscellaneous/system.types';
+import { TimeUtils } from '../../common/utilities/time.utils';
+import { EngineUtils } from './engine.utils';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -39,7 +42,11 @@ export class SchemaEngine {
 
     _schemaInstanceService: SchemaInstanceService = new SchemaInstanceService();
 
+    _actionService: NodeActionService = new NodeActionService();
+
     _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+
+    _engineUtils: EngineUtils = new EngineUtils();
 
     constructor(schema: SchemaResponseDto, schemaInstance: SchemaInstanceResponseDto, event: EventResponseDto) {
         this._schema = schema;
@@ -74,7 +81,8 @@ export class SchemaEngine {
 
         await this.handleListeningNodes();
 
-        var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+        const currentNodeId: uuid = currentNodeInstance.Node.id;
+        var currentNode = await this._nodeService.getById(currentNodeId);
 
         if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
             const allExecuted = await this.executeNodeActions(currentNode, currentNodeInstance);
@@ -147,7 +155,7 @@ export class SchemaEngine {
     private async createSchemaInstance(schema: SchemaResponseDto, event: EventResponseDto) {
 
         const padZero = (num: number, size: number) => String(num).padStart(size, '0');
-        const pattern = formatDateToYYMMDD(new Date());
+        const pattern = TimeUtils.formatDateToYYMMDD(new Date());
         var instanceCount = await this._schemaInstanceService.getCount(schema.TenantId, schema.id, pattern);
         const formattedCount = padZero(instanceCount + 1, 3); // Count with leading zeros (e.g., 001)
         var code = 'E-' + pattern + '-' + formattedCount;
@@ -222,8 +230,8 @@ export class SchemaEngine {
         var yesActionId = await currentNode.YesAction?.id;
         var noActionId = await currentNode.NoAction?.id;
 
-        var yesAction = await this._nodeService.getById(yesActionId);
-        var noAction = await this._nodeService.getById(noActionId);
+        var yesAction = await this._actionService.getById(yesActionId);
+        var noAction = await this._actionService.getById(noActionId);
 
         var yesActionInstance = await this._commonUtilsService.getActionInstance(yesAction.id, this._schemaInstance.id);
         var noActionInstance = await this._commonUtilsService.getActionInstance(noAction.id, this._schemaInstance.id);
@@ -268,28 +276,10 @@ export class SchemaEngine {
 
     private async setNextNodeInstance(currentNode: NodeResponseDto, currentNodeInstance: NodeInstanceResponseDto) {
         var nextNodeId = currentNode.NextNodeId;
-        if (!nextNodeId) {
-            logger.info(`End of the workflow. Existing...`);
-            return { currentNode, currentNodeInstance };
-        }
-        var nextNode = await this._nodeService.getById(nextNodeId);
-        if (!nextNode) {
-            logger.error(`Next node not found for Node ${currentNode.Name}`);
-            return { currentNode, currentNodeInstance };
-        }
         var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
-        var nextNodeInstance = await this._nodeInstanceService.getByNodeIdAndSchemaInstance(nextNodeId, schemaInstanceId);
-        if (!nextNodeInstance) {
-            nextNodeInstance = await this._nodeInstanceService.create({
-                Type             : nextNode.Type,
-                Input            : nextNode.Input,
-                NodeId           : nextNode.id,
-                SchemaInstanceId : schemaInstanceId,
-                ExecutionStatus  : ExecutionStatus.Pending,
-            });
-        }
-        if (!nextNodeInstance) {
-            logger.error(`Unable to get next node! ...`);
+        var [nextNodeInstance, nextNode] = await this._engineUtils.createNodeInstance(nextNodeId, schemaInstanceId);
+        if (!nextNodeInstance || !nextNode) {
+            logger.error(`Error while setting next node instance!`);
             return { currentNode, currentNodeInstance };
         }
         currentNodeInstance = nextNodeInstance;

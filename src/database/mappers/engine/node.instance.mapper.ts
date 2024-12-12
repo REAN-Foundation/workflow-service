@@ -28,14 +28,14 @@ export class NodeInstanceMapper {
                 Type : instance.Node.Type,
                 Name : instance.Node.Name,
             },
-            SchemaInstance : {
+            SchemaInstance : instance.SchemaInstance ? {
                 id     : instance.SchemaInstance.id,
                 Schema : instance.SchemaInstance.Schema ? {
                     id          : instance.SchemaInstance.Schema.id,
                     Name        : instance.SchemaInstance.Schema.Name,
                     Description : instance.SchemaInstance.Schema.Description,
                 } : null
-            },
+            } : null,
             ParentNodeInstance : instance.ParentNodeInstance ? {
                 id   : instance.ParentNodeInstance.id,
                 Node : instance.ParentNodeInstance.Node ? {

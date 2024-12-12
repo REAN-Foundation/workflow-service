@@ -22,7 +22,7 @@ export class NodeController {
     create = async (request: express.Request, response: express.Response) => {
         try {
             var model: NodeCreateModel = await this._validator.validateCreateRequest(request);
-            model.Type = NodeType.ExecutionNode; //If generic node, it is just an execution node
+            model.Type = model.Type ?? NodeType.ExecutionNode; //If generic node, it is just an execution node
             const record = await this._service.create(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');
@@ -54,6 +54,22 @@ export class NodeController {
         try {
             var model: YesNoNodeCreateModel = await this._validator.validateCreateYesNoNodeRequest(request);
             model.Type = NodeType.YesNoNode;
+
+            const record = await this._service.create(model);
+            if (record === null) {
+                ErrorHandler.throwInternalServerError('Unable to add node!');
+            }
+            const message = 'Node added successfully!';
+            return ResponseHandler.success(request, response, message, 201, record);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    createListeningNode = async (request: express.Request, response: express.Response) => {
+        try {
+            var model: NodeCreateModel = await this._validator.validateCreateRequest(request);
+            model.Type = NodeType.ListeningNode;
 
             const record = await this._service.create(model);
             if (record === null) {

@@ -297,7 +297,7 @@ export class CommonUtilsService {
                 }
             });
             if (!actionInstance) {
-                ErrorHandler.throwNotFoundError('ActionInstance not found');
+                return null;
             }
             return NodeInstanceMapper.toNodeActionInstanceResponseDto(actionInstance);
         } catch (error) {
@@ -316,11 +316,9 @@ export class CommonUtilsService {
                     },
                     ExecutionStatus : Not(ExecutionStatus.Executed)
                 },
-                select : {
-                    Node : {
-                        id   : true,
-                        Name : true
-                    },
+                relations : {
+                    Node           : true,
+                    SchemaInstance : true,
                 }
             });
             var dtos = nodeInstances.map(x => NodeInstanceMapper.toResponseDto(x));

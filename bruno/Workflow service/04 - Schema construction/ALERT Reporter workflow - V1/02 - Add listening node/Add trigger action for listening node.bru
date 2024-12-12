@@ -1,7 +1,7 @@
 meta {
   name: Add trigger action for listening node
   type: http
-  seq: 3
+  seq: 2
 }
 
 post {
@@ -40,7 +40,7 @@ body:json {
 
 tests {
   test("Request is successfull", function () {
-      expect(res.getStatus()).to.equal(200);
+      expect(res.getStatus()).to.equal(201);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });

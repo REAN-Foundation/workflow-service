@@ -1,4 +1,4 @@
-import { ExecutionStatus, InputSourceType, ParamType } from "../../domain.types/engine/engine.enums";
+import { InputSourceType, ParamType } from "../../domain.types/engine/engine.enums";
 import { ActionInputParams, ActionOutputParams } from "../../domain.types/engine/intermediate.types/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
@@ -14,6 +14,7 @@ import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.inst
 import { EventResponseDto } from "../../domain.types/engine/event.types";
 import { NodeActionResult } from "../../domain.types/engine/node.action.types";
 import needle = require('needle');
+import { EngineUtils } from "./engine.utils";
 
 ////////////////////////////////////////////////////////////////
 
@@ -36,6 +37,8 @@ export class ActionExecutioner {
     _schemaInstanceService: SchemaInstanceService = new SchemaInstanceService();
 
     _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+
+    _engineUtils: EngineUtils = new EngineUtils();
 
     constructor(schema: SchemaResponseDto,
         schemaInstance: SchemaInstanceResponseDto,
@@ -72,16 +75,15 @@ export class ActionExecutioner {
             };
         }
 
-        var nodeInstance = await this._nodeInstanceService.getByNodeIdAndSchemaInstance(nodeId, this._schemaInstance.id);
+        var [nodeInstance, node] = await this._engineUtils.createNodeInstance(nodeId, this._schemaInstance.id);
         if (!nodeInstance) {
-            nodeInstance = await this._nodeInstanceService.create({
-                Type             : node.Type,
-                Input            : node.Input,
-                NodeId           : nodeId,
-                SchemaInstanceId : this._schemaInstance.id,
-                ExecutionStatus  : ExecutionStatus.Pending
-            });
+            logger.error(`Unable to create node instance for Node Id: ${nodeId}`);
+            return {
+                Success : false,
+                Result  : null
+            };
         }
+
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         return {
             Success : true,
@@ -414,49 +416,5 @@ export class ActionExecutioner {
     };
 
 }
-
-// export const executeAction = async (
-//     action: ActionInstance,
-//     currentNodeInstance: XNodeInstance,
-// ): Promise<any> => {
-
-//     const actionType = action.Type;
-//     const schemaInstanceId: uuid = currentNodeInstance.SchemaInstanceId;
-//     const currentNodeId: uuid = currentNodeInstance.NodeId;
-//     const currentNodeInstanceId: uuid = currentNodeInstance.id;
-//     const almanac = new Almanac(schemaInstanceId);
-
-//     if (!schemaInstanceId) {
-//         logger.error('SchemaInstanceId is required');
-//         throw new Error('SchemaInstanceId is required');
-//     }
-
-//     if (actionType === ActionType.SendMessage) {
-//         return await executeSendMessageAction(action, almanac);
-//     }
-//     if (actionType === ActionType.StoreToAlmanac) {
-//         return await executeStoreToAlmanacAction(action, almanac);
-//     }
-//     if (actionType === ActionType.GetFromAlmanac) {
-//         return await executeGetFromAlmanacAction(action, almanac);
-//     }
-//     if (actionType === ActionType.ExistsInAlmanac) {
-//         const v = await executeGetFromAlmanacAction(action, almanac);
-//         return v !== null;
-//     }
-//     if (actionType === ActionType.Continue) {
-//         return true;
-//     }
-//     if (actionType === ActionType.Exit) {
-//         return false;
-//     }
-//     if (actionType === ActionType.TriggerListeningNode) {
-//         return true;
-//     }
-//     if (actionType === ActionType.TriggerWaitNode) {
-//         return true;
-//     }
-
-// };
 
 ////////////////////////////////////////////////////////////////

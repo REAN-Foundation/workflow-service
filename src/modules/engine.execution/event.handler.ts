@@ -30,7 +30,7 @@ export default class EventHandler {
                 logger.error(`Error handling incoming event: ${JSON.stringify(error.stack, null, 2)}`);
             }
             else {
-                logger.info(`Recorded EHR record: ${JSON.stringify(model, null, 2)}`);
+                logger.info(`Enqueued event: ${JSON.stringify(model, null, 2)}`);
             }
         });
     };

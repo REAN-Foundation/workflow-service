@@ -5,11 +5,12 @@ import { SchemaInstanceService } from "../../database/services/engine/schema.ins
 import { SchemaResponseDto } from "../../domain.types/engine/schema.domain.types";
 import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.instance.types";
 import { ParamType } from "../../domain.types/engine/engine.enums";
-import { compareLocations, compareTimestamps } from "./engine.utils";
 import { SchemaEngine } from "./schema.engine";
 import { logger } from "../../logger/logger";
 import { ContextParams, Params } from "../../domain.types/engine/intermediate.types/params.types";
-import { DistanceUnit, TimestampUnit } from "../../domain.types/engine/intermediate.types/common.types";
+import { DistanceUnit } from "../../domain.types/engine/intermediate.types/common.types";
+import { MiscUtils } from "../../common/utilities/misc.utils";
+import { TimeUtils } from "../../common/utilities/time.utils";
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -114,7 +115,7 @@ export class UserMessageEventHandler {
             }
             if (p.Type === ParamType.Location) {
                 var distUnit = p.ComparisonUnit as DistanceUnit ?? 'm';
-                if (!compareLocations(p.Value, event.UserMessage.Location, p.ComparisonThreshold, distUnit)) {
+                if (!MiscUtils.compareLocations(p.Value, event.UserMessage.Location, p.ComparisonThreshold, distUnit)) {
                     if (p.Required) {
                         return [];
                     }
@@ -125,7 +126,7 @@ export class UserMessageEventHandler {
             }
             if (p.Type === ParamType.DateTime) {
                 // var timeUnit = p.ComparisonUnit as TimestampUnit ?? 'm';
-                if (!compareTimestamps(p.Value, new Date(), p.ComparisonThreshold)) {
+                if (!TimeUtils.compareTimestamps(p.Value, new Date(), p.ComparisonThreshold)) {
                     if (p.Required) {
                         return [];
                     }

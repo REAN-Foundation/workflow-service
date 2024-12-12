@@ -1,145 +1,89 @@
-import { Location, TimestampUnit, DistanceUnit } from "../../domain.types/engine/intermediate.types/common.types";
-import { logger } from "../../logger/logger";
+import { ExecutionStatus, NodeType } from '../../domain.types/engine/engine.enums';
+import { NodeService } from "../../database/services/engine/node.service";
+import { SchemaService } from "../../database/services/engine/schema.service";
+import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
+import { NodeInstanceResponseDto } from '../../domain.types/engine/node.instance.types';
+import { logger } from '../../logger/logger';
+import { NodeInstanceService } from '../../database/services/engine/node.instance.service';
+import { NodeResponseDto } from '../../domain.types/engine/node.types';
+import { CommonUtilsService } from '../../database/services/engine/common.utils.service';
+import { RuleService } from '../../database/services/engine/rule.service';
+import { NodeActionService } from '../../database/services/engine/node.action.service';
+import { uuid } from '../../domain.types/miscellaneous/system.types';
 
-////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-/**
-     * Compare two locations and check if they are within the given threshold distance.
-     *
-     * @param location1 - The first location to compare
-     * @param location2 - The second location to compare
-     * @param threshold - The maximum allowable distance
-     * @param unit - The unit of distance ('km', 'mi', or 'm' for meters)
-     * @returns True if the locations are within the threshold, otherwise false
-     */
-export function compareLocations(
-    location1: Location,
-    location2: Location,
-    threshold: number,
-    unit: DistanceUnit = 'm'
-): boolean {
-    if (location1 == null || location2 == null) {
-        logger.error("Both locations must be valid.");
-        return false;
-    }
-    if (
-        location1.Lattitude == null ||
-            location1.Longitude == null ||
-            location2.Lattitude == null ||
-            location2.Longitude == null
-    ) {
-        logger.error("Both locations must have valid Latitude and Longitude.");
-        return false;
-    }
+export class EngineUtils {
 
-    const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+    _nodeService: NodeService = new NodeService();
 
-    const EARTH_RADIUS_KM = 6371; // Radius of Earth in kilometers
-    const EARTH_RADIUS_MI = 3958.8; // Radius of Earth in miles
+    _ruleService: RuleService = new RuleService();
 
-    // Use Earth's radius based on the unit
-    let R: number = EARTH_RADIUS_KM * 1000; // Default to meters
-    if (unit === 'km') {
-        R = EARTH_RADIUS_KM;
-    } else if (unit === 'mi') {
-        R = EARTH_RADIUS_MI;
-    } else if (unit === 'm') {
-        R = EARTH_RADIUS_KM * 1000; // Convert kilometers to meters
-    } else {
-        logger.error("Unsupported unit. Use 'km', 'mi', or 'm'.");
-        return false;
-    }
+    _nodeInstanceService: NodeInstanceService = new NodeInstanceService();
 
-    const lat1 = toRadians(location1.Lattitude);
-    const lon1 = toRadians(location1.Longitude);
-    const lat2 = toRadians(location2.Lattitude);
-    const lon2 = toRadians(location2.Longitude);
+    _schemaService: SchemaService = new SchemaService();
 
-    const dLat = lat2 - lat1;
-    const dLon = lon2 - lon1;
+    _schemaInstanceService: SchemaInstanceService = new SchemaInstanceService();
 
-    const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1) * Math.cos(lat2) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    _actionService: NodeActionService = new NodeActionService();
 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
 
-    const distance = R * c; // Distance in the specified unit
+    public createNodeInstance = async (nodeId: uuid, schemaInstanceId: uuid): Promise<[NodeInstanceResponseDto, NodeResponseDto]> => {
+        try {
+            if (!nodeId) {
+                logger.error('Node Id is required');
+                return null;
+            }
+            if (!schemaInstanceId) {
+                logger.error('Schema Instance Id is required');
+                return null;
+            }
+            var node = await this._nodeService.getById(nodeId);
+            if (!node) {
+                logger.error(`Node not found for Id: ${nodeId}`);
+                return null;
+            }
+            var nodeInstance = await this._nodeInstanceService.getByNodeIdAndSchemaInstance(nodeId, schemaInstanceId);
+            if (!nodeInstance) {
+                nodeInstance = await this._nodeInstanceService.create({
+                    Type             : node.Type,
+                    Input            : node.Input,
+                    NodeId           : node.id,
+                    SchemaInstanceId : schemaInstanceId,
+                    ExecutionStatus  : ExecutionStatus.Pending,
+                });
+            }
+            if (!nodeInstance) {
+                logger.error(`Unable to create node instance for Node Id: ${nodeId}`);
+                return null;
+            }
 
-    return distance <= threshold;
+            const actionIntances = await this._commonUtilsService.createNodeActionInstances(nodeInstance.id);
+            nodeInstance.ActionInstances = actionIntances;
+
+            if (node.Type === NodeType.YesNoNode) {
+                const yesAction = await this._actionService.getById(node.YesAction.id);
+                const noAction = await this._actionService.getById(node.NoAction.id);
+                if (!yesAction || !noAction) {
+                    logger.error(`Yes/No actions not found for Node ${node.Name}`);
+                    return null;
+                }
+                var yesActionInstance = await this._commonUtilsService.getActionInstance(yesAction.id, schemaInstanceId);
+                if (!yesActionInstance) {
+                    yesActionInstance = await this._commonUtilsService.createNodeActionInstance(nodeInstance.id, yesAction.id);
+                }
+
+                var noActionInstance = await this._commonUtilsService.getActionInstance(noAction.id, schemaInstanceId);
+                if (!noActionInstance) {
+                    noActionInstance = await this._commonUtilsService.createNodeActionInstance(nodeInstance.id, noAction.id);
+                }
+            }
+            return [nodeInstance, node];
+        } catch (error) {
+            logger.error(error.message);
+            return null;
+        }
+    };
+
 }
-
-/**
-     * Compare two timestamps and check if they are within the given threshold.
-     *
-     * @param timestamp1 - The first timestamp to compare
-     * @param timestamp2 - The second timestamp to compare
-     * @param thresholdInMin - The maximum allowable time difference in minutes
-     * @returns True if the timestamps are within the threshold, otherwise false
-     */
-export function compareTimestamps(
-    timestamp1: Date,
-    timestamp2: Date,
-    thresholdInMin = 5
-): boolean {
-    if (timestamp1 == null || timestamp2 == null) {
-        logger.error("Both timestamps must be valid.");
-        return false;
-    }
-    const dt1 = new Date(timestamp1);
-    const dt2 = new Date(timestamp2);
-
-    // Convert timestamps to milliseconds
-    const time1 = dt1.getTime();
-    const time2 = dt2.getTime();
-
-    // Calculate absolute difference in milliseconds
-    const diffInMs = Math.abs(time1 - time2);
-
-    // Convert threshold into milliseconds based on the unit
-    const threshold: number = 1000 * 60 * thresholdInMin; // Default to minutes
-
-    // switch (unit) {
-    //     case 'ms': // Milliseconds
-    //         thresholdInMs = threshold;
-    //         break;
-    //     case 's': // Seconds
-    //         thresholdInMs = threshold * 1000;
-    //         break;
-    //     case 'm': // Minutes
-    //         thresholdInMs = threshold * 1000 * 60;
-    //         break;
-    //     case 'h': // Hours
-    //         thresholdInMs = threshold * 1000 * 60 * 60;
-    //         break;
-    //     case 'd': // Days
-    //         thresholdInMs = threshold * 1000 * 60 * 60 * 24;
-    //         break;
-    //     case 'w': // Weeks
-    //         thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 7;
-    //         break;
-    //     case 'mo': // Months
-    //         thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 30;
-    //         break;
-    //     case 'y': // Years
-    //         thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 365;
-    //         break;
-    //     default:
-    //         logger.error("Unsupported unit. Use 'ms', 's', 'min', 'h', or 'd'.");
-    // }
-
-    // Check if the difference is within the threshold
-    return diffInMs <= threshold;
-}
-
-export function formatDateToYYMMDD(date: Date): string {
-    const padZero = (num: number, size: number) => String(num).padStart(size, '0');
-
-    const year = date.getFullYear() % 100; // Get last 2 digits of the year
-    const month = padZero(date.getMonth() + 1, 2); // Months are 0-indexed
-    const day = padZero(date.getDate(), 2);
-
-    return `${year}${month}${day}`;
-}
-

@@ -401,10 +401,10 @@ export class SchemaEngine {
             result = await actionExecutioner.executeSendMultipleMessagesAction(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.GetFromAlmanac) {
-            result = await actionExecutioner.executeStoreToAlmanacAction(actionInstance);
+            result = await actionExecutioner.executeGetFromAlmanacAction(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.StoreToAlmanac) {
-            result = await actionExecutioner.executeGetFromAlmanacAction(actionInstance);
+            result = await actionExecutioner.executeStoreToAlmanacAction(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.ExistsInAlmanac) {
             result = await actionExecutioner.executeExistsInAlmanacAction(actionInstance);

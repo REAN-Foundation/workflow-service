@@ -17,7 +17,6 @@ import { NodeActionResult } from "../../domain.types/engine/node.action.types";
 import { RuleService } from '../../database/services/engine/rule.service';
 import { ConditionProcessor } from './condition.processor';
 import { NodeActionService } from '../../database/services/engine/node.action.service';
-import { uuid } from '../../domain.types/miscellaneous/system.types';
 import { TimeUtils } from '../../common/utilities/time.utils';
 import { EngineUtils } from './engine.utils';
 
@@ -88,18 +87,14 @@ export class SchemaEngine {
         //If there are any listening nodes, handle them
         await this.handleListeningNodes();
 
-        const currentNodeId: uuid = currentNodeInstance.Node.id;
-        var currentNode = await this._nodeService.getById(currentNodeId);
-
         if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
-            const allExecuted = await this.executeNodeActions(currentNode, currentNodeInstance);
+            const allExecuted = await this.executeNodeActions(currentNodeInstance);
             if (allExecuted) {
                 currentNodeInstance.ExecutionStatus = ExecutionStatus.Executed;
             }
-            logger.info(`Node ${currentNode.Name} All actions executed: ${allExecuted}`);
         }
 
-        var currentNodeInstance = await this.traverse(currentNode, currentNodeInstance);
+        var currentNodeInstance = await this.traverse(currentNodeInstance);
         if (!currentNodeInstance) {
             logger.error(`Error while executing workflow. Cannot find the node!`);
         }
@@ -139,7 +134,7 @@ export class SchemaEngine {
             }
             //Execute the actions
             var actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
-            var actionInstances = await this._commonUtilsService.getNodeActionInstances(listeningNodeInstance.id);
+            var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(listeningNodeInstance.id);
             var results = new Map<string, NodeActionResult>();
             for (var actionInstance of actionInstances) {
                 if (actionInstance.Executed !== true) {
@@ -233,45 +228,32 @@ export class SchemaEngine {
     }
 
     // eslint-disable-next-line max-len
-    private async traverse(
-        currentNode: NodeResponseDto,
-        currentNodeInstance: NodeInstanceResponseDto
+    private async traverse(currentNodeInstance: NodeInstanceResponseDto
     ): Promise<NodeInstanceResponseDto> {
 
-        if (!currentNode) {
-            logger.error(`Error while executing workflow. Cannot find the node!`);
-        }
+        var currentNodeType = currentNodeInstance.Node.Type;
 
-        if (currentNode.Type === NodeType.QuestionNode) {
-            return await this.traverseQuestionNode(currentNode, currentNodeInstance);
+        if (currentNodeType === NodeType.QuestionNode) {
+            return await this.traverseQuestionNode(currentNodeInstance);
         }
-        else if (currentNode.Type === NodeType.YesNoNode) {
-            return await this.traverseYesNoNode(currentNode, currentNodeInstance);
+        else if (currentNodeType === NodeType.YesNoNode) {
+            return await this.traverseYesNoNode(currentNodeInstance);
         }
-        else if (currentNode.Type === NodeType.ExecutionNode) {
-            return await this.traverseExecutionNode(currentNode, currentNodeInstance);
+        else if (currentNodeType === NodeType.ExecutionNode) {
+            return await this.traverseExecutionNode(currentNodeInstance);
         }
         return currentNodeInstance;
     }
 
-    private async traverseQuestionNode(
-        currentNode: NodeResponseDto,
-        currentNodeInstance: NodeInstanceResponseDto
-    ): Promise<NodeInstanceResponseDto> {
-
-        logger.info(`Traversing Question Node: ${currentNode.Name}`);
-        logger.info(`Question Node instance: ${currentNodeInstance.id}`);
-
+    private async traverseQuestionNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
         // TODO: Implement the question node traversal logic
-
         await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
         return currentNodeInstance;
     }
 
-    private async traverseYesNoNode(
-        currentNode: NodeResponseDto,
-        currentNodeInstance: NodeInstanceResponseDto
-    ): Promise<NodeInstanceResponseDto> {
+    private async traverseYesNoNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
 
         var yesActionId = await currentNode.YesAction?.id;
         var noActionId = await currentNode.NoAction?.id;
@@ -279,16 +261,10 @@ export class SchemaEngine {
         var yesAction = await this._actionService.getById(yesActionId);
         var noAction = await this._actionService.getById(noActionId);
 
-        var yesActionInstance = await this._commonUtilsService.getActionInstance(yesAction.id, this._schemaInstance.id);
-        var noActionInstance = await this._commonUtilsService.getActionInstance(noAction.id, this._schemaInstance.id);
+        var yesActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, this._schemaInstance.id);
+        var noActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, this._schemaInstance.id);
 
-        if (!yesActionInstance) {
-            yesActionInstance = await this._commonUtilsService.createNodeActionInstance(currentNodeInstance.id, yesAction.id);
-        }
-        if (!noActionInstance) {
-            noActionInstance = await this._commonUtilsService.createNodeActionInstance(currentNodeInstance.id, noAction.id);
-        }
-
+        var currentNode = currentNodeInstance.Node;
         var ruleId = currentNode.RuleId;
         var rule = await this._ruleService.getById(ruleId);
         if (!rule) {
@@ -323,26 +299,11 @@ export class SchemaEngine {
         return currentNodeInstance;
     }
 
-    private async setNextNodeInstance(currentNode: NodeResponseDto, currentNodeInstance: NodeInstanceResponseDto) {
-        var nextNodeId = currentNode.NextNodeId;
-        var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
-        var [nextNodeInstance, nextNode] = await this._engineUtils.createNodeInstance(nextNodeId, schemaInstanceId);
-        if (!nextNodeInstance || !nextNode) {
-            logger.error(`Error while setting next node instance!`);
-            return { currentNode, currentNodeInstance };
-        }
-        currentNodeInstance = nextNodeInstance;
-        currentNode = nextNode;
-        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
-        return { currentNode, currentNodeInstance };
-    }
-
-    private async traverseExecutionNode(
-        currentNode: NodeResponseDto,
-        currentNodeInstance: NodeInstanceResponseDto
-    ): Promise<NodeInstanceResponseDto> {
+    private async traverseExecutionNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
 
         if (currentNodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
+            var currentNode = currentNodeInstance.Node;
             var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
             currentNode = res.currentNode;
             currentNodeInstance = res.currentNodeInstance;
@@ -350,22 +311,17 @@ export class SchemaEngine {
         return currentNodeInstance;
     }
 
-    private async executeNodeActions(
-        currentNode: NodeResponseDto,
-        currentNodeInstance: NodeInstanceResponseDto): Promise<boolean> {
+    private async executeNodeActions(currentNodeInstance: NodeInstanceResponseDto): Promise<boolean> {
 
         //Generate the action executioner
         const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
 
-        var actions = await this._commonUtilsService.getNodeActions(currentNode.id);
+        const currentNodeId = currentNodeInstance.Node.id;
+        var actions = await this._commonUtilsService.getNodeActions(currentNodeId);
         if (actions.length === 0) {
             return true;
         }
-        var actionInstances = await this._commonUtilsService.getNodeActionInstances(currentNodeInstance.id);
-        if (actionInstances.length === 0) {
-            actionInstances = await this._commonUtilsService.createNodeActionInstances(currentNodeInstance.id);
-        }
-
+        var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(currentNodeInstance.id);
         actionInstances = actionInstances.sort((a, b) => a.Sequence - b.Sequence);
 
         var results = new Map<string, NodeActionResult>();
@@ -422,6 +378,20 @@ export class SchemaEngine {
             result = await actionExecutioner.executeRestApiCallAction(actionInstance);
         }
         return result;
+    }
+
+    private async setNextNodeInstance(currentNode: NodeResponseDto, currentNodeInstance: NodeInstanceResponseDto) {
+        var nextNodeId = currentNode.NextNodeId;
+        var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
+        var [nextNodeInstance, nextNode] = await this._engineUtils.createNodeInstance(nextNodeId, schemaInstanceId);
+        if (!nextNodeInstance || !nextNode) {
+            logger.error(`Error while setting next node instance!`);
+            return { currentNode, currentNodeInstance };
+        }
+        currentNodeInstance = nextNodeInstance;
+        currentNode = nextNode;
+        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
+        return { currentNode, currentNodeInstance };
     }
 
 }

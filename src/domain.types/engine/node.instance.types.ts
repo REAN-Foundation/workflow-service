@@ -8,6 +8,7 @@ import {
 import { ActionType, ExecutionStatus, NodeType } from "./engine.enums";
 import { ActionInputParams, ActionOutputParams } from "./intermediate.types/params.types";
 import { NodeActionResponseDto } from "./node.action.types";
+import { NodeResponseDto } from "./node.types";
 
 //////////////////////////////////////////////////////////////
 
@@ -25,16 +26,12 @@ export interface NodeInstanceUpdateModel {
 }
 
 export interface NodeInstanceResponseDto {
-    id         : uuid;
-    ExecutionStatus : ExecutionStatus;
-    StatusUpdateTimestamp : Date;
+    id                   : uuid;
+    ExecutionStatus      : ExecutionStatus;
+    StatusUpdateTimestamp: Date;
     ExecutionResult      : any;
-    Node                 : {
-        id    : uuid;
-        Type  : NodeType;
-        Name  : string;
-    };
-    SchemaInstance : {
+    Node                 : NodeResponseDto;
+    SchemaInstance       : {
         id    : uuid;
         Schema: {
             id         : uuid;
@@ -42,25 +39,23 @@ export interface NodeInstanceResponseDto {
             Description: string;
         };
     };
-    ParentNodeInstance : {
-        id: uuid;
-        Node: {
-            id: uuid;
-            Name: string;
-        };
-    } | null;
+    ParentNodeInstance   : {
+            id  : uuid;
+            Node: {
+                id  : uuid;
+                Name: string;
+            };
+        } | null;
     ChildrenNodeInstances : {
-        id  : uuid;
-        Node: {
-            id: uuid;
-            Name: string;
-        };
-    }[];
-
-    ActionInstances  ?: NodeActionInstanceResponseDto[];
-
-    CreatedAt: Date;
-    UpdatedAt: Date;
+            id  : uuid;
+            Node: {
+                id  : uuid;
+                Name: string;
+            };
+        }[];
+    ActionInstances?: NodeActionInstanceResponseDto[];
+    CreatedAt       : Date;
+    UpdatedAt       : Date;
 }
 
 export interface NodeInstanceSearchFilters extends BaseSearchFilters {

@@ -61,7 +61,7 @@ export class SchemaInstanceService extends BaseService {
         const rootNodeInstanceRecord = await this._nodeInstanceRepository.save(rootNodeInstance);
 
         //Add action instances to the root node instance
-        await this._commonUtilsService.createNodeActionInstances(rootNodeInstanceRecord.id);
+        await this._commonUtilsService.getOrCreateNodeActionInstances(rootNodeInstanceRecord.id);
 
         record.RootNodeInstance = rootNodeInstanceRecord;
         record.CurrentNodeInstance = rootNodeInstanceRecord;

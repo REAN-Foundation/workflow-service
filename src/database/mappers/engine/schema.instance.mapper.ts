@@ -15,12 +15,12 @@ export class SchemaInstanceMapper {
             id       : instance.id,
             TenantId : instance.TenantId,
             Code     : instance.Code,
-            Schema   : {
+            Schema   : instance.Schema ? {
                 id          : instance.Schema.id,
                 Name        : instance.Schema.Name,
                 Description : instance.Schema.Description,
                 TenantId    : instance.Schema.TenantId,
-            },
+            } : null,
             RootNodeInstance : instance.RootNodeInstance ? {
                 id   : instance.RootNodeInstance.id,
                 Node : instance.RootNodeInstance.Node ? {

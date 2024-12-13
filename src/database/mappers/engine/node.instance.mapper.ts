@@ -5,6 +5,7 @@ import {
 } from '../../../domain.types/engine/node.instance.types';
 import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
 import { NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
+import { NodeMapper } from './node.mapper';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -23,12 +24,8 @@ export class NodeInstanceMapper {
             ExecutionStatus       : instance.ExecutionStatus,
             StatusUpdateTimestamp : instance.StatusUpdateTimestamp,
             ExecutionResult       : instance.ExecutionResult ?? null,
-            Node                  : {
-                id   : instance.Node.id,
-                Type : instance.Node.Type,
-                Name : instance.Node.Name,
-            },
-            SchemaInstance : instance.SchemaInstance ? {
+            Node                  : instance.Node ? NodeMapper.toResponseDto(instance.Node) : null,
+            SchemaInstance        : instance.SchemaInstance ? {
                 id     : instance.SchemaInstance.id,
                 Schema : instance.SchemaInstance.Schema ? {
                     id          : instance.SchemaInstance.Schema.id,

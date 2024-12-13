@@ -50,7 +50,7 @@ export class NodeInstanceService extends BaseService {
             Input           : createModel.Input,
         });
         var record = await this._nodeInstanceRepository.save(nodeInstance);
-        var actionInstances = await this._commonUtilsService.getNodeActionInstances(record.id);
+        var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(record.id);
         return NodeInstanceMapper.toResponseDto(record, actionInstances);
     };
 
@@ -76,7 +76,7 @@ export class NodeInstanceService extends BaseService {
             if (!nodeInstance) {
                 return null;
             }
-            var actionInstances = await this._commonUtilsService.getNodeActionInstances(id);
+            var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(id);
             return NodeInstanceMapper.toResponseDto(nodeInstance, actionInstances);
         } catch (error) {
             logger.error(error.message);
@@ -109,7 +109,7 @@ export class NodeInstanceService extends BaseService {
             if (!nodeInstance) {
                 return null;
             }
-            var actionInstances = await this._commonUtilsService.getNodeActionInstances(nodeInstance.id);
+            var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(nodeInstance.id);
             return NodeInstanceMapper.toResponseDto(nodeInstance, actionInstances);
         } catch (error) {
             logger.error(error.message);

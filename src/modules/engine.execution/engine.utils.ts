@@ -29,7 +29,8 @@ export class EngineUtils {
 
     _commonUtilsService: CommonUtilsService = new CommonUtilsService();
 
-    public createNodeInstance = async (nodeId: uuid, schemaInstanceId: uuid): Promise<[NodeInstanceResponseDto, NodeResponseDto]> => {
+    public createNodeInstance = async (nodeId: uuid, schemaInstanceId: uuid)
+        : Promise<[NodeInstanceResponseDto, NodeResponseDto]> => {
         try {
             if (!nodeId) {
                 logger.error('Node Id is required');
@@ -59,7 +60,7 @@ export class EngineUtils {
                 return null;
             }
 
-            const actionIntances = await this._commonUtilsService.createNodeActionInstances(nodeInstance.id);
+            const actionIntances = await this._commonUtilsService.getOrCreateNodeActionInstances(nodeInstance.id);
             nodeInstance.ActionInstances = actionIntances;
 
             if (node.Type === NodeType.YesNoNode) {
@@ -69,15 +70,8 @@ export class EngineUtils {
                     logger.error(`Yes/No actions not found for Node ${node.Name}`);
                     return null;
                 }
-                var yesActionInstance = await this._commonUtilsService.getActionInstance(yesAction.id, schemaInstanceId);
-                if (!yesActionInstance) {
-                    yesActionInstance = await this._commonUtilsService.createNodeActionInstance(nodeInstance.id, yesAction.id);
-                }
-
-                var noActionInstance = await this._commonUtilsService.getActionInstance(noAction.id, schemaInstanceId);
-                if (!noActionInstance) {
-                    noActionInstance = await this._commonUtilsService.createNodeActionInstance(nodeInstance.id, noAction.id);
-                }
+                await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, schemaInstanceId);
+                await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, schemaInstanceId);
             }
             return [nodeInstance, node];
         } catch (error) {

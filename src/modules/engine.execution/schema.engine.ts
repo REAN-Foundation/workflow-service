@@ -255,22 +255,23 @@ export class SchemaEngine {
     private async traverseYesNoNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
 
+        var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
         var yesActionId = await currentNode.YesAction?.id;
         var noActionId = await currentNode.NoAction?.id;
 
         var yesAction = await this._actionService.getById(yesActionId);
         var noAction = await this._actionService.getById(noActionId);
 
-        var yesActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, this._schemaInstance.id);
-        var noActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, this._schemaInstance.id);
+        var yesActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, currentNodeInstance.id);
+        var noActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, currentNodeInstance.id);
 
-        var currentNode = currentNodeInstance.Node;
         var ruleId = currentNode.RuleId;
         var rule = await this._ruleService.getById(ruleId);
         if (!rule) {
             logger.error(`Rule not found for Node ${currentNode.Name}`);
             return null;
         }
+
         const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
         var condition = rule.Condition;
         if (!condition) {
@@ -303,7 +304,7 @@ export class SchemaEngine {
         : Promise<NodeInstanceResponseDto> {
 
         if (currentNodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
-            var currentNode = currentNodeInstance.Node;
+            var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
             var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
             currentNode = res.currentNode;
             currentNodeInstance = res.currentNodeInstance;
@@ -316,12 +317,13 @@ export class SchemaEngine {
         //Generate the action executioner
         const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
 
+        const includePathActions = false;
         const currentNodeId = currentNodeInstance.Node.id;
-        var actions = await this._commonUtilsService.getNodeActions(currentNodeId);
+        var actions = await this._commonUtilsService.getNodeActions(currentNodeId, includePathActions);
         if (actions.length === 0) {
             return true;
         }
-        var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(currentNodeInstance.id);
+        var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(currentNodeInstance.id, includePathActions);
         actionInstances = actionInstances.sort((a, b) => a.Sequence - b.Sequence);
 
         var results = new Map<string, NodeActionResult>();

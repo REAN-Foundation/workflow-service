@@ -39,7 +39,7 @@ export class SchemaService extends BaseService {
 
     _conditionRepository: Repository<Condition> = Source.getRepository(Condition);
 
-    _commonUtils: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
 
     //#endregion
 
@@ -73,14 +73,8 @@ export class SchemaService extends BaseService {
 
         if (rootNode.Actions) {
             for (var action of createModel.RootNode.Actions) {
-                var actionRecord = await this._actionRepository.create({
-                    ParentNode : rootNodeRecord,
-                    Type       : action.Type,
-                    Name       : action.Name,
-                    Input      : action.Input,
-                    Output     : action.Output,
-                });
-                await this._actionRepository.save(actionRecord);
+                var actionRecord = await this._commonUtilsService.createAction(action, rootNodeRecord);
+                rootNodeRecord.Actions.push(actionRecord);
             }
         }
 
@@ -122,7 +116,7 @@ export class SchemaService extends BaseService {
             if (!schema) {
                 ErrorHandler.throwNotFoundError('Schema not found!');
             }
-            const rootNode = await this._commonUtils.getNode(schema.RootNodeId);
+            const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
             return SchemaMapper.toResponseDto(schema, rootNode);
         } catch (error) {
             logger.error(error.message);
@@ -178,7 +172,7 @@ export class SchemaService extends BaseService {
             if (model.ContextParams != null) {
                 schema.ContextParams = model.ContextParams;
             }
-            const rootNode = await this._commonUtils.getNode(schema.RootNodeId);
+            const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
             var record = await this._schemaRepository.save(schema);
             return SchemaMapper.toResponseDto(record, rootNode);
         } catch (error) {
@@ -214,7 +208,7 @@ export class SchemaService extends BaseService {
             });
             var dtos: SchemaResponseDto[] = [];
             for (var schema of schemas) {
-                const rootNode = await this._commonUtils.getNode(schema.RootNodeId);
+                const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
                 var dto = SchemaMapper.toResponseDto(schema, rootNode);
                 dtos.push(dto);
             }

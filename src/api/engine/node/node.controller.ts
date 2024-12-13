@@ -39,7 +39,7 @@ export class NodeController {
             var model: QuestionNodeCreateModel = await this._validator.validateCreateQuestionNodeRequest(request);
             model.Type = NodeType.QuestionNode;
 
-            const record = await this._service.create(model);
+            const record = await this._service.createQuestionNode(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');
             }
@@ -55,7 +55,7 @@ export class NodeController {
             var model: YesNoNodeCreateModel = await this._validator.validateCreateYesNoNodeRequest(request);
             model.Type = NodeType.YesNoNode;
 
-            const record = await this._service.create(model);
+            const record = await this._service.createYesNoNode(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');
             }

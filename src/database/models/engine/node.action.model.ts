@@ -27,6 +27,9 @@ export class NodeAction {
     @Column({ type: 'int', nullable: false, default: 0 })
     Sequence: number;
 
+    @Column({ type: 'boolean', nullable: false, default: false })
+    IsPathAction: boolean;
+
     @ManyToOne(() => Node, (node) => node.Actions, { nullable: true })
     @JoinColumn()
     ParentNode: Node;

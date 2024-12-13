@@ -70,8 +70,8 @@ export class EngineUtils {
                     logger.error(`Yes/No actions not found for Node ${node.Name}`);
                     return null;
                 }
-                await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, schemaInstanceId);
-                await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, schemaInstanceId);
+                await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, nodeInstance.id);
+                await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, nodeInstance.id);
             }
             return [nodeInstance, node];
         } catch (error) {

@@ -308,7 +308,7 @@ export class SchemaInstanceService extends BaseService {
             for (let index = 0; index < tempParams.Params.length; index++) {
                 const element = tempParams.Params[index];
                 if (element.Key === params.Key) {
-                    tempParams.Params[index] = params;
+                    tempParams.Params[index].Value = params.Value;
                     updatedExisting = true;
                     break;
                 }

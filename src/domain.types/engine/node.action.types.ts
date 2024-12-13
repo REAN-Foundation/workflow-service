@@ -6,19 +6,21 @@ import { ActionInputParams, ActionOutputParams } from "./intermediate.types/para
 ////////////////////////////////////////////////////////////////////////
 
 export interface NodeActionCreateModel {
-    Type        : ActionType;
-    Sequence    : number;
-    ParentNodeId: uuid;
-    Name        : string;
-    Description?: string;
-    Input       : ActionInputParams;
-    Output     ?: ActionOutputParams;
+    Type         : ActionType;
+    Sequence     : number;
+    IsPathAction?: boolean;
+    ParentNodeId : uuid;
+    Name         : string;
+    Description ?: string;
+    Input        : ActionInputParams;
+    Output      ?: ActionOutputParams;
 }
 
 export interface NodeActionUpdateModel {
     Type        ?: ActionType;
     Sequence    ?: number;
     ParentNodeId?: uuid;
+    IsPathAction?: boolean;
     Name        ?: string;
     Description ?: string;
     Input       ?: ActionInputParams;
@@ -26,18 +28,19 @@ export interface NodeActionUpdateModel {
 }
 
 export interface NodeActionResponseDto {
-    id         : uuid;
-    Type       : ActionType;
-    Sequence   : number;
-    Name       : string;
-    Description: string;
-    ParentNode : {
-        id: uuid;
-        Name: string;
+    id          : uuid;
+    Type        : ActionType;
+    Sequence    : number;
+    IsPathAction: boolean;
+    Name        : string;
+    Description : string;
+    ParentNode  : {
+        id         : uuid;
+        Name       : string;
         Description: string;
     }
-    Input      : ActionInputParams;
-    Output     : ActionOutputParams;
+    Input    : ActionInputParams;
+    Output   : ActionOutputParams;
     CreatedAt: Date;
     UpdatedAt: Date;
 }
@@ -46,6 +49,7 @@ export interface NodeActionSearchFilters extends BaseSearchFilters {
     Name         ?: string;
     ParentNodeId ?: uuid;
     Type         ?: ActionType;
+    IsPathAction ?: boolean;
 }
 
 export interface NodeActionSearchResults extends BaseSearchResults {

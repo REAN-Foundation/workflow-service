@@ -37,20 +37,8 @@ export class NodeActionService extends BaseService {
 
     public create = async (createModel: NodeActionCreateModel)
         : Promise<NodeActionResponseDto> => {
-
-        const parentNode = await this.getNode(createModel.ParentNodeId);
-
-        const action = this._actionRepository.create({
-            ParentNode  : parentNode,
-            Sequence    : createModel.Sequence,
-            Type        : createModel.Type,
-            Name        : createModel.Name,
-            Description : createModel.Description,
-            Input       : createModel.Input,
-            Output      : createModel.Output,
-        });
-        var record = await this._actionRepository.save(action);
-        return NodeActionMapper.toResponseDto(record);
+        const actionRecord = await this._commonUtils.createAction(createModel);
+        return NodeActionMapper.toResponseDto(actionRecord);
     };
 
     public getById = async (id: uuid): Promise<NodeActionResponseDto> => {

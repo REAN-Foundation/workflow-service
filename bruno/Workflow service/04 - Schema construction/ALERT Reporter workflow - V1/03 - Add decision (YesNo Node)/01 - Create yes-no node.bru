@@ -26,6 +26,7 @@ body:json {
     "NoAction": {
       "Type": "SendMessage",
       "Name": "Send message - Prompt for location",
+      "IsPathAction": true,
       "Input": {
         "Params": [
           {
@@ -46,6 +47,7 @@ body:json {
     "YesAction": {
       "Type": "Continue",
       "Name": "Continue to next node.",
+      "IsPathAction": true,
       "Description": "This will set the next node as current node.",
       "Input": null
     }

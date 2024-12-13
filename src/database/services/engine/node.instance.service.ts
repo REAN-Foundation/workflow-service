@@ -67,7 +67,10 @@ export class NodeInstanceService extends BaseService {
                     ChildrenNodeInstances : {
                         Node : true
                     },
-                    Node               : true,
+                    Node : {
+                        Schema  : true,
+                        Actions : true,
+                    },
                     ParentNodeInstance : {
                         Node : true
                     }

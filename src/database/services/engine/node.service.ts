@@ -21,7 +21,7 @@ import { CommonUtilsService } from './common.utils.service';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 import { Question } from '../../../database/models/engine/question.model';
 import { StringUtils } from '../../../common/utilities/string.utils';
-import { NodeActionCreateModel, NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
+import { NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
 import { NodeActionMapper } from '../../../database/mappers/engine/node.action.mapper';
 
 ///////////////////////////////////////////////////////////////////////
@@ -46,12 +46,10 @@ export class NodeService extends BaseService {
 
     public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel | YesNoNodeCreateModel)
         : Promise<NodeResponseDto> => {
+
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
         const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
-
-        var yesAction = await this.createAction(createModel.Type === NodeType.YesNoNode ? (createModel as YesNoNodeCreateModel).YesAction : null);
-        var noAction = await this.createAction(createModel.Type === NodeType.YesNoNode ? (createModel as YesNoNodeCreateModel).NoAction : null);
 
         const node = this._nodeRepository.create({
             Code         : StringUtils.generateDisplayCode_RandomChars(12, prefix),
@@ -64,36 +62,120 @@ export class NodeService extends BaseService {
             RuleId       : createModel.RuleId,
             RawData      : createModel.RawData,
             Input        : createModel.Input,
-            YesActionId  : yesAction ? yesAction.id : null,
-            NoActionId   : noAction ? noAction.id : null,
+            YesActionId  : null,
+            NoActionId   : null,
         });
         var record = await this._nodeRepository.save(node);
         if (record == null)
         {
             return null;
         }
-        var nodeId = record.id;
-        var model = null;
-        if (createModel.Type === NodeType.QuestionNode) {
-            model = createModel as QuestionNodeCreateModel;
-            var questionModel = {
-                id           : nodeId,
-                QuestionText : model.QuestionText,
-                ResponseType : model.ResponseType,
-                Options      : model.Options,
-            };
-            var question = await this._questionRepository.create(questionModel);
-            await this._questionRepository.save(question);
+
+        var nodeActions: NodeActionResponseDto[] = [];
+        if (createModel.Actions && createModel.Actions?.length > 0) {
+            for await (const actionModel of createModel.Actions) {
+                var actionRecord = await this._commonUtilsService.createAction(actionModel, node);
+                var actionDto = NodeActionMapper.toResponseDto(actionRecord);
+                nodeActions.push(actionDto);
+            }
+        }
+
+        return NodeMapper.toResponseDto(record, nodeActions, null, null, null);
+    };
+
+    public createQuestionNode = async (createModel: QuestionNodeCreateModel) : Promise<NodeResponseDto> => {
+
+        const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
+        const parentNode = await this.getNode(createModel.ParentNodeId);
+        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+
+        const node = this._nodeRepository.create({
+            Code         : StringUtils.generateDisplayCode_RandomChars(12, prefix),
+            Type         : NodeType.QuestionNode,
+            Schema       : schema,
+            ParentNode   : parentNode,
+            Name         : createModel.Name,
+            Description  : createModel.Description,
+            DelaySeconds : createModel.DelaySeconds,
+            RuleId       : createModel.RuleId,
+            RawData      : createModel.RawData,
+            Input        : createModel.Input,
+            YesActionId  : null,
+            NoActionId   : null,
+        });
+        var record = await this._nodeRepository.save(node);
+        if (record == null)
+        {
+            return null;
+        }
+
+        var questionModel = {
+            id           : record.id, // nodeId,
+            QuestionText : createModel.QuestionText,
+            ResponseType : createModel.ResponseType,
+            Options      : createModel.Options,
+        };
+        var question = await this._questionRepository.create(questionModel);
+        await this._questionRepository.save(question);
+
+        var nodeActions: NodeActionResponseDto[] = [];
+        if (createModel.Actions && createModel.Actions?.length > 0) {
+            for await (const actionModel of createModel.Actions) {
+                var actionRecord = await this._commonUtilsService.createAction(actionModel, node);
+                var actionDto = NodeActionMapper.toResponseDto(actionRecord);
+                nodeActions.push(actionDto);
+            }
+        }
+
+        return NodeMapper.toResponseDto(record, nodeActions, question, null, null);
+    };
+
+    public createYesNoNode = async (createModel: YesNoNodeCreateModel)
+        : Promise<NodeResponseDto> => {
+        const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
+        const parentNode = await this.getNode(createModel.ParentNodeId);
+        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+
+        var yesActionModel = (createModel as YesNoNodeCreateModel).YesAction;
+        yesActionModel.IsPathAction = true;
+        var yesAction = await this._commonUtilsService.createAction(yesActionModel);
+        var yesActionId = yesAction ? yesAction.id : null;
+
+        var noActionModel = (createModel as YesNoNodeCreateModel).NoAction;
+        noActionModel.IsPathAction = true;
+        var noAction = await this._commonUtilsService.createAction(noActionModel);
+        var noActionId = noAction.id ? noAction.id : null;
+
+        const node = this._nodeRepository.create({
+            Code         : StringUtils.generateDisplayCode_RandomChars(12, prefix),
+            Type         : NodeType.YesNoNode,
+            Schema       : schema,
+            ParentNode   : parentNode,
+            Name         : createModel.Name,
+            Description  : createModel.Description,
+            DelaySeconds : createModel.DelaySeconds,
+            RuleId       : createModel.RuleId,
+            RawData      : createModel.RawData,
+            Input        : createModel.Input,
+            YesActionId  : yesActionId,
+            NoActionId   : noActionId,
+        });
+        var record = await this._nodeRepository.save(node);
+        if (record == null)
+        {
+            return null;
         }
 
         var nodeActions: NodeActionResponseDto[] = [];
         if (createModel.Actions && createModel.Actions?.length > 0) {
             for await (const actionModel of createModel.Actions) {
-                var actionRecord = await this.createAction(actionModel, node);
+                actionModel.IsPathAction = false;
+                var actionRecord = await this._commonUtilsService.createAction(actionModel, node);
                 var actionDto = NodeActionMapper.toResponseDto(actionRecord);
                 nodeActions.push(actionDto);
             }
         }
+
         const yesActionDto = yesAction ? NodeActionMapper.toResponseDto(yesAction) : null;
         const noActionDto = noAction ? NodeActionMapper.toResponseDto(noAction) : null;
         if (yesAction) {
@@ -105,7 +187,8 @@ export class NodeService extends BaseService {
             await this._actionRepository.save(noAction);
         }
 
-        return NodeMapper.toResponseDto(record, nodeActions, question, yesActionDto, noActionDto);
+        return NodeMapper.toResponseDto(record, nodeActions, null, yesActionDto, noActionDto);
+
     };
 
     public getById = async (id: uuid): Promise<NodeResponseDto> => {
@@ -346,23 +429,6 @@ export class NodeService extends BaseService {
             ErrorHandler.throwNotFoundError('Node cannot be found');
         }
         return node;
-    }
-
-    private async createAction(actionModel?: NodeActionCreateModel, nodeRecord?: Node): Promise<NodeAction> {
-        if (actionModel == null) {
-            return null;
-        }
-        var action = await this._actionRepository.create({
-            Type        : actionModel.Type,
-            Sequence    : actionModel.Sequence,
-            Name        : actionModel.Name,
-            Description : actionModel.Description,
-            Input       : actionModel.Input,
-            Output      : actionModel.Output,
-            ParentNode  : nodeRecord,
-        });
-        var actionRecord = await this._actionRepository.save(action);
-        return actionRecord;
     }
 
 }

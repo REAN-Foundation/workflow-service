@@ -57,15 +57,24 @@ export class CommonUtilsService {
         return schema;
     };
 
-    public createAction = async (actionModel: NodeActionCreateModel) => {
-        const action = await this._actionRepository.create({
-            Type        : actionModel.Type,
-            Name        : actionModel.Name,
-            Description : actionModel.Description,
-            Input       : actionModel.Input,
-            Output      : actionModel.Output
+    public createAction = async (actionModel: NodeActionCreateModel, parentNode?: Node): Promise<NodeAction> => {
+
+        if (!parentNode) {
+            parentNode = await this.getNode(actionModel.ParentNodeId);
+        }
+
+        const action = this._actionRepository.create({
+            ParentNode   : parentNode,
+            Sequence     : actionModel.Sequence,
+            IsPathAction : actionModel.IsPathAction,
+            Type         : actionModel.Type,
+            Name         : actionModel.Name,
+            Description  : actionModel.Description,
+            Input        : actionModel.Input,
+            Output       : actionModel.Output,
         });
-        return action;
+        var record = await this._actionRepository.save(action);
+        return record;
     };
 
     public getNode = async (nodeId: uuid) => {
@@ -95,7 +104,7 @@ export class CommonUtilsService {
         return client;
     };
 
-    public getNodeActions = async (nodeId: uuid): Promise<NodeActionResponseDto[]> => {
+    public getNodeActions = async (nodeId: uuid, isPathAction = false): Promise<NodeActionResponseDto[]> => {
         try {
             var node = await this._nodeRepository.findOne({
                 where : {
@@ -107,7 +116,8 @@ export class CommonUtilsService {
             }
             var actions = await this._actionRepository.find({
                 where : {
-                    ParentNode : {
+                    IsPathAction : isPathAction,
+                    ParentNode   : {
                         id : nodeId
                     }
                 }
@@ -119,7 +129,7 @@ export class CommonUtilsService {
         }
     };
 
-    public getOrCreateNodeActionInstances = async (nodeInstanceId: uuid): Promise<NodeActionInstanceResponseDto[]> => {
+    public getOrCreateNodeActionInstances = async (nodeInstanceId: uuid, isPathAction = false): Promise<NodeActionInstanceResponseDto[]> => {
         try {
             var nodeInstance = await this._nodeInstanceRepository.findOne({
                 where : {
@@ -143,7 +153,8 @@ export class CommonUtilsService {
             }
             var nodeActionRecords = await this._actionRepository.find({
                 where : {
-                    ParentNode : {
+                    IsPathAction : isPathAction,
+                    ParentNode   : {
                         id : nodeInstance.Node.id
                     }
                 }

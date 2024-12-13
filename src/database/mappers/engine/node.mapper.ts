@@ -23,11 +23,11 @@ export class NodeMapper {
             Type        : node.Type,
             Name        : node.Name,
             Description : node.Description,
-            Schema      : {
+            Schema      : node.Schema ? {
                 id          : node.Schema.id,
                 Name        : node.Schema.Name,
                 Description : node.Schema.Description,
-            },
+            } : null,
             ParentNode : node.ParentNode ? {
                 id          : node.ParentNode.id,
                 Name        : node.ParentNode.Name,

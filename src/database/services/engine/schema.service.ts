@@ -79,12 +79,13 @@ export class SchemaService extends BaseService {
         }
 
         const schema = await this._schemaRepository.create({
-            TenantId      : createModel.TenantId,
-            Name          : createModel.Name,
-            Description   : createModel.Description,
-            Type          : createModel.Type,
-            RootNodeId    : rootNodeRecord.id,
-            ContextParams : createModel.ContextParams,
+            TenantId       : createModel.TenantId,
+            ParentSchemaId : createModel.ParentSchemaId,
+            Name           : createModel.Name,
+            Description    : createModel.Description,
+            Type           : createModel.Type,
+            RootNodeId     : rootNodeRecord.id,
+            ContextParams  : createModel.ContextParams,
         });
         var schemaRecord = await this._schemaRepository.save(schema);
 
@@ -172,6 +173,9 @@ export class SchemaService extends BaseService {
             if (model.ContextParams != null) {
                 schema.ContextParams = model.ContextParams;
             }
+            if (model.ParentSchemaId != null) {
+                schema.ParentSchemaId = model.ParentSchemaId;
+            }
             const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
             var record = await this._schemaRepository.save(schema);
             return SchemaMapper.toResponseDto(record, rootNode);
@@ -238,6 +242,9 @@ export class SchemaService extends BaseService {
         }
         if (filters.Description) {
             search.where['Description'] = Like(`%${filters.Description}%`);
+        }
+        if (filters.ParentSchemaId) {
+            search.where['ParentSchemaId'] = filters.ParentSchemaId;
         }
 
         return search;

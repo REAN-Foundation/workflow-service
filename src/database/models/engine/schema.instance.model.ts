@@ -31,6 +31,9 @@ export class SchemaInstance {
     @JoinColumn()
     Schema: Schema;
 
+    @Column({ type: 'uuid', nullable: true })
+    ParentSchemaInstanceId : string;
+
     @Column({ type: 'varchar', length: 64, nullable: false })
     Code : string;
 

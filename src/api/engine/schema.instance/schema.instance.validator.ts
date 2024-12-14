@@ -16,8 +16,9 @@ export class SchemaInstanceValidator extends BaseValidator {
     public validateCreateRequest = async (request: express.Request): Promise<SchemaInstanceCreateModel> => {
         try {
             const schema = joi.object({
-                SchemaId      : joi.string().uuid().required(),
-                ContextParams : joi.object({
+                SchemaId               : joi.string().uuid().required(),
+                ParentSchemaInstanceId : joi.string().uuid().optional(),
+                ContextParams          : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
                         Name        : joi.string().max(128).required(),
@@ -29,9 +30,10 @@ export class SchemaInstanceValidator extends BaseValidator {
             });
             await schema.validateAsync(request.body);
             return {
-                TenantId      : request.body.TenantId,
-                SchemaId      : request.body.SchemaId,
-                ContextParams : request.body.ContextParams
+                TenantId               : request.body.TenantId,
+                SchemaId               : request.body.SchemaId,
+                ParentSchemaInstanceId : request.body.ParentSchemaInstanceId ?? null,
+                ContextParams          : request.body.ContextParams
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -42,8 +44,9 @@ export class SchemaInstanceValidator extends BaseValidator {
         try {
             const schema = joi.object({
                 ContextParams : joi.object({
-                    Name   : joi.string().max(128).required(),
-                    Params : joi.array().items(joi.object({
+                    Name                   : joi.string().max(128).required(),
+                    ParentSchemaInstanceId : joi.string().uuid().optional(),
+                    Params                 : joi.array().items(joi.object({
                         Name        : joi.string().max(128).required(),
                         Type        : joi.string().valid(...Object.values(ParamType)).required(),
                         Description : joi.string().max(512).optional(),
@@ -53,7 +56,8 @@ export class SchemaInstanceValidator extends BaseValidator {
             });
             await schema.validateAsync(request.body);
             return {
-                ContextParams : request.body.ContextParams ?? null
+                ContextParams          : request.body.ContextParams ?? null,
+                ParentSchemaInstanceId : request.body.ParentSchemaInstanceId ?? null
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -63,8 +67,9 @@ export class SchemaInstanceValidator extends BaseValidator {
     public validateSearchRequest = async (request: express.Request): Promise<SchemaInstanceSearchFilters> => {
         try {
             const schema = joi.object({
-                schemaId  : joi.string().uuid().optional(),
-                contextId : joi.string().uuid().optional(),
+                schemaId               : joi.string().uuid().optional(),
+                contextId              : joi.string().uuid().optional(),
+                parentSchemaInstanceId : joi.string().uuid().optional(),
             });
             await schema.validateAsync(request.query);
             const filters = this.getSearchFilters(request.query);
@@ -89,6 +94,10 @@ export class SchemaInstanceValidator extends BaseValidator {
         var contextId = query.contextId ? query.contextId : null;
         if (contextId != null) {
             filters['ContextId'] = contextId;
+        }
+        var parentSchemaInstanceId = query.parentSchemaInstanceId ? query.parentSchemaInstanceId : null;
+        if (parentSchemaInstanceId != null) {
+            filters['ParentSchemaInstanceId'] = parentSchemaInstanceId;
         }
 
         return filters;

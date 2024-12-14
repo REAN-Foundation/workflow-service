@@ -18,6 +18,7 @@ import { Node } from '../../models/engine/node.model';
 import { CommonUtilsService } from './common.utils.service';
 import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
 import { Params } from '../../../domain.types/engine/intermediate.types/params.types';
+import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -46,17 +47,20 @@ export class SchemaInstanceService extends BaseService {
         const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
 
         const schemaInstance = this._schemaInstanceRepository.create({
-            TenantId      : createModel.TenantId,
-            Code          : createModel.Code,
-            ContextParams : createModel.ContextParams,
-            Schema        : schema,
+            TenantId               : createModel.TenantId,
+            Code                   : createModel.Code,
+            ContextParams          : createModel.ContextParams,
+            Schema                 : schema,
+            ParentSchemaInstanceId : createModel.ParentSchemaInstanceId ?? null,
         });
         var record = await this._schemaInstanceRepository.save(schemaInstance);
 
         //Create root node instance
         const rootNodeInstance = await this._nodeInstanceRepository.create({
-            Node           : rootNode,
-            SchemaInstance : schemaInstance
+            Node            : rootNode,
+            SchemaInstance  : schemaInstance,
+            Type            : rootNode.Type,
+            ExecutionStatus : ExecutionStatus.Pending,
         });
         const rootNodeInstanceRecord = await this._nodeInstanceRepository.save(rootNodeInstance);
 
@@ -106,6 +110,34 @@ export class SchemaInstanceService extends BaseService {
                     Schema : {
                         id : schemaId
                     }
+                },
+                relations : {
+                    Schema : {
+                        Nodes : true,
+                    },
+                    CurrentNodeInstance : {
+                        Node : true,
+                    },
+                    RootNodeInstance : {
+                        Node : true,
+                    },
+                    NodeInstances : {
+                        Node : true,
+                    },
+                }
+            });
+            return schemaInstances.map(x => SchemaInstanceMapper.toResponseDto(x));
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getByParentSchemaInstanceId = async (parentSchemaInstanceId: uuid): Promise<SchemaInstanceResponseDto[]> => {
+        try {
+            var schemaInstances = await this._schemaInstanceRepository.find({
+                where : {
+                    ParentSchemaInstanceId : parentSchemaInstanceId
                 },
                 relations : {
                     Schema : {
@@ -209,6 +241,9 @@ export class SchemaInstanceService extends BaseService {
             }
             if (model.ContextParams != null) {
                 schemaInstance.ContextParams = model.ContextParams;
+            }
+            if (model.ParentSchemaInstanceId != null) {
+                schemaInstance.ParentSchemaInstanceId = model.ParentSchemaInstanceId;
             }
             var record = await this._schemaInstanceRepository.save(schemaInstance);
             return SchemaInstanceMapper.toResponseDto(record);
@@ -387,6 +422,9 @@ export class SchemaInstanceService extends BaseService {
         }
         if (filters.Code) {
             search.where['Code'] = Like(`%${filters.Code}%`);
+        }
+        if (filters.ParentSchemaInstanceId) {
+            search.where['ParentSchemaInstanceId'] = filters.ParentSchemaInstanceId;
         }
 
         return search;

@@ -12,63 +12,67 @@ import { ContextParams } from "./intermediate.types/params.types";
 //////////////////////////////////////////////////////////////
 
 export interface SchemaInstanceCreateModel {
-    SchemaId     : uuid;
-    TenantId     : uuid;
-    ContextParams: ContextParams;
-    Code        ?: string;
+    SchemaId               : uuid;
+    TenantId               : uuid;
+    ContextParams          : ContextParams;
+    Code                  ?: string;
+    ParentSchemaInstanceId?: uuid;
 }
 
 export interface SchemaInstanceUpdateModel {
-    ContextParams : ContextParams;
+    ContextParams          : ContextParams;
+    ParentSchemaInstanceId?: uuid;
 }
 
 export interface SchemaInstanceResponseDto {
-    id         : uuid;
-    Code       : string;
-    TenantId   : uuid;
-    Schema     : {
+    id                     : uuid;
+    Code                   : string;
+    TenantId               : uuid;
+    ParentSchemaInstanceId?: uuid;
+    Schema                 : {
         id         : uuid;
         Name       : string;
         Description: string;
         TenantId   : uuid;
     };
-    ContextParams ?: ContextParams;
+    ContextParams   ?: ContextParams;
     RootNodeInstance : {
-        id: uuid;
+        id  : uuid;
         Node: {
-            id: uuid;
+            id  : uuid;
             Name: string;
             Type: NodeType;
         }
     };
     CurrentNodeInstance : {
-        id: uuid;
+        id  : uuid;
         Node: {
-            id: uuid;
+            id  : uuid;
             Name: string;
             Type: NodeType;
         }
     };
     NodeInstances : {
-        id: uuid;
+        id  : uuid;
         Node: {
-            id: uuid;
-            Name: string;
-            Type: NodeType;
+            id     : uuid;
+            Name   : string;
+            Type   : NodeType;
             Active?: boolean;
         }
     }[];
-    AlmanacObjects: AlmanacObject[];
-    ExecutionStarted: boolean;
+    AlmanacObjects           : AlmanacObject[];
+    ExecutionStarted         : boolean;
     ExecutionStartedTimestamp: Date;
-    CreatedAt: Date;
-    UpdatedAt: Date;
+    CreatedAt                : Date;
+    UpdatedAt                : Date;
 }
 
 export interface SchemaInstanceSearchFilters extends BaseSearchFilters {
-    SchemaId  ?: uuid;
-    TenantId  ?: uuid;
-    Code      ?: string;
+    SchemaId              ?: uuid;
+    TenantId              ?: uuid;
+    Code                  ?: string;
+    ParentSchemaInstanceId?: uuid;
 }
 
 export interface SchemaInstanceSearchResults extends BaseSearchResults {

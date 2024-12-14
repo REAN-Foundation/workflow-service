@@ -92,6 +92,8 @@ export class SchemaEngine {
         return currentNodeInstance;
     };
 
+    //#region Private methods
+
     private async processCurrentNode(currentNodeInstance: NodeInstanceResponseDto) {
 
         if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
@@ -166,46 +168,6 @@ export class SchemaEngine {
         }
     }
 
-    private async createSchemaInstance(schema: SchemaResponseDto, event: EventResponseDto) {
-
-        const padZero = (num: number, size: number) => String(num).padStart(size, '0');
-        const pattern = TimeUtils.formatDateToYYMMDD(new Date());
-        var instanceCount = await this._schemaInstanceService.getCount(schema.TenantId, schema.id, pattern);
-        const formattedCount = padZero(instanceCount + 1, 3); // Count with leading zeros (e.g., 001)
-        var code = 'E-' + pattern + '-' + formattedCount;
-
-        var schemaInstanceContextParams = schema.ContextParams;
-        for (var p of schemaInstanceContextParams.Params) {
-            if (p.Type === ParamType.Phonenumber) {
-                p.Value = event.UserMessage.Phone;
-            }
-            if (p.Type === ParamType.Location) {
-                p.Value = event.UserMessage.Location;
-            }
-            if (p.Type === ParamType.DateTime) {
-                p.Value = new Date();
-            }
-            if (p.Type === ParamType.Text) {
-                if (p.Key === 'SchemaInstanceCode') {
-                    p.Value = code;
-                }
-            }
-        }
-        const schemaInstance = await this._schemaInstanceService.create({
-            TenantId      : schema.TenantId,
-            Code          : code,
-            SchemaId      : schema.id,
-            ContextParams : schemaInstanceContextParams,
-        });
-
-        if (!schemaInstance) {
-            logger.error(`Error while creating schema instance!`);
-            return null;
-        }
-
-        return schemaInstance;
-    }
-
     private async syncWithAlmanac(schemaInstance: SchemaInstanceResponseDto) {
         var fact: any = null;
         const params = schemaInstance.ContextParams.Params;
@@ -239,7 +201,6 @@ export class SchemaEngine {
         }
     }
 
-    // eslint-disable-next-line max-len
     private async traverse(currentNodeInstance: NodeInstanceResponseDto
     ): Promise<NodeInstanceResponseDto> {
 
@@ -328,7 +289,8 @@ export class SchemaEngine {
         return currentNodeInstance;
     }
 
-    private async executeNodeActions(currentNodeInstance: NodeInstanceResponseDto): Promise<boolean> {
+    private async executeNodeActions(currentNodeInstance: NodeInstanceResponseDto):
+        Promise<boolean> {
 
         //Generate the action executioner
         const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
@@ -411,5 +373,47 @@ export class SchemaEngine {
         await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
         return { currentNode, currentNodeInstance };
     }
+
+    private async createSchemaInstance(schema: SchemaResponseDto, event: EventResponseDto) {
+
+        const padZero = (num: number, size: number) => String(num).padStart(size, '0');
+        const pattern = TimeUtils.formatDateToYYMMDD(new Date());
+        var instanceCount = await this._schemaInstanceService.getCount(schema.TenantId, schema.id, pattern);
+        const formattedCount = padZero(instanceCount + 1, 3); // Count with leading zeros (e.g., 001)
+        var code = 'E-' + pattern + '-' + formattedCount;
+
+        var schemaInstanceContextParams = schema.ContextParams;
+        for (var p of schemaInstanceContextParams.Params) {
+            if (p.Type === ParamType.Phonenumber) {
+                p.Value = event.UserMessage.Phone;
+            }
+            if (p.Type === ParamType.Location) {
+                p.Value = event.UserMessage.Location;
+            }
+            if (p.Type === ParamType.DateTime) {
+                p.Value = new Date();
+            }
+            if (p.Type === ParamType.Text) {
+                if (p.Key === 'SchemaInstanceCode') {
+                    p.Value = code;
+                }
+            }
+        }
+        const schemaInstance = await this._schemaInstanceService.create({
+            TenantId      : schema.TenantId,
+            Code          : code,
+            SchemaId      : schema.id,
+            ContextParams : schemaInstanceContextParams,
+        });
+
+        if (!schemaInstance) {
+            logger.error(`Error while creating schema instance!`);
+            return null;
+        }
+
+        return schemaInstance;
+    }
+
+    //#endregion
 
 }

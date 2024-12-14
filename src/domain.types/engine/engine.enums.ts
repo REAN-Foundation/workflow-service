@@ -1,7 +1,11 @@
-
 export enum SchemaType {
     ChatBot = 'ChatBot',
     Application = 'Application',
+}
+
+export enum WorkflowActivityType {
+    UserEvent  = 'UserEvent',
+    NodeAction = 'NodeAction',
 }
 
 export enum ParamType {

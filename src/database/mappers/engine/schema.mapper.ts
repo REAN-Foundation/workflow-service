@@ -14,12 +14,13 @@ export class SchemaMapper {
             return null;
         }
         const dto: SchemaResponseDto = {
-            id          : schema.id,
-            Type        : schema.Type,
-            TenantId    : schema.TenantId,
-            Name        : schema.Name,
-            Description : schema.Description,
-            RootNode    : rootNode ? {
+            id             : schema.id,
+            Type           : schema.Type,
+            TenantId       : schema.TenantId,
+            Name           : schema.Name,
+            Description    : schema.Description,
+            ParentSchemaId : schema.ParentSchemaId,
+            RootNode       : rootNode ? {
                 id          : rootNode.id,
                 Description : rootNode.Description,
                 Name        : rootNode.Name,

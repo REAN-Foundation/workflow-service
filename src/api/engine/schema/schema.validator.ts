@@ -12,11 +12,12 @@ export class SchemaValidator extends BaseValidator {
     public validateCreateRequest = async (request: express.Request): Promise<SchemaCreateModel> => {
         try {
             const schema = joi.object({
-                TenantId      : joi.string().uuid().required(),
-                Name          : joi.string().max(64).required(),
-                Type          : joi.string().valid(...Object.values(SchemaType)).required(),
-                Description   : joi.string().max(512).optional(),
-                ContextParams : joi.object({
+                TenantId       : joi.string().uuid().required(),
+                Name           : joi.string().max(64).required(),
+                Type           : joi.string().valid(...Object.values(SchemaType)).required(),
+                Description    : joi.string().max(512).optional(),
+                ParentSchemaId : joi.string().uuid().optional(),
+                ContextParams  : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
                         Name        : joi.string().max(128).required(),
@@ -56,12 +57,13 @@ export class SchemaValidator extends BaseValidator {
             await schema.validateAsync(request.body);
 
             return {
-                TenantId      : request.body.TenantId,
-                Name          : request.body.Name,
-                Description   : request.body.Description ?? null,
-                Type          : request.body.Type,
-                RootNode      : request.body.RootNode ?? null,
-                ContextParams : request.body.ContextParams ?? null,
+                TenantId       : request.body.TenantId,
+                ParentSchemaId : request.body.ParentSchemaId ?? null,
+                Name           : request.body.Name,
+                Description    : request.body.Description ?? null,
+                Type           : request.body.Type,
+                RootNode       : request.body.RootNode ?? null,
+                ContextParams  : request.body.ContextParams ?? null,
             };
 
         } catch (error) {
@@ -72,10 +74,11 @@ export class SchemaValidator extends BaseValidator {
     public validateUpdateRequest = async (request: express.Request): Promise<SchemaUpdateModel|undefined> => {
         try {
             const schema = joi.object({
-                Name          : joi.string().max(64).optional(),
-                Type          : joi.string().valid(...Object.values(SchemaType)).optional(),
-                Description   : joi.string().max(512).optional(),
-                ContextParams : joi.object({
+                Name           : joi.string().max(64).optional(),
+                Type           : joi.string().valid(...Object.values(SchemaType)).optional(),
+                Description    : joi.string().max(512).optional(),
+                ParentSchemaId : joi.string().uuid().optional(),
+                ContextParams  : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
                         Name        : joi.string().max(128).required(),
@@ -87,10 +90,11 @@ export class SchemaValidator extends BaseValidator {
             });
             await schema.validateAsync(request.body);
             return {
-                Name          : request.body.Name ?? null,
-                Type          : request.body.Type ?? null,
-                Description   : request.body.Description ?? null,
-                ContextParams : request.body.ContextParams ?? null,
+                Name           : request.body.Name ?? null,
+                Type           : request.body.Type ?? null,
+                ParentSchemaId : request.body.ParentSchemaId ?? null,
+                Description    : request.body.Description ?? null,
+                ContextParams  : request.body.ContextParams ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -100,8 +104,9 @@ export class SchemaValidator extends BaseValidator {
     public validateSearchRequest = async (request: express.Request): Promise<SchemaSearchFilters> => {
         try {
             const schema = joi.object({
-                tenantId : joi.string().uuid().optional(),
-                name     : joi.string().max(64).optional(),
+                tenantId       : joi.string().uuid().optional(),
+                name           : joi.string().max(64).optional(),
+                parentSchemaId : joi.string().uuid().optional(),
             });
             await schema.validateAsync(request.query);
             const filters = this.getSearchFilters(request.query);
@@ -126,6 +131,10 @@ export class SchemaValidator extends BaseValidator {
         var tenantId = query.tenantId ? query.tenantId : null;
         if (tenantId != null) {
             filters['TenantId'] = tenantId;
+        }
+        var parentSchemaId = query.parentSchemaId ? query.parentSchemaId : null;
+        if (parentSchemaId != null) {
+            filters['ParentSchemaId'] = parentSchemaId;
         }
 
         return filters;

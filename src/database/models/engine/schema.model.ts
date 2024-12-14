@@ -29,6 +29,9 @@ export class Schema {
     @Column({ type: 'enum', enum: SchemaType, nullable: false, default: SchemaType.ChatBot })
     Type : SchemaType;
 
+    @Column({ type: 'uuid', nullable: true })
+    ParentSchemaId : string;
+
     @Column({ type: 'uuid', nullable: false })
     TenantId : string;
 

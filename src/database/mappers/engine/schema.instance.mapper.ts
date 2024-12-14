@@ -12,10 +12,11 @@ export class SchemaInstanceMapper {
             return null;
         }
         const dto: SchemaInstanceResponseDto = {
-            id       : instance.id,
-            TenantId : instance.TenantId,
-            Code     : instance.Code,
-            Schema   : instance.Schema ? {
+            id                     : instance.id,
+            TenantId               : instance.TenantId,
+            Code                   : instance.Code,
+            ParentSchemaInstanceId : instance.ParentSchemaInstanceId,
+            Schema                 : instance.Schema ? {
                 id          : instance.Schema.id,
                 Name        : instance.Schema.Name,
                 Description : instance.Schema.Description,

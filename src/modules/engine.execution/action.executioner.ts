@@ -1,5 +1,6 @@
+import needle = require('needle');
 import { InputSourceType, ParamType } from "../../domain.types/engine/engine.enums";
-import { ActionInputParams, ActionOutputParams } from "../../domain.types/engine/intermediate.types/params.types";
+import { ActionInputParams, ActionOutputParams, Params } from "../../domain.types/engine/intermediate.types/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
 import { ChatbotMessageService } from "../communication/chatbot.message.service";
@@ -13,8 +14,9 @@ import { SchemaResponseDto } from "../../domain.types/engine/schema.domain.types
 import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.instance.types";
 import { EventResponseDto } from "../../domain.types/engine/event.types";
 import { NodeActionResult } from "../../domain.types/engine/node.action.types";
-import needle = require('needle');
 import { EngineUtils } from "./engine.utils";
+import { uuid } from "../../domain.types/miscellaneous/system.types";
+import { TimeUtils } from "../../common/utilities/time.utils";
 
 ////////////////////////////////////////////////////////////////
 
@@ -455,6 +457,74 @@ export class ActionExecutioner {
         else {
             return p.Value;
         }
+    };
+
+    private createChildSchemaInstance = async (
+        childSchemaId: uuid,
+        parentSchemaInstance: SchemaInstanceResponseDto,
+        params: Params[]
+    ) => {
+
+        if (!parentSchemaInstance) {
+            logger.error(`Parent schema instance not found!`);
+            return null;
+        }
+
+        const childSchema = await this._schemaService.getById(childSchemaId);
+        if (!childSchema) {
+            logger.error(`Child schema not found!`);
+            return null;
+        }
+
+        const padZero = (num: number, size: number) => String(num).padStart(size, '0');
+        const pattern = TimeUtils.formatDateToYYMMDD(new Date());
+        var instanceCount = await this._schemaInstanceService.getCount(childSchema.TenantId, childSchema.id, pattern);
+        const formattedCount = padZero(instanceCount + 1, 3); // Count with leading zeros (e.g., 001)
+        var code = 'E-' + pattern + '-' + formattedCount;
+
+        const schemaInstanceContextParams = childSchema.ContextParams;
+        for (var p of schemaInstanceContextParams.Params) {
+            if (p.Type === ParamType.Phonenumber) {
+                p.Value = params.find(x => x.Type === ParamType.Phonenumber).Value;
+            }
+            if (p.Type === ParamType.Location) {
+                p.Value = params.find(x => x.Type === ParamType.Location).Value;
+            }
+            if (p.Type === ParamType.DateTime) {
+                p.Value = new Date();
+            }
+            if (p.Type === ParamType.Text) {
+                if (p.Key === 'SchemaInstanceCode') {
+                    p.Value = code;
+                }
+            }
+            if (p.Type === ParamType.SchemaInstanceId) {
+                if (p.Key === 'ParentSchemaInstanceId') {
+                    p.Value = parentSchemaInstance.id;
+                }
+            }
+        }
+
+        const rootNode = await this._commonUtilsService.getNode(childSchema.RootNode.id);
+        if (!rootNode) {
+            logger.error(`Root node not found for child schema!`);
+            return null;
+        }
+
+        const childSchemaInstance = await this._schemaInstanceService.create({
+            TenantId               : childSchema.TenantId,
+            SchemaId               : childSchema.id,
+            ParentSchemaInstanceId : parentSchemaInstance.id,
+            ContextParams          : schemaInstanceContextParams,
+            Code                   : code,
+        });
+
+        if (!childSchemaInstance) {
+            logger.error(`Error while creating schema instance!`);
+            return null;
+        }
+
+        return childSchemaInstance;
     };
 
 }

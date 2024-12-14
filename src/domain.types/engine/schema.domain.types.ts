@@ -13,28 +13,31 @@ import { NodeCreateModel } from "./node.types";
 //////////////////////////////////////////////////////////////
 
 export interface SchemaCreateModel {
-    TenantId      : uuid;
-    Type          : SchemaType;
-    Name          : string;
-    Description?  : string;
-    RootNode     ?: NodeCreateModel;
-    ContextParams?: ContextParams;
+    TenantId       : uuid;
+    Type           : SchemaType;
+    Name           : string;
+    Description?   : string;
+    RootNode      ?: NodeCreateModel;
+    ContextParams ?: ContextParams;
+    ParentSchemaId?: uuid;
 }
 
 export interface SchemaUpdateModel {
-    Type?        : SchemaType;
-    Name?        : string;
-    Description? : string;
-    ContextParams?: ContextParams;
+    Type?           : SchemaType;
+    Name?           : string;
+    Description?    : string;
+    ParentSchemaId? : uuid;
+    ContextParams  ?: ContextParams;
 }
 
 export interface SchemaResponseDto {
-    id          : uuid;
-    Type        : SchemaType;
-    TenantId    : uuid;
-    Name        : string;
-    Description : string;
-    RootNode   ?: {
+    id             : uuid;
+    Type           : SchemaType;
+    TenantId       : uuid;
+    Name           : string;
+    Description    : string;
+    ParentSchemaId?: uuid;
+    RootNode      ?: {
        id         : uuid,
        Name       : string;
        Description: string;
@@ -48,9 +51,10 @@ export interface SchemaResponseDto {
 }
 
 export interface SchemaSearchFilters extends BaseSearchFilters {
-    Name?        : string;
-    Description? : string;
-    TenantId ?   : uuid;
+    Name?          : string;
+    Description?   : string;
+    TenantId      ?: uuid;
+    ParentSchemaId?: uuid;
 }
 
 export interface SchemaSearchResults extends BaseSearchResults {

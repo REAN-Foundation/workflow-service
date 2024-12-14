@@ -18,7 +18,8 @@ import { Node } from '../../models/engine/node.model';
 import { CommonUtilsService } from './common.utils.service';
 import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
 import { Params } from '../../../domain.types/engine/intermediate.types/params.types';
-import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
+import { ExecutionStatus, WorkflowActivityType } from '../../../domain.types/engine/engine.enums';
+import { SchemaInstanceActivity } from '../../../database/models/engine/schema.instance.activity.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -35,6 +36,8 @@ export class SchemaInstanceService extends BaseService {
     _nodeInstanceRepository: Repository<NodeInstance> = Source.getRepository(NodeInstance);
 
     _nodeActionInstanceRepository: Repository<NodeActionInstance> = Source.getRepository(NodeActionInstance);
+
+    _schemaInstanceActivityRepository: Repository<SchemaInstanceActivity> = Source.getRepository(SchemaInstanceActivity);
 
     _commonUtilsService: CommonUtilsService = new CommonUtilsService();
 
@@ -353,6 +356,38 @@ export class SchemaInstanceService extends BaseService {
             }
             schemaInstance.ContextParams = tempParams;
             await this._schemaInstanceRepository.save(schemaInstance);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getActivityHistory = async (schemaInstanceId: uuid): Promise<SchemaInstanceActivity[]> => {
+        try {
+            var activities = await this._schemaInstanceActivityRepository.find({
+                where : {
+                    SchemaInstanceId : schemaInstanceId
+                },
+                order : {
+                    Timestamp : 'ASC'
+                }
+            });
+            return activities;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public recordActivity = async (schemaInstanceId: uuid, type: WorkflowActivityType, payload: any): Promise<void> => {
+        try {
+            var activity = this._schemaInstanceActivityRepository.create({
+                Type             : type,
+                SchemaInstanceId : schemaInstanceId,
+                Payload          : payload,
+                Timestamp        : new Date()
+            });
+            await this._schemaInstanceActivityRepository.save(activity);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

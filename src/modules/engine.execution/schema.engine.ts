@@ -1,4 +1,4 @@
-import { ActionType, ExecutionStatus, InputSourceType, NodeType, ParamType } from '../../domain.types/engine/engine.enums';
+import { ActionType, ExecutionStatus, InputSourceType, NodeType, ParamType, WorkflowActivityType } from '../../domain.types/engine/engine.enums';
 import { SchemaInstanceResponseDto } from '../../domain.types/engine/schema.instance.types';
 import { EventResponseDto } from '../../domain.types/engine/event.types';
 import { SchemaResponseDto } from '../../domain.types/engine/schema.domain.types';
@@ -110,7 +110,6 @@ export class SchemaEngine {
 
         if (newNodeInstance.id !== currentNodeInstance.id) {
             currentNodeInstance = newNodeInstance;
-            await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
             if (currentNodeInstance.Node.Type === NodeType.ExecutionNode) {
                 return await this.processCurrentNode(currentNodeInstance);
             }
@@ -221,7 +220,6 @@ export class SchemaEngine {
     private async traverseQuestionNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
         // TODO: Implement the question node traversal logic
-        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
         return currentNodeInstance;
     }
 
@@ -368,6 +366,16 @@ export class SchemaEngine {
             logger.error(`Error while setting next node instance!`);
             return { currentNode, currentNodeInstance };
         }
+
+        // Record the activity
+        const activityPayload = {
+            PreviousNodeInstance : currentNodeInstance,
+            PreviousNode         : currentNode,
+            NextNodeInstance     : nextNodeInstance,
+            NextNode             : nextNode,
+        };
+        await this._schemaInstanceService.recordActivity(schemaInstanceId, WorkflowActivityType.SwitchCurrentNode, activityPayload);
+
         currentNodeInstance = nextNodeInstance;
         currentNode = nextNode;
         await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);

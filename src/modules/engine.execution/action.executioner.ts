@@ -1,5 +1,5 @@
 import needle = require('needle');
-import { InputSourceType, ParamType } from "../../domain.types/engine/engine.enums";
+import { InputSourceType, ParamType, WorkflowActivityType } from "../../domain.types/engine/engine.enums";
 import { ActionInputParams, ActionOutputParams, Params } from "../../domain.types/engine/intermediate.types/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
@@ -87,6 +87,17 @@ export class ActionExecutioner {
         }
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+
+        // Record the workflow activity
+        const activityPayload = {
+            NodeInstanceId : action.NodeInstanceId,
+            NodeName       : node.Name,
+            ActionType     : action.ActionType,
+            Action         : action,
+            ActionResult   : nodeInstance,
+        };
+        await this._schemaInstanceService.recordActivity(action.SchemaInstanceId, WorkflowActivityType.NodeAction, activityPayload);
+
         return {
             Success : true,
             Result  : nodeInstance

@@ -26,6 +26,7 @@ import { NodeActionInstance } from "./models/engine/node.action.instance.model";
 import { Question } from "./models/engine/question.model";
 import { QuestionOption } from "./models/engine/question.option.model";
 import { Event } from "./models/engine/event.model";
+import { SchemaInstanceActivity } from "./models/engine/schema.instance.activity.model";
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -73,6 +74,7 @@ class DatabaseConnector {
             FileResourceVersion,
             Question,
             QuestionOption,
+            SchemaInstanceActivity,
         ],
         migrations  : [],
         subscribers : [],

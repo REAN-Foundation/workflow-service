@@ -4,8 +4,10 @@ export enum SchemaType {
 }
 
 export enum WorkflowActivityType {
-    UserEvent  = 'UserEvent',
-    NodeAction = 'NodeAction',
+    UserEvent         = 'UserEvent',
+    NodeAction        = 'NodeAction',
+    SystemEvent       = 'SystemEvent',
+    SwitchCurrentNode = 'SwitchCurrentNode',
 }
 
 export enum ParamType {

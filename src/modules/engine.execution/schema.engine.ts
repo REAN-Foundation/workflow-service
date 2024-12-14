@@ -78,6 +78,8 @@ export class SchemaEngine {
             currentNodeInstance = await this._nodeInstanceService.getById(this._schemaInstance.CurrentNodeInstance.id);
         }
 
+        await this._schemaInstanceService.recordActivity(this._schemaInstance.id, WorkflowActivityType.UserEvent, this._event);
+
         //Set up the almanac
         this._almanac = new Almanac(this._schemaInstance.id);
 

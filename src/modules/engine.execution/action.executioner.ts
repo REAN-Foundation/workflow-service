@@ -87,16 +87,7 @@ export class ActionExecutioner {
         }
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
-
-        // Record the workflow activity
-        const activityPayload = {
-            NodeInstanceId : action.NodeInstanceId,
-            NodeName       : node.Name,
-            ActionType     : action.ActionType,
-            Action         : action,
-            ActionResult   : nodeInstance,
-        };
-        await this._schemaInstanceService.recordActivity(action.SchemaInstanceId, WorkflowActivityType.NodeAction, activityPayload);
+        await this.recordActionActivity(action, nodeInstance);
 
         return {
             Success : true,
@@ -141,6 +132,8 @@ export class ActionExecutioner {
         if (result === true) {
             await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         }
+        await this.recordActionActivity(action, result);
+
         return {
             Success : result === true,
             Result  : result
@@ -200,6 +193,8 @@ export class ActionExecutioner {
             }
         }
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, result);
+
         return {
             Success : true,
             Result  : result
@@ -241,6 +236,7 @@ export class ActionExecutioner {
         await this._almanac.addFact(key, value);
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, { Key: key, Value: value });
 
         return {
             Success : true,
@@ -280,6 +276,12 @@ export class ActionExecutioner {
             await this._schemaInstanceService.updateContextParams(schemaInstanceId, p);
         }
 
+        await this._commonUtilsService.markActionInstanceAsExecuted(actionInstance.id);
+        await this.recordActionActivity(actionInstance, {
+            SchemaInstanceId : schemaInstanceId,
+            UpdatedParams    : input.Params
+        });
+
         return {
             Success : true,
             Result  : true
@@ -313,6 +315,7 @@ export class ActionExecutioner {
         var result = await this._almanac.getFact(key);
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, { key: key, value: result });
 
         return {
             Success : true,
@@ -347,6 +350,7 @@ export class ActionExecutioner {
         var result = await this._almanac.getFact(key);
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, { key: key, value: result, exists: result !== null });
 
         return {
             Success : result !== null,
@@ -431,6 +435,18 @@ export class ActionExecutioner {
                 await this._almanac.addFact(op.Key, data);
             }
         }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action,
+            {
+                url           : url,
+                method        : method,
+                headers       : headers,
+                queryParams   : queryParams,
+                responseField : responseField,
+                responseData  : data
+            });
+
         return {
             Success : true,
             Result  : data
@@ -536,6 +552,20 @@ export class ActionExecutioner {
         }
 
         return childSchemaInstance;
+    };
+
+    private recordActionActivity = async (
+        action: NodeActionInstanceResponseDto,
+        result: any) => {
+
+        const activityPayload = {
+            NodeInstanceId : action.NodeInstanceId,
+            NodeId         : action.NodeId,
+            ActionType     : action.ActionType,
+            Action         : action,
+            ActionResult   : result,
+        };
+        await this._schemaInstanceService.recordActivity(action.SchemaInstanceId, WorkflowActivityType.NodeAction, activityPayload);
     };
 
 }

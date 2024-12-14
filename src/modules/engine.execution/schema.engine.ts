@@ -87,6 +87,13 @@ export class SchemaEngine {
         //If there are any listening nodes, handle them
         await this.handleListeningNodes();
 
+        currentNodeInstance = await this.processCurrentNode(currentNodeInstance);
+
+        return currentNodeInstance;
+    };
+
+    private async processCurrentNode(currentNodeInstance: NodeInstanceResponseDto) {
+
         if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
             const allExecuted = await this.executeNodeActions(currentNodeInstance);
             if (allExecuted) {
@@ -94,15 +101,20 @@ export class SchemaEngine {
             }
         }
 
-        var currentNodeInstance = await this.traverse(currentNodeInstance);
-        if (!currentNodeInstance) {
+        var newNodeInstance = await this.traverse(currentNodeInstance);
+        if (!newNodeInstance) {
             logger.error(`Error while executing workflow. Cannot find the node!`);
         }
 
-        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
-
+        if (newNodeInstance.id !== currentNodeInstance.id) {
+            currentNodeInstance = newNodeInstance;
+            await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
+            if (currentNodeInstance.Node.Type === NodeType.ExecutionNode) {
+                return await this.processCurrentNode(currentNodeInstance);
+            }
+        }
         return currentNodeInstance;
-    };
+    }
 
     private async handleListeningNodes() {
 
@@ -288,15 +300,16 @@ export class SchemaEngine {
 
         if (actionToExecute.ActionType === ActionType.Continue) {
             var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
-            currentNode = res.currentNode;
-            currentNodeInstance = res.currentNodeInstance;
+            if (!res || !res.currentNode || !res.currentNodeInstance) {
+                logger.error(`Error while setting next node instance!`);
+                return currentNodeInstance;
+            }
+            return res.currentNodeInstance;
         }
         else {
             result = await this.executeAction(actionToExecute, actionExecutioner);
+            logger.info(`Yes/No Node Action Result: ${JSON.stringify(result)}`);
         }
-
-        logger.info(`Yes/No Node Action Result: ${JSON.stringify(result)}`);
-
         return currentNodeInstance;
     }
 
@@ -306,8 +319,11 @@ export class SchemaEngine {
         if (currentNodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
             var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
             var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
-            currentNode = res.currentNode;
-            currentNodeInstance = res.currentNodeInstance;
+            if (!res || !res.currentNode || !res.currentNodeInstance) {
+                logger.error(`Error while setting next node instance!`);
+                return currentNodeInstance;
+            }
+            return res.currentNodeInstance;
         }
         return currentNodeInstance;
     }

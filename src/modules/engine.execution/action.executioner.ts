@@ -1,5 +1,5 @@
 import needle = require('needle');
-import { InputSourceType, ParamType, WorkflowActivityType } from "../../domain.types/engine/engine.enums";
+import { InputSourceType, MessageChannelType, ParamType, UserMessageType, WorkflowActivityType } from "../../domain.types/engine/engine.enums";
 import { ActionInputParams, ActionOutputParams, Params } from "../../domain.types/engine/intermediate.types/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
@@ -17,6 +17,7 @@ import { NodeActionResult } from "../../domain.types/engine/node.action.types";
 import { EngineUtils } from "./engine.utils";
 import { uuid } from "../../domain.types/miscellaneous/system.types";
 import { TimeUtils } from "../../common/utilities/time.utils";
+import { WorkflowMessageEvent } from '../../domain.types/engine/intermediate.types/user.event.types';
 
 ////////////////////////////////////////////////////////////////
 
@@ -109,8 +110,8 @@ export class ActionExecutioner {
                 Result  : null
             };
         }
-        var message = await this.getActionParamValue(input, ParamType.Text, 'Message');
-        if (!message) {
+        var textMessage = await this.getActionParamValue(input, ParamType.Text, 'Message');
+        if (!textMessage) {
             logger.error('Message not found in input parameters');
             return {
                 Success : false,
@@ -126,9 +127,7 @@ export class ActionExecutioner {
         //     }
         // });
 
-        // Execute the action
-        var messageService = new ChatbotMessageService();
-        var result = await messageService.send(phonenumber, message);
+        var result = await this.sendBotMessage(action, phonenumber, textMessage);
         if (result === true) {
             await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         }
@@ -170,9 +169,9 @@ export class ActionExecutioner {
             phonenumebrs = values.map(x => x["Phonenumber"]);
         }
 
-        var message = await this.getActionParamValue(input, ParamType.Text, 'MessageText');
+        var textMessage = await this.getActionParamValue(input, ParamType.Text, 'MessageText');
         var location = await this.getActionParamValue(input, ParamType.Location, 'Location');
-        if (!message && !location) {
+        if (!textMessage && !location) {
             logger.error('Text message or location not found in input parameters');
             return {
                 Success : false,
@@ -181,10 +180,9 @@ export class ActionExecutioner {
         }
 
         // Execute the action
-        var messageService = new ChatbotMessageService();
         for (let index = 0; index < phonenumebrs.length; index++) {
             const phonenumber = phonenumebrs[index];
-            var result = await messageService.send(phonenumber, message);
+            var result = await this.sendBotMessage(action, phonenumber, textMessage);
             if (!result) {
                 return {
                     Success : false,
@@ -566,6 +564,41 @@ export class ActionExecutioner {
             ActionResult   : result,
         };
         await this._schemaInstanceService.recordActivity(action.SchemaInstanceId, WorkflowActivityType.NodeAction, activityPayload);
+    };
+
+    private sendBotMessage = async (
+        action: NodeActionInstanceResponseDto,
+        phonenumber: string,
+        textMessage: string)
+        : Promise<boolean> => {
+
+        var messageService = new ChatbotMessageService();
+
+        const messageEvent: WorkflowMessageEvent = {
+            MessageType    : UserMessageType.Text,
+            EventTimestamp : new Date(),
+            MessageChannel : this._event.UserMessage.MessageChannel,
+            Phone          : phonenumber,
+            TextMessage    : textMessage,
+            Payload        : {
+                MessageType              : UserMessageType.Text,
+                ProcessingEventId        : this._event.id,
+                ChannelMessageId         : null,
+                BotMessageId             : null,
+                ChannelType              : this._event.Payload.MessageChannel as MessageChannelType,
+                SchemaId                 : this._schema.id,
+                SchemaInstanceId         : this._schemaInstance.id,
+                SchemaInstanceCode       : this._schemaInstance.Code,
+                SchemaName               : this._schema.Name,
+                NodeInstanceId           : action.NodeInstanceId,
+                NodeId                   : action.NodeId,
+                ActionId                 : action.id,
+                PreviousChannelMessageId : this._event.Payload.ChannelMessageId,
+                PreviousBotMessageId     : this._event.Payload.BotMessageId
+            }
+        };
+        var result = await messageService.send(phonenumber, messageEvent);
+        return result;
     };
 
 }

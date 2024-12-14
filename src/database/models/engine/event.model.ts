@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
 import { EventType } from "../../../domain.types/enums/event.type";
-import { UserMessageEvent } from "../../../domain.types/engine/intermediate.types/user.event.types";
+import { WorkflowMessageEvent } from "../../../domain.types/engine/intermediate.types/user.event.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +32,7 @@ export class Event {
     SchemaInstanceId: uuid;
 
     @Column({ type: 'simple-json', nullable: true })
-    UserMessage: UserMessageEvent;
+    UserMessage: WorkflowMessageEvent;
 
     @Column({ type: 'simple-json', nullable: true })
     Payload: any;

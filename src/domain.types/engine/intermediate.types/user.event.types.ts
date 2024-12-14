@@ -15,7 +15,24 @@ export interface QuestionResponseMessage {
     PreviousNodeId      ?: uuid;
 }
 
-export interface UserMessageEvent {
+export interface MessagePayload {
+    MessageType              : UserMessageType;
+    ProcessingEventId        : uuid;
+    ChannelMessageId         : string;
+    ChannelType              : MessageChannelType;
+    PreviousChannelMessageId?: string;
+    BotMessageId             : uuid;
+    PreviousBotMessageId    ?: uuid;
+    SchemaId                ?: uuid;
+    SchemaInstanceId        ?: uuid;
+    SchemaInstanceCode      ?: string;
+    SchemaName              ?: string;
+    NodeInstanceId          ?: uuid;
+    NodeId                  ?: uuid;
+    ActionId                ?: uuid;
+}
+
+export interface WorkflowMessageEvent {
     Phone?           : string;
     EventTimestamp   : Date;
     MessageType      : UserMessageType;
@@ -26,4 +43,5 @@ export interface UserMessageEvent {
     VideoUrl        ?: string;
     Location        ?: Location;
     QuestionResponse?: QuestionResponseMessage;
+    Payload         ?: MessagePayload;
 }

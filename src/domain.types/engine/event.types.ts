@@ -4,7 +4,7 @@ import {
     BaseSearchResults
 } from "../miscellaneous/base.search.types";
 import { uuid } from "../miscellaneous/system.types";
-import { UserMessageEvent } from "./intermediate.types/user.event.types";
+import { WorkflowMessageEvent } from "./intermediate.types/user.event.types";
 
 ////////////////////////////////////////////////////////////
 
@@ -13,7 +13,7 @@ export interface EventCreateModel {
     TenantId         : uuid;
     SchemaId         : uuid;
     SchemaInstanceId?: uuid;
-    UserMessage     ?: UserMessageEvent;
+    UserMessage     ?: WorkflowMessageEvent;
     Payload         ?: any;
     EventTimestamp   : Date;
 }
@@ -30,7 +30,7 @@ export interface EventResponseDto {
     SchemaInstanceId  ?: uuid;
     SchemaName        ?: string;
     SchemaInstanceCode?: string;
-    UserMessage       ?: UserMessageEvent;
+    UserMessage       ?: WorkflowMessageEvent;
     Payload           ?: any;
     EventTimestamp     : Date;
     Handled           ?: boolean;

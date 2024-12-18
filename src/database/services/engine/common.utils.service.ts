@@ -228,7 +228,15 @@ export class CommonUtilsService {
                 }
             });
             if (actionInstance) {
-                return NodeInstanceMapper.toNodeActionInstanceResponseDto(actionInstance);
+                var action = await this._actionRepository.findOne({
+                    where : {
+                        id : actionId
+                    },
+                    relations : {
+                        ParentNode : true
+                    }
+                });
+                return NodeInstanceMapper.toNodeActionInstanceResponseDto(actionInstance, action);
             }
             return await this.createNodeActionInstance(nodeInstanceId, actionId);
         } catch (error) {
@@ -311,6 +319,9 @@ export class CommonUtilsService {
             var action = await this._actionRepository.findOne({
                 where : {
                     id : actionId
+                },
+                relations : {
+                    ParentNode : true
                 }
             });
             if (!action) {
@@ -337,7 +348,7 @@ export class CommonUtilsService {
                 Output           : action.Output,
             });
             var nodeActionInstance = await this._nodeActionInstanceRepository.save(actionInstance);
-            return NodeInstanceMapper.toNodeActionInstanceResponseDto(nodeActionInstance);
+            return NodeInstanceMapper.toNodeActionInstanceResponseDto(nodeActionInstance, action);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

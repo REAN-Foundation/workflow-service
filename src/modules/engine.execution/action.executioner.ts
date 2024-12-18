@@ -687,7 +687,17 @@ export class ActionExecutioner {
             Action         : action,
             ActionResult   : result,
         };
-        await this._schemaInstanceService.recordActivity(action.SchemaInstanceId, WorkflowActivityType.NodeAction, activityPayload);
+        const summary = {
+            Type        : "Action",
+            Sequence    : action.Sequence,
+            ActionType  : action.ActionType,
+            CurrentNode : action.Action?.ParentNode?.Name ?? null,
+            Name        : action.Action.Name,
+            Description : action.Action.Description ?? null,
+            Timestamp   : new Date(),
+        };
+        await this._schemaInstanceService.recordActivity(
+            action.SchemaInstanceId, WorkflowActivityType.NodeAction, activityPayload, summary);
     };
 
     private sendBotMessage = async (

@@ -88,4 +88,15 @@ export class SchemaInstanceController {
         }
     };
 
+    getActivitySummary = async (request: express.Request, response: express.Response) => {
+        try {
+            var id: uuid = await this._validator.requestParamAsUUID(request, 'id');
+            const activitySummary = await this._service.getActivitySummary(id);
+            const message = 'SchemaInstance activity summary retrieved successfully!';
+            ResponseHandler.success(request, response, message, 200, activitySummary);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 }

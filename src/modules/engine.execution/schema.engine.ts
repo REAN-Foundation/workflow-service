@@ -19,6 +19,7 @@ import { ConditionProcessor } from './condition.processor';
 import { NodeActionService } from '../../database/services/engine/node.action.service';
 import { TimeUtils } from '../../common/utilities/time.utils';
 import { EngineUtils } from './engine.utils';
+import { EventType } from '../../domain.types/enums/event.type';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -78,7 +79,16 @@ export class SchemaEngine {
             currentNodeInstance = await this._nodeInstanceService.getById(this._schemaInstance.CurrentNodeInstance.id);
         }
 
-        await this._schemaInstanceService.recordActivity(this._schemaInstance.id, WorkflowActivityType.UserEvent, this._event);
+        const summary = {
+            Type      : "MessageEvent",
+            EventType : EventType.UserMessage,
+            Message   : this._event.UserMessage.TextMessage ?? null,
+            Location  : this._event.UserMessage.Location ?? null,
+            Timestamp : new Date(),
+        };
+
+        await this._schemaInstanceService.recordActivity(
+            this._schemaInstance.id, WorkflowActivityType.UserEvent, this._event, summary);
 
         //Set up the almanac
         this._almanac = new Almanac(this._schemaInstance.id);
@@ -383,7 +393,15 @@ export class SchemaEngine {
             NextNodeInstance     : nextNodeInstance,
             NextNode             : nextNode,
         };
-        await this._schemaInstanceService.recordActivity(schemaInstanceId, WorkflowActivityType.SwitchCurrentNode, activityPayload);
+        const summary = {
+            Type        : WorkflowActivityType.SwitchCurrentNode,
+            CurrentNode : currentNode.Name,
+            NextNode    : nextNode.Name,
+            Timestamp   : new Date(),
+        };
+
+        await this._schemaInstanceService.recordActivity(
+            schemaInstanceId, WorkflowActivityType.SwitchCurrentNode, activityPayload, summary);
 
         currentNodeInstance = nextNodeInstance;
         currentNode = nextNode;

@@ -379,12 +379,37 @@ export class SchemaInstanceService extends BaseService {
         }
     };
 
-    public recordActivity = async (schemaInstanceId: uuid, type: WorkflowActivityType, payload: any): Promise<void> => {
+    public getActivitySummary = async (schemaInstanceId: uuid): Promise<any[]> => {
+        try {
+            var activities = await this._schemaInstanceActivityRepository.find({
+                where : {
+                    SchemaInstanceId : schemaInstanceId
+                },
+                order : {
+                    CreatedAt : 'ASC'
+                }
+            });
+
+            var summary = activities.map(x => {
+                return {
+                    Type    : x.Type,
+                    Summary : x.Summary
+                };
+            });
+            return summary;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public recordActivity = async (schemaInstanceId: uuid, type: WorkflowActivityType, payload: any, summary: any): Promise<void> => {
         try {
             var activity = this._schemaInstanceActivityRepository.create({
                 Type             : type,
                 SchemaInstanceId : schemaInstanceId,
-                Payload          : payload
+                Payload          : payload,
+                Summary          : summary,
             });
             await this._schemaInstanceActivityRepository.save(activity);
         } catch (error) {

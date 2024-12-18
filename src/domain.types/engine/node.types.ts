@@ -7,8 +7,8 @@ import {
 } from "../miscellaneous/system.types";
 import { NodeType, QuestionResponseType } from "./engine.enums";
 import { XAction } from "./intermediate.types/action.types";
-import { XQuestionOption } from "./intermediate.types/node.types";
 import { ActionInputParams } from "./intermediate.types/params.types";
+import { QuestionOption } from "./intermediate.types/user.event.types";
 import { NodeActionCreateModel, NodeActionResponseDto } from "./node.action.types";
 
 //////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ export interface YesNoNodeCreateModel extends NodeCreateModel {
 export interface QuestionNodeCreateModel extends NodeCreateModel {
     QuestionText : string;
     ResponseType : QuestionResponseType;
-    Options      : XQuestionOption[];
+    Options      : QuestionOption[];
 }
 
 export interface NodeUpdateModel {
@@ -73,7 +73,7 @@ export interface NodeResponseDto {
     Question ? : {
         ResponseType : QuestionResponseType;
         QuestionText?: string;
-        Options?     : XQuestionOption[];
+        Options?     : QuestionOption[];
     },
     NextNodeId  ?: uuid;
     Actions      : NodeActionResponseDto[];
@@ -97,3 +97,5 @@ export interface NodeSearchFilters extends BaseSearchFilters {
 export interface NodeSearchResults extends BaseSearchResults {
     Items: NodeResponseDto[];
 }
+
+export type QuestionNodeResponseDto = NodeResponseDto;

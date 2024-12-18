@@ -1,5 +1,5 @@
 import needle = require('needle');
-import { InputSourceType, MessageChannelType, ParamType, UserMessageType, WorkflowActivityType } from "../../domain.types/engine/engine.enums";
+import { InputSourceType, MessageChannelType, OutputDestinationType, ParamType, UserMessageType, WorkflowActivityType } from "../../domain.types/engine/engine.enums";
 import { ActionInputParams, ActionOutputParams, Params } from "../../domain.types/engine/intermediate.types/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
@@ -18,6 +18,7 @@ import { EngineUtils } from "./engine.utils";
 import { uuid } from "../../domain.types/miscellaneous/system.types";
 import { TimeUtils } from "../../common/utilities/time.utils";
 import { WorkflowMessageEvent } from '../../domain.types/engine/intermediate.types/user.event.types';
+import { NodeResponseDto } from '../../domain.types/engine/node.types';
 
 ////////////////////////////////////////////////////////////////
 
@@ -111,23 +112,74 @@ export class ActionExecutioner {
             };
         }
         var textMessage = await this.getActionParamValue(input, ParamType.Text, 'Message');
-        if (!textMessage) {
-            logger.error('Message not found in input parameters');
+        var location = await this.getActionParamValue(input, ParamType.Location, 'Location');
+        var questionId = await this.getActionParamValue(input, ParamType.QuestionId, 'QuestionId');
+        if (!textMessage && !location && !questionId) {
+            logger.error('Text message, question or location not found in bot message input parameters');
             return {
                 Success : false,
                 Result  : null
             };
         }
-        // var messagePlaceholders = input.Params.filter(x => x.Type === ParamType.Placeholder);
-        // messagePlaceholders.forEach(async (placeholder) => {
-        //     var placeholderKey = placeholder.Key;
-        //     var placeholderValue = placeholder.Value;
-        //     if (placeholderKey && placeholderValue) {
-        //         message = message.replace(placeholderKey, placeholderValue);
-        //     }
-        // });
 
-        var result = await this.sendBotMessage(action, phonenumber, textMessage);
+        var questionNode: NodeResponseDto | null = null;
+        if (questionId) {
+            questionNode = await this._commonUtilsService.getQuestionNode(questionId);
+            if (!questionNode) {
+                logger.error(`Question node not found for Id: ${questionId}`);
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
+        }
+        const messageTemplateId = await this.getActionParamValue(input, ParamType.Text, 'MessageTemplateId');
+
+        const placeholders: { Key: string, Value: string }[] = [];
+        var messagePlaceholders = input.Params.filter(x => x.Type === ParamType.Placeholder);
+        messagePlaceholders.forEach(async (placeholder) => {
+            var placeholderKey = placeholder.Key;
+            var placeholderValue = placeholder.Value;
+            if (placeholderKey === 'Timestamp') {
+                placeholderValue = new Date().toISOString();
+            }
+            placeholders.push({ Key: placeholderKey, Value: placeholderValue });
+        });
+
+        const payload = this._event.Payload;
+
+        const message: WorkflowMessageEvent = {
+            MessageType     : UserMessageType.Text,
+            EventTimestamp  : new Date(),
+            MessageChannel  : this._event.UserMessage.MessageChannel,
+            Phone           : phonenumber,
+            TextMessage     : textMessage ?? null,
+            Location        : location ?? null,
+            Question        : questionNode ? questionNode.Question.QuestionText : null,
+            QuestionOptions : questionNode ? questionNode.Question.Options : null,
+            Placeholders    : placeholders,
+            Payload         : {
+                MessageType               : UserMessageType.Text,
+                ProcessingEventId         : this._event.id,
+                ChannelType               : this._event.UserMessage.MessageChannel as MessageChannelType,
+                ChannelMessageId          : null,
+                PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
+                MessageTemplateId         : messageTemplateId,
+                PreviousMessageTemplateId : payload ? payload.MessageTemplateId : null,
+                BotMessageId              : null,
+                PreviousBotMessageId      : payload ? payload.BotMessageId : null,
+                SchemaId                  : this._schema.id,
+                SchemaInstanceId          : this._schemaInstance.id,
+                SchemaInstanceCode        : this._schemaInstance.Code,
+                SchemaName                : this._schema.Name,
+                NodeInstanceId            : action.NodeInstanceId,
+                NodeId                    : action.NodeId,
+                ActionId                  : action.id,
+                Metadata                  : payload ? payload.Metadata : null,
+            }
+        };
+
+        var result = await this.sendBotMessage(action, message);
         if (result === true) {
             await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         }
@@ -169,20 +221,79 @@ export class ActionExecutioner {
             phonenumebrs = values.map(x => x["Phonenumber"]);
         }
 
-        var textMessage = await this.getActionParamValue(input, ParamType.Text, 'MessageText');
+        var textMessage = await this.getActionParamValue(input, ParamType.Text, 'Message');
         var location = await this.getActionParamValue(input, ParamType.Location, 'Location');
-        if (!textMessage && !location) {
-            logger.error('Text message or location not found in input parameters');
+        var questionId = await this.getActionParamValue(input, ParamType.QuestionId, 'QuestionId');
+        if (!textMessage && !location && !questionId) {
+            logger.error('Text message, question or location not found in bot message input parameters');
             return {
                 Success : false,
                 Result  : null
             };
         }
+        var questionNode: NodeResponseDto | null = null;
+        if (questionId) {
+            questionNode = await this._commonUtilsService.getQuestionNode(questionId);
+            if (!questionNode) {
+                logger.error(`Question node not found for Id: ${questionId}`);
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
+        }
+        const messageTemplateId = await this.getActionParamValue(input, ParamType.Text, 'MessageTemplateId');
+
+        const placeholders: { Key: string, Value: string }[] = [];
+        var messagePlaceholders = input.Params.filter(x => x.Type === ParamType.Placeholder);
+        messagePlaceholders.forEach(async (placeholder) => {
+            var placeholderKey = placeholder.Key;
+            var placeholderValue = placeholder.Value;
+            if (placeholderKey === 'Timestamp') {
+                placeholderValue = new Date().toISOString();
+            }
+            placeholders.push({ Key: placeholderKey, Value: placeholderValue });
+        });
+
+        const payload = this._event.Payload;
+
+        const message: WorkflowMessageEvent = {
+            MessageType     : UserMessageType.Text,
+            EventTimestamp  : new Date(),
+            MessageChannel  : this._event.UserMessage.MessageChannel,
+            TextMessage     : textMessage ?? null,
+            Location        : location ?? null,
+            Question        : questionNode ? questionNode.Question.QuestionText : null,
+            QuestionOptions : questionNode ? questionNode.Question.Options : null,
+            Placeholders    : placeholders,
+            Payload         : {
+                MessageType               : UserMessageType.Text,
+                ProcessingEventId         : this._event.id,
+                ChannelType               : payload ? payload.MessageChannel as MessageChannelType : null,
+                ChannelMessageId          : null,
+                PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
+                MessageTemplateId         : messageTemplateId,
+                PreviousMessageTemplateId : payload ? payload.MessageTemplateId : null,
+                BotMessageId              : null,
+                PreviousBotMessageId      : payload ? payload.BotMessageId : null,
+                SchemaId                  : this._schema.id,
+                SchemaInstanceId          : this._schemaInstance.id,
+                SchemaInstanceCode        : this._schemaInstance.Code,
+                SchemaName                : this._schema.Name,
+                NodeInstanceId            : action.NodeInstanceId,
+                NodeId                    : action.NodeId,
+                ActionId                  : action.id,
+                Metadata                  : payload ? payload.Metadata : null,
+            }
+        };
 
         // Execute the action
         for (let index = 0; index < phonenumebrs.length; index++) {
             const phonenumber = phonenumebrs[index];
-            var result = await this.sendBotMessage(action, phonenumber, textMessage);
+            message.Phone = phonenumber;
+            //If the schemaInstance and schema are different, then
+
+            var result = await this.sendBotMessage(action, message);
             if (!result) {
                 return {
                     Success : false,
@@ -398,6 +509,19 @@ export class ActionExecutioner {
             if (queryParams && queryParams.length > 0) {
                 updatedUrl = url + '?';
                 var paramList = [];
+                for (var param of queryParams) {
+                    if (!param.Value) {
+                        var source = param.Source || InputSourceType.Almanac;
+                        if (source === InputSourceType.Almanac) {
+                            var v = await this._almanac.getFact(param.Key);
+                            if (v && param.SourceValueKey) {
+                                v = v[param.SourceValueKey];
+                            }
+                            param.Value = v;
+                        }
+                    }
+                    paramList.push(`${param.Key}=${param.Value}`);
+                }
                 queryParams.forEach((param) => {
                     paramList.push(`${param.Key}=${param.Value}`);
                 });
@@ -429,7 +553,7 @@ export class ActionExecutioner {
         }
         if (output && output.Params && output.Params.length > 0) {
             var op = output.Params[0];
-            if (op) {
+            if (op && op.Destination === OutputDestinationType.Almanac) {
                 await this._almanac.addFact(op.Key, data);
             }
         }
@@ -568,24 +692,43 @@ export class ActionExecutioner {
 
     private sendBotMessage = async (
         action: NodeActionInstanceResponseDto,
-        phonenumber: string,
-        textMessage: string)
+        message: WorkflowMessageEvent)
         : Promise<boolean> => {
 
         var messageService = new ChatbotMessageService();
 
+        var eventPayload = this._event.Payload;
+
+        const phonenumber = message.Phone;
+        const textMessage = message.TextMessage;
+        const imageUrl = message.ImageUrl || null;
+        const audioUrl = message.AudioUrl || null;
+        const videoUrl = message.VideoUrl || null;
+        const location = message.Location || null;
+        const question = message.Question || null;
+        const questionOptions = message.QuestionOptions || null;
+        const messageType = message.MessageType;
+
         const messageEvent: WorkflowMessageEvent = {
-            MessageType    : UserMessageType.Text,
-            EventTimestamp : new Date(),
-            MessageChannel : this._event.UserMessage.MessageChannel,
-            Phone          : phonenumber,
-            TextMessage    : textMessage,
-            Payload        : {
+            MessageType     : messageType,
+            EventTimestamp  : new Date(),
+            MessageChannel  : this._event.UserMessage.MessageChannel,
+            Phone           : phonenumber,
+            TextMessage     : textMessage,
+            Location        : location,
+            ImageUrl        : imageUrl,
+            AudioUrl        : audioUrl,
+            VideoUrl        : videoUrl,
+            Question        : question,
+            QuestionOptions : questionOptions,
+            Payload         : {
                 MessageType              : UserMessageType.Text,
                 ProcessingEventId        : this._event.id,
                 ChannelMessageId         : null,
                 BotMessageId             : null,
-                ChannelType              : this._event.Payload.MessageChannel as MessageChannelType,
+                ChannelType              : eventPayload ? eventPayload.MessageChannel as MessageChannelType : null,
+                PreviousChannelMessageId : eventPayload ? eventPayload.ChannelMessageId : null,
+                PreviousBotMessageId     : eventPayload ? eventPayload.BotMessageId : null,
                 SchemaId                 : this._schema.id,
                 SchemaInstanceId         : this._schemaInstance.id,
                 SchemaInstanceCode       : this._schemaInstance.Code,
@@ -593,8 +736,6 @@ export class ActionExecutioner {
                 NodeInstanceId           : action.NodeInstanceId,
                 NodeId                   : action.NodeId,
                 ActionId                 : action.id,
-                PreviousChannelMessageId : this._event.Payload.ChannelMessageId,
-                PreviousBotMessageId     : this._event.Payload.BotMessageId
             }
         };
         var result = await messageService.send(phonenumber, messageEvent);

@@ -166,6 +166,13 @@ export class SchemaEngine {
                     results.set(actionInstance.id, result);
                 }
             }
+
+            var keys = Array.from(results.keys());
+            var allExecuted = keys.every(k => results.get(k).Success === true);
+            if (allExecuted) {
+                await this._nodeInstanceService.setExecutionStatus(listeningNodeInstance.id, ExecutionStatus.Executed);
+            }
+            return allExecuted;
         }
     }
 

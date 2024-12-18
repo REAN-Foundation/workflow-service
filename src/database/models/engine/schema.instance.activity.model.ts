@@ -27,9 +27,6 @@ export class SchemaInstanceActivity {
     @Column({ type: 'json', nullable: true })
     Payload: any;
 
-    @Column({ type: 'timestamp', nullable: false })
-    Timestamp: Date;
-
     @CreateDateColumn()
     CreatedAt : Date;
 

@@ -369,7 +369,7 @@ export class SchemaInstanceService extends BaseService {
                     SchemaInstanceId : schemaInstanceId
                 },
                 order : {
-                    Timestamp : 'ASC'
+                    CreatedAt : 'ASC'
                 }
             });
             return activities;
@@ -384,8 +384,7 @@ export class SchemaInstanceService extends BaseService {
             var activity = this._schemaInstanceActivityRepository.create({
                 Type             : type,
                 SchemaInstanceId : schemaInstanceId,
-                Payload          : payload,
-                Timestamp        : new Date()
+                Payload          : payload
             });
             await this._schemaInstanceActivityRepository.save(activity);
         } catch (error) {

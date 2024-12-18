@@ -28,6 +28,7 @@ export enum ParamType {
     SchemaId         = 'SchemaId',
     SchemaInstanceId = 'SchemaInstanceId',
     NodeInstanceId   = 'NodeInstanceId',
+    QuestionId       = 'QuestionId',
     ChannelMessageId = 'ChannelMessageId',
     Unknown          = 'Unknown',
 }
@@ -43,7 +44,9 @@ export enum UserMessageType {
     Video    = 'Video',
     Link     = 'Link',
     Location = 'Location',
-    File     = 'File'
+    File     = 'File',
+    Question = 'Question',
+    Image    = 'Image',
 }
 
 export const MessageTypeList: UserMessageType[] = [

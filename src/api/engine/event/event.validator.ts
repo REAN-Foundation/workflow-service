@@ -56,8 +56,6 @@ export class EventValidator extends BaseValidator {
                 SchemaId         : request.body.SchemaId ?? null,
                 SchemaInstanceId : request.body.SchemaInstanceId ?? null,
                 UserMessage      : request.body.UserMessage ?? null,
-                EventTimestamp   : request.body.EventTimestamp,
-                Payload          : request.body.Payload,
             };
             return model;
         } catch (error) {

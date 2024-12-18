@@ -31,9 +31,8 @@ export class EventService extends BaseService {
             EventType        : createModel.EventType,
             SchemaId         : createModel.SchemaId,
             SchemaInstanceId : createModel.SchemaInstanceId,
-            EventTimestamp   : createModel.EventTimestamp,
+            EventTimestamp   : new Date(),
             UserMessage      : createModel.UserMessage,
-            Payload          : createModel.Payload,
         };
         const event = this._eventRepository.create(eventModel);
         var record = await this._eventRepository.save(event);

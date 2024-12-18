@@ -11,11 +11,9 @@ import { WorkflowMessageEvent } from "./intermediate.types/user.event.types";
 export interface EventCreateModel {
     EventType        : EventType;
     TenantId         : uuid;
-    SchemaId         : uuid;
+    SchemaId        ?: uuid;
     SchemaInstanceId?: uuid;
     UserMessage     ?: WorkflowMessageEvent;
-    Payload         ?: any;
-    EventTimestamp   : Date;
 }
 
 export interface EventUpdateModel {

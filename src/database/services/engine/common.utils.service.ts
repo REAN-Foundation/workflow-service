@@ -17,6 +17,9 @@ import { NodeActionInstanceResponseDto } from '../../../domain.types/engine/node
 import { NodeActionMapper } from '../../../database/mappers/engine/node.action.mapper';
 import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
+import { Question } from '../../../database/models/engine/question.model';
+import { QuestionNodeResponseDto } from '../../../domain.types/engine/node.types';
+import { NodeMapper } from '../../../database/mappers/engine/node.mapper';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -39,6 +42,8 @@ export class CommonUtilsService {
     _nodeActionInstanceRepository: Repository<NodeActionInstance> = Source.getRepository(NodeActionInstance);
 
     _schemaInstanceRepository: Repository<SchemaInstance> = Source.getRepository(SchemaInstance);
+
+    _questionRepository: Repository<Question> = Source.getRepository(Question);
 
     //#endregion
 
@@ -249,6 +254,38 @@ export class CommonUtilsService {
             });
             var dtos = nodeInstances.map(x => NodeInstanceMapper.toResponseDto(x));
             return dtos;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getQuestionNode = async (questionId: uuid): Promise<QuestionNodeResponseDto> => {
+        try {
+            var question = await this._questionRepository.findOne({
+                where : {
+                    id : questionId
+                },
+                relations : {
+                    Options : true,
+                }
+            });
+            if (!question) {
+                ErrorHandler.throwNotFoundError('Question not found');
+            }
+            var node = await this._nodeRepository.findOne({
+                where : {
+                    id : questionId
+                },
+                relations : {
+                    Paths   : true,
+                    Actions : true,
+                }
+            });
+            if (!node) {
+                ErrorHandler.throwNotFoundError('Node not found');
+            }
+            return NodeMapper.toResponseDto(node, node.Actions, question);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

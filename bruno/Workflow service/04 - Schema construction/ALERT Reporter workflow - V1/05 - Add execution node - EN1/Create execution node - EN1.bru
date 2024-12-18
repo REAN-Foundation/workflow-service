@@ -99,28 +99,6 @@ body:json {
             }
           ]
         }
-      },
-      {
-        "Type": "SendMultipleMessages",
-        "Name": "Send message to CFRs",
-        "Sequence": 2,
-        "Input": {
-          "Params": [
-            {
-              "Name": "List of phonenumbers",
-              "Type": "Array",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:CFR:Phonenumbers"
-            },
-            {
-              "Name": "Location",
-              "Type": "Location",
-              "Source": "Almanac",
-              "Key": "ContextParams:Location"
-            }
-          ]
-        }
       }
     ]
   }

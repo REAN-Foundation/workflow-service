@@ -23,18 +23,18 @@ body:json {
     "ParentRuleId": "{{TERMINATION_MESSAGE_YES_NO_RULE_ID}}",
     "ParentConditionId": null,
     "OperatorType": "Logical",
-    "LogicalOperatorType": "Equal",
+    "LogicalOperatorType": "Contains",
     "FirstOperand": {
-      "DataType": "Boolean",
+      "DataType": "TextArray",
       "Name": "Location Exists Expected",
-      "Value": true
+      "Value": ["stop", "done", "thank you", "thank", "thanks"]
     },
     "SecondOperand": {
-      "DataType": "Boolean",
-      "Name": "Does location exists?",
+      "DataType": "Text",
+      "Name": "String to search",
       "Value": null,
-      "Source": "Almanac",
-      "Key": "ContextParams:Location"
+      "Source": "UserEvent",
+      "Key": "TextMessage"
     }
   }
 }

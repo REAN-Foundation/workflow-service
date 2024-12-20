@@ -55,7 +55,7 @@ tests {
       expect(jsonRes.Status).to.eql('success');
   });
   
-  test("Question node is created", function () {
+  test("Question node second path condition is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');

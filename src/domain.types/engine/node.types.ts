@@ -6,7 +6,6 @@ import {
     uuid
 } from "../miscellaneous/system.types";
 import { NodeType, QuestionResponseType } from "./engine.enums";
-import { XAction } from "./intermediate.types/action.types";
 import { ActionInputParams } from "./intermediate.types/params.types";
 import { QuestionOption } from "./intermediate.types/user.event.types";
 import { NodeActionCreateModel, NodeActionResponseDto } from "./node.action.types";
@@ -43,7 +42,6 @@ export interface NodeUpdateModel {
     Description ?: string;
     ParentNodeId?: uuid;
     SchemaId    ?: uuid;
-    Actions     ?: XAction[];
     DelaySeconds?: number;
     RuleId      ?: uuid;
     RawData     ?: any;

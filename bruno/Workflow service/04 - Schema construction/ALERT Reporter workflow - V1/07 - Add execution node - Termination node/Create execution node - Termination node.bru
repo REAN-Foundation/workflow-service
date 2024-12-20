@@ -1,0 +1,65 @@
+meta {
+  name: Create execution node - Termination node
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Termination node-Send Messages to Incident Reporter",
+    "Description": "This execution node holds actions to send assuring message to the incident reporter.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{QUESTION_NODE_1_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "Exit",
+        "Name": "Exit the workflow",
+        "Description": "Exit the workflow after reporter chooses option to "
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("TERMINATION_NODE_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Termination node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

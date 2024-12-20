@@ -1,6 +1,6 @@
 
 import { logger } from "../../logger/logger";
-import { Location, DistanceUnit } from "../../domain.types/engine/intermediate.types/common.types";
+import { Location, DistanceUnit } from "../../domain.types/engine/common.types";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 

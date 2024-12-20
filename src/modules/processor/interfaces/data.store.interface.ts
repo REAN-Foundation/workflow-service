@@ -1,7 +1,7 @@
 import { DataStorageInputParams } from '../../../domain.types/engine/intermediate.types/params.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { OutputParams } from '../../../domain.types/engine/intermediate.types/params.types';
-import { ProcessorResult } from '../../../domain.types/engine/intermediate.types/common.types';
+import { ProcessorResult } from '../../../domain.types/engine/common.types';
 
 ////////////////////////////////////////////////////////////////
 

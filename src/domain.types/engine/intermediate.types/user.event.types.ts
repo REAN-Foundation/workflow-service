@@ -1,6 +1,6 @@
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
 import { MessageChannelType, UserMessageType } from "../engine.enums";
-import { Location } from "../intermediate.types/common.types";
+import { Location } from "../common.types";
 import { Params } from "./params.types";
 
 ////////////////////////////////////////////////////////////////
@@ -10,7 +10,7 @@ export interface QuestionOption {
     Text              : string;
     ImageUrl?         : string;
     Sequence          : number;
-    Metadata          : string;
+    Metadata          : { Key: string, Value: string }[];
 }
 
 export interface QuestionResponseMessage {

@@ -1,0 +1,50 @@
+meta {
+  name: 03 - Create QN1 - first node path
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/engine/node-paths
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "QN1 - First node path - Mark incident as handled",
+    "Description": "This is node path if the user has chosen option to mark the incident handled and closed.",
+    "ParentNodeId": "{{QUESTION_NODE_1_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}"
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("QN1_NODE_PATH_1_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

@@ -16,6 +16,7 @@ import {
     RuleUpdateModel } from '../../../domain.types/engine/rule.domain.types';
 import { ConditionMapper } from '../../../database/mappers/engine/condition.mapper';
 import { ConditionResponseDto } from '../../../domain.types/engine/condition.types';
+import { NodePath } from '../../../database/models/engine/node.path.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -29,17 +30,31 @@ export class RuleService extends BaseService {
 
     _conditionRepository: Repository<Condition> = Source.getRepository(Condition);
 
+    _pathRepository: Repository<NodePath> = Source.getRepository(NodePath);
+
     //#endregion
 
     public create = async (createModel: RuleCreateModel)
         : Promise<RuleResponseDto> => {
 
         const parentNode = await this.getNode(createModel.ParentNodeId);
+        if (!parentNode) {
+            ErrorHandler.throwNotFoundError('Parent Node not found!');
+        }
+        var nodePath: NodePath = null;
+        if (createModel.NodePathId) {
+            nodePath = await this._pathRepository.findOne({
+                where : {
+                    id : createModel.NodePathId
+                }
+            });
+        }
 
         const rule = this._ruleRepository.create({
             ParentNode  : parentNode,
             Name        : createModel.Name,
             Description : createModel.Description,
+            NodePath    : nodePath,
         });
         var record = await this._ruleRepository.save(rule);
         record = await this._ruleRepository.save(rule);
@@ -52,6 +67,11 @@ export class RuleService extends BaseService {
             var rule = await this._ruleRepository.findOne({
                 where : {
                     id : id
+                },
+                relations : {
+                    ParentNode : true,
+                    NodePath   : true,
+                    Schema     : true
                 }
             });
             var conditionDto: ConditionResponseDto = null;
@@ -89,6 +109,33 @@ export class RuleService extends BaseService {
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwDbAccessError('DB Error: Unable to search records!', error);
+        }
+    };
+
+    public setNodePathToRule = async (ruleId: uuid, nodePathId: uuid): Promise<boolean> => {
+        try {
+            var rule = await this._ruleRepository.findOne({
+                where : {
+                    id : ruleId
+                }
+            });
+            if (!rule) {
+                ErrorHandler.throwNotFoundError('Rule not found!');
+            }
+            var nodePath = await this._pathRepository.findOne({
+                where : {
+                    id : nodePathId
+                }
+            });
+            if (!nodePath) {
+                ErrorHandler.throwNotFoundError('Node Path not found!');
+            }
+            rule.NodePath = nodePath;
+            var result = await this._ruleRepository.save(rule);
+            return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
         }
     };
 

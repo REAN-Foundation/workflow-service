@@ -15,6 +15,7 @@ export interface RuleCreateModel {
     ParentNodeId: uuid;
     SchemaId    : uuid;
     ConditionId : uuid;
+    NodePathId ?: uuid;
 }
 
 export interface RuleUpdateModel {
@@ -23,6 +24,7 @@ export interface RuleUpdateModel {
     ParentNodeId ?: uuid;
     SchemaId     ?: uuid;
     ConditionId  ?: uuid;
+    NodePathId   ?: uuid;
 }
 
 export interface RuleResponseDto {
@@ -55,6 +57,7 @@ export interface RuleSearchFilters extends BaseSearchFilters {
     Name         ?: string;
     ParentNodeId ?: uuid;
     ConditionId  ?: uuid;
+    NodePathId   ?: uuid;
 }
 
 export interface RuleSearchResults extends BaseSearchResults {

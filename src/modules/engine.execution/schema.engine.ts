@@ -96,9 +96,6 @@ export class SchemaEngine {
         //Sync the almanac with the schema instance
         await this.syncWithAlmanac(this._schemaInstance);
 
-        //If there are any listening nodes, handle them
-        await this.handleListeningNodes();
-
         currentNodeInstance = await this.processCurrentNode(currentNodeInstance);
 
         return currentNodeInstance;
@@ -107,6 +104,9 @@ export class SchemaEngine {
     //#region Private methods
 
     private async processCurrentNode(currentNodeInstance: NodeInstanceResponseDto) {
+
+        //If there are any listening nodes, handle them
+        await this.handleListeningNodes();
 
         if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
             const allExecuted = await this.executeNodeActions(currentNodeInstance);
@@ -122,7 +122,8 @@ export class SchemaEngine {
 
         if (newNodeInstance.id !== currentNodeInstance.id) {
             currentNodeInstance = newNodeInstance;
-            if (currentNodeInstance.Node.Type === NodeType.ExecutionNode) {
+            if (currentNodeInstance.Node.Type === NodeType.ExecutionNode ||
+                currentNodeInstance.Node.Type === NodeType.YesNoNode) {
                 return await this.processCurrentNode(currentNodeInstance);
             }
         }

@@ -3,17 +3,16 @@ import { ResponseHandler } from '../../common/handlers/response.handler';
 import { ErrorHandler } from '../../common/handlers/error.handler';
 import { RoleService } from '../../database/services/user/role.service';
 import {
+    ActionTypeList,
     CompositionOperatorList,
     ConditionOperandDataTypeList,
-    ContextTypeList,
-    DataActionTypeList,
-    EventActionTypeList,
     ExecutionStatusList,
     InputSourceTypeList,
-    LogicalOperatorList,
     MathematicalOperatorList,
-    OperatorList,
-    OutputSourceTypeList } from '../../domain.types/engine/engine.types';
+    NodeTypeList
+} from '../../domain.types/engine/engine.enums';
+import { LogicalOperatorList } from '../../domain.types/engine/engine.enums';
+import { OperatorList } from '../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -45,20 +44,20 @@ export class TypesController {
         }
     };
 
-    getEventActionTypes = async (request: express.Request, response: express.Response): Promise<void> => {
+    getNodeTypes = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            ResponseHandler.success(request, response, 'Event action types retrieved successfully!', 200, {
-                Types : EventActionTypeList,
+            ResponseHandler.success(request, response, 'Node types retrieved successfully!', 200, {
+                Types : NodeTypeList,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
     };
 
-    getContextTypes = async (request: express.Request, response: express.Response): Promise<void> => {
+    getActionTypes = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            ResponseHandler.success(request, response, 'Context types retrieved successfully!', 200, {
-                Types : ContextTypeList,
+            ResponseHandler.success(request, response, 'Action types retrieved successfully!', 200, {
+                Types : ActionTypeList,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -125,30 +124,10 @@ export class TypesController {
         }
     };
 
-    getDataActionTypes = async (request: express.Request, response: express.Response): Promise<void> => {
-        try {
-            ResponseHandler.success(request, response, 'Data action types retrieved successfully!', 200, {
-                Types : DataActionTypeList,
-            });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
-
     getInputSourceTypes = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             ResponseHandler.success(request, response, 'Input source types retrieved successfully!', 200, {
                 Types : InputSourceTypeList,
-            });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
-
-    getOutputSourceTypes = async (request: express.Request, response: express.Response): Promise<void> => {
-        try {
-            ResponseHandler.success(request, response, 'Output source types retrieved successfully!', 200, {
-                Types : OutputSourceTypeList,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

@@ -1,4 +1,4 @@
-import { EventType } from "../enums/event.type";
+import { AlmanacObject } from "../../modules/engine.execution/almanac";
 import {
     BaseSearchFilters,
     BaseSearchResults
@@ -6,77 +6,73 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { ContextType } from "./engine.types";
+import { NodeType } from "./engine.enums";
+import { ContextParams } from "./intermediate.types/params.types";
 
 //////////////////////////////////////////////////////////////
 
 export interface SchemaInstanceCreateModel {
-    SchemaId  : uuid;
-    ContextId : uuid;
+    SchemaId               : uuid;
+    TenantId               : uuid;
+    ContextParams          : ContextParams;
+    Code                  ?: string;
+    ParentSchemaInstanceId?: uuid;
 }
 
 export interface SchemaInstanceUpdateModel {
-    SchemaId  ?: uuid;
-    ContextId ?: uuid;
+    ContextParams          : ContextParams;
+    ParentSchemaInstanceId?: uuid;
 }
 
 export interface SchemaInstanceResponseDto {
-    id         : uuid;
-    Schema     : {
+    id                     : uuid;
+    Code                   : string;
+    TenantId               : uuid;
+    ParentSchemaInstanceId?: uuid;
+    Schema                 : {
         id         : uuid;
         Name       : string;
         Description: string;
-        Client     : {
+        TenantId   : uuid;
+    };
+    ContextParams   ?: ContextParams;
+    RootNodeInstance : {
+        id  : uuid;
+        Node: {
             id  : uuid;
             Name: string;
-        },
-        EventTypes : EventType[],
-    };
-    Context     : {
-        id          : uuid;
-        ReferenceId : uuid;
-        Type        : ContextType;
-        Participant?: {
-            id         : uuid;
-            ReferenceId: uuid;
-            Prefix     : string;
-            FirstName  : string;
-            LastName   : string;
-        };
-        ParticipantGroup ?: {
-            id         : uuid;
-            Name       : string;
-            Description: string;
-        };
-    };
-    RootNodeInstance : {
-        id: uuid;
-        Node: {
-            id: uuid;
-            Name: string;
+            Type: NodeType;
         }
     };
     CurrentNodeInstance : {
-        id: uuid;
+        id  : uuid;
         Node: {
-            id: uuid;
+            id  : uuid;
             Name: string;
+            Type: NodeType;
         }
     };
     NodeInstances : {
-        id: uuid;
+        id  : uuid;
         Node: {
-            id: uuid;
-            Name: string;
+            id     : uuid;
+            Name   : string;
+            Type   : NodeType;
+            Active?: boolean;
         }
     }[];
-    CreatedAt: Date;
-    UpdatedAt: Date;
+    AlmanacObjects           : AlmanacObject[];
+    ExecutionStarted         : boolean;
+    ExecutionStartedTimestamp: Date;
+    CreatedAt                : Date;
+    UpdatedAt                : Date;
 }
 
 export interface SchemaInstanceSearchFilters extends BaseSearchFilters {
-    SchemaId  ?: uuid;
-    ContextId ?: uuid;
+    SchemaId              ?: uuid;
+    TenantId              ?: uuid;
+    Code                  ?: string;
+    ParentSchemaInstanceId?: uuid;
 }
 
 export interface SchemaInstanceSearchResults extends BaseSearchResults {

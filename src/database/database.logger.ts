@@ -31,4 +31,5 @@ export class DBLogger implements Logger {
             logger.info(message);
         }
     }
+
 }

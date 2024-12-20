@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { LogicalOperator, CompositionOperator, MathematicalOperator, OperandDataType, OperatorType } from "../../../domain.types/engine/engine.types";
 import {
     Column,
     Entity,
@@ -7,11 +6,9 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     DeleteDateColumn,
-    OneToMany,
-    OneToOne,
-    ManyToOne,
 } from 'typeorm';
-import { Rule } from "./rule.model";
+import { CompositionOperatorType, LogicalOperatorType, OperatorType } from "../../../domain.types/engine/engine.enums";
+import { ConditionOperand } from "../../../domain.types/engine/intermediate.types/rule.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -27,35 +24,53 @@ export class Condition {
     @Column({ type: 'varchar', length: 512, nullable: true })
     Description : string;
 
-    @OneToOne(() => Rule, (rule) => rule.Condition)
-    Rule: Rule;
+    @Column({ type: 'uuid', nullable: false })
+    ParentRuleId: string;
+
+    @Column({ type: 'uuid', nullable: true })
+    ParentConditionId: string;
+
+    @Column({ type: 'uuid', nullable: true })
+    NodePathId: string;
+
+    @Column({ type: 'uuid', nullable: true })
+    ParentNodeId: string;
 
     @Column({ type: 'enum', enum: OperatorType, nullable: false, default: OperatorType.Logical })
-    Operator : OperatorType;
+    OperatorType : OperatorType;
 
-    @Column({ type: 'varchar', length: 256, nullable: true })
-    Fact : string;
+    @Column({ type: 'enum', enum: LogicalOperatorType, nullable: false, default: LogicalOperatorType.None })
+    LogicalOperatorType : LogicalOperatorType;
 
-    @Column({ type: 'enum', enum: LogicalOperator, nullable: false, default: LogicalOperator.None })
-    LogicalOperator : LogicalOperator;
-
-    @Column({ type: 'enum', enum: MathematicalOperator, nullable: false, default: MathematicalOperator.None })
-    MathematicalOperator : MathematicalOperator;
-
-    @Column({ type: 'enum', enum: CompositionOperator, nullable: false, default: CompositionOperator.None })
-    CompositionOperator : CompositionOperator;
-
-    @Column({ type: 'enum', enum: OperandDataType, nullable: false })
-    DataType : OperandDataType;
+    @Column({ type: 'enum', enum: CompositionOperatorType, nullable: false, default: CompositionOperatorType.None })
+    CompositionOperatorType : CompositionOperatorType;
 
     @Column({ type: 'json', nullable: true })
-    Value : any;
+    FirstOperand : ConditionOperand;
 
-    @ManyToOne(() => Condition, (child) => child.ChildrenConditions, { nullable: true })
-    ParentCondition: Condition;
+    @Column({ type: 'json', nullable: true })
+    SecondOperand : ConditionOperand;
 
-    @OneToMany(() => Condition, (parent) => parent.ParentCondition)
-    ChildrenConditions: Condition[];
+    @Column({ type: 'json', nullable: true })
+    ThirdOperand : ConditionOperand;
+
+    // @Column({ type: 'varchar', length: 256, nullable: true })
+    // Fact : string;
+
+    // @Column({ type: 'enum', enum: MathematicalOperatorType, nullable: false, default: MathematicalOperatorType.None })
+    // MathematicalOperator : MathematicalOperatorType;
+
+    // @Column({ type: 'enum', enum: OperandDataType, nullable: false })
+    // DataType : OperandDataType;
+
+    // @Column({ type: 'json', nullable: true })
+    // Value : any;
+
+    // @ManyToOne(() => Condition, (child) => child.ChildrenConditions, { nullable: true })
+    // ParentCondition: Condition;
+
+    // @OneToMany(() => Condition, (parent) => parent.ParentCondition)
+    // ChildrenConditions: Condition[];
 
     @CreateDateColumn()
     CreatedAt : Date;

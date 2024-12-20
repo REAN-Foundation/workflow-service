@@ -1,0 +1,57 @@
+meta {
+  name: moderator logs in
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/users/login-password
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+body:json {
+  {
+      "UserName": "{{MODERATOR_USER_NAME}}",
+      "Password": "{{MODERATOR_PASSWORD}}"
+  }
+  
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+    bru.setEnvVar("MODERATOR_ACCESS_TOKEN", res.body.Data.AccessToken);
+    bru.setEnvVar("MODERATOR_SESSION_ID", res.body.Data.User.SessionId);
+    bru.setEnvVar("MODERATOR_USER_ID",res.body.Data.User.UserId);
+    bru.setEnvVar("MODERATOR_USER_JWT",res.body.Data.AccessToken);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Moderator login: Access token is returned", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('AccessToken');
+      expect(jsonRes.Data.AccessToken).to.not.be.null;
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

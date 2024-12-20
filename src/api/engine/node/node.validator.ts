@@ -3,27 +3,13 @@ import express from 'express';
 import {
     NodeCreateModel,
     NodeUpdateModel,
-    NodeSearchFilters
-} from '../../../domain.types/engine/node.domain.types';
+    NodeSearchFilters,
+    QuestionNodeCreateModel,
+    YesNoNodeCreateModel
+} from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
-import { EventActionType, NodeType } from '../../../domain.types/engine/engine.types';
-import {
-    ActionInputParamsObj_Create,
-    ActionInputParamsObj_Update,
-    ActionOutputParamsObj_Create,
-    ActionOutputParamsObj_Update,
-    ContinuityInputParamsObj_Create,
-    ContinuityInputParamsObj_Update,
-    DataExtractionInputParamsObj_Create,
-    DataExtractionInputParamsObj_Update,
-    DataStorageInputParamsObj_Create,
-    DataStorageInputParamsObj_Update,
-    RangeComparisonInputParamsObj_Create,
-    RangeComparisonInputParamsObj_Update,
-    ValueComparisonInputParamsObj_Create,
-    ValueComparisonInputParamsObj_Update
-} from '../common.validations';
+import { NodeType, ActionType, QuestionResponseType, ParamType, InputSourceType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -34,23 +20,35 @@ export class NodeValidator extends BaseValidator {
         try {
             const node = joi.object({
                 Type         : joi.string().valid(...Object.values(NodeType)).required(),
-                Name         : joi.string().max(32).required(),
-                Description  : joi.string().max(256).optional(),
-                ParentNodeId : joi.string().uuid().required(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
+                ParentNodeId : joi.string().allow(null).uuid().required(),
                 SchemaId     : joi.string().uuid().required(),
-                Action       : {
-                    ActionType  : joi.string().valid(...Object.values(EventActionType)).required(),
-                    Name        : joi.string().max(32).required(),
-                    Description : joi.string().max(256).optional(),
-                    InputParams : joi.alternatives().try(
-                        ActionInputParamsObj_Create,
-                        ContinuityInputParamsObj_Create,
-                        DataExtractionInputParamsObj_Create,
-                        DataStorageInputParamsObj_Create,
-                        RangeComparisonInputParamsObj_Create,
-                        ValueComparisonInputParamsObj_Create).optional(),
-                    OutputParams : joi.alternatives().try(ActionOutputParamsObj_Create).optional(),
-                }
+                Actions      : joi.array().items(joi.object({
+                    Type         : joi.string().valid(...Object.values(ActionType)).required(),
+                    Sequence     : joi.number().integer().optional(),
+                    IsPathAction : joi.boolean().optional(),
+                    Name         : joi.string().max(64).required(),
+                    Description  : joi.string().max(512).optional(),
+                    RawInput     : joi.any().optional(),
+                    Input        : joi.object().optional(),
+                    Output       : joi.object().optional(),
+                })).optional(),
+                RuleId       : joi.string().uuid().optional(),
+                DelaySeconds : joi.number().integer().optional(),
+                RawData      : joi.object().allow(null).optional(),
+                Input        : joi.object({
+                    Params : joi.array().items(joi.object({
+                        Name        : joi.string().max(128).required(),
+                        Description : joi.string().max(512).optional(),
+                        ActionType  : joi.string().valid(...Object.values(ActionType)).optional(),
+                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
+                        Value       : joi.any().allow(null).required(),
+                        Source      : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                        Key         : joi.string().max(256).optional(),
+                        Required    : joi.boolean().optional(),
+                    })).required(),
+                }).optional(),
             });
             await node.validateAsync(request.body);
             return {
@@ -59,13 +57,132 @@ export class NodeValidator extends BaseValidator {
                 Description  : request.body.Description ?? null,
                 ParentNodeId : request.body.ParentNodeId,
                 SchemaId     : request.body.SchemaId,
-                Action       : {
-                    Name         : request.body.Action.Name,
-                    Description  : request.body.Action.Description ?? null,
-                    ActionType   : request.body.Action.ActionType,
-                    InputParams  : request.body.Action.InputParams ?? null,
-                    OutputParams : request.body.Action.OutputParams ?? null,
-                },
+                Actions      : request.body.Actions ?? null,
+                DelaySeconds : request.body.DelaySeconds ?? null,
+                RuleId       : request.body.RuleId ?? null,
+                RawData      : request.body.RawData ?? null,
+                Input        : request.body.Input ?? null,
+            };
+        } catch (error) {
+            ErrorHandler.handleValidationError(error);
+        }
+    };
+
+    public validateCreateYesNoNodeRequest = async (request: express.Request)
+    : Promise<YesNoNodeCreateModel> => {
+        try {
+            const node = joi.object({
+                Type         : joi.string().valid(...Object.values(NodeType)).required(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
+                ParentNodeId : joi.string().uuid().required(),
+                SchemaId     : joi.string().uuid().required(),
+                Actions      : joi.array().items(joi.object({
+                    Type         : joi.string().valid(...Object.values(ActionType)).required(),
+                    Sequence     : joi.number().integer().optional(),
+                    IsPathAction : joi.boolean().optional(),
+                    Name         : joi.string().max(64).required(),
+                    Description  : joi.string().max(512).optional(),
+                    RawInput     : joi.any().optional(),
+                    Input        : joi.object().optional(),
+                    Output       : joi.object().optional(),
+                })).optional(),
+                RuleId       : joi.string().uuid().optional(),
+                DelaySeconds : joi.number().integer().optional(),
+                RawData      : joi.object().allow(null).optional(),
+                Input        : joi.object({
+                    Params : joi.array().items(joi.object({
+                        Type     : joi.string().valid(...Object.values(ParamType)).required(),
+                        Value    : joi.any().allow(null).required(),
+                        Source   : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                        Key      : joi.string().max(256).optional(),
+                        Required : joi.boolean().optional(),
+                    })).required(),
+                }).optional(),
+                YesAction : joi.object({
+                    Type         : joi.string().valid(...Object.values(ActionType)).required(),
+                    Name         : joi.string().max(64).required(),
+                    IsPathAction : joi.boolean().optional(),
+                    Description  : joi.string().max(512).optional(),
+                    RawInput     : joi.any().optional(),
+                    Input        : joi.object().allow(null).optional(),
+                    Output       : joi.object().allow(null).optional(),
+                }).required(),
+                NoAction : joi.object({
+                    Type         : joi.string().valid(...Object.values(ActionType)).required(),
+                    Name         : joi.string().max(64).required(),
+                    IsPathAction : joi.boolean().optional(),
+                    Description  : joi.string().max(512).optional(),
+                    RawInput     : joi.any().optional(),
+                    Input        : joi.object().allow(null).optional(),
+                    Output       : joi.object().allow(null).optional(),
+                }).required(),
+            });
+            await node.validateAsync(request.body);
+            return {
+                Type         : request.body.Type,
+                Name         : request.body.Name,
+                Description  : request.body.Description ?? null,
+                ParentNodeId : request.body.ParentNodeId,
+                SchemaId     : request.body.SchemaId,
+                Actions      : request.body.Actions ?? null,
+                DelaySeconds : request.body.DelaySeconds ?? null,
+                RuleId       : request.body.RuleId ?? null,
+                RawData      : request.body.RawData ?? null,
+                Input        : request.body.Input ?? null,
+                YesAction    : request.body.YesAction ?? null,
+                NoAction     : request.body.NoAction ?? null,
+            };
+        } catch (error) {
+            ErrorHandler.handleValidationError(error);
+        }
+    };
+
+    public validateCreateQuestionNodeRequest = async (request: express.Request)
+    : Promise<QuestionNodeCreateModel> => {
+        try {
+            const node = joi.object({
+                Type         : joi.string().valid(...Object.values(NodeType)).required(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
+                ParentNodeId : joi.string().uuid().required(),
+                SchemaId     : joi.string().uuid().required(),
+                Actions      : joi.array().items(joi.object({
+                    Type         : joi.string().valid(...Object.values(ActionType)).required(),
+                    Sequence     : joi.number().integer().optional(),
+                    IsPathAction : joi.boolean().optional(),
+                    Name         : joi.string().max(64).required(),
+                    Description  : joi.string().max(512).optional(),
+                    RawInput     : joi.any().optional(),
+                    Input        : joi.object().optional(),
+                    Output       : joi.object().optional(),
+                })).optional(),
+                QuestionText : joi.string().max(512).required(),
+                ResponseType : joi.string().valid(...Object.values(QuestionResponseType)).required(),
+                Options      : joi.array().items(joi.object({
+                    Text     : joi.string().allow(null).max(512).required(),
+                    ImageUrl : joi.string().allow(null).max(512).optional(),
+                    Sequence : joi.number().integer().allow(null).max(10).optional(),
+                    Metadata : joi.string().allow(null).max(1024).optional(),
+                })).optional(),
+                RuleId       : joi.string().uuid().optional(),
+                DelaySeconds : joi.number().integer().optional(),
+                RawData      : joi.object().allow(null).optional(),
+            });
+            await node.validateAsync(request.body);
+            return {
+                Type         : request.body.Type,
+                Name         : request.body.Name,
+                Description  : request.body.Description ?? null,
+                ParentNodeId : request.body.ParentNodeId,
+                SchemaId     : request.body.SchemaId,
+                Actions      : request.body.Actions ?? null,
+                QuestionText : request.body.QuestionText ?? null,
+                ResponseType : request.body.ResponseType ?? null,
+                Options      : request.body.Options ?? [],
+                DelaySeconds : request.body.ExecutionDelaySeconds ?? null,
+                RuleId       : request.body.ExecutionRuleId ?? null,
+                RawData      : request.body.RawData ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);
@@ -75,24 +192,14 @@ export class NodeValidator extends BaseValidator {
     public validateUpdateRequest = async (request: express.Request): Promise<NodeUpdateModel|undefined> => {
         try {
             const node = joi.object({
-                Type         : joi.string().valid(...Object.values(NodeType)).optional(),
-                Name         : joi.string().max(32).optional(),
-                Description  : joi.string().max(256).optional(),
-                ParentNodeId : joi.string().uuid().optional(),
-                SchemaId     : joi.string().uuid().optional(),
-                Action       : {
-                    ActionType  : joi.string().valid(...Object.values(EventActionType)).optional(),
-                    Name        : joi.string().max(32).optional(),
-                    Description : joi.string().max(256).optional(),
-                    InputParams : joi.alternatives().try(
-                        ActionInputParamsObj_Update,
-                        ContinuityInputParamsObj_Update,
-                        DataExtractionInputParamsObj_Update,
-                        DataStorageInputParamsObj_Update,
-                        RangeComparisonInputParamsObj_Update,
-                        ValueComparisonInputParamsObj_Update).optional(),
-                    OutputParams : joi.alternatives().try(ActionOutputParamsObj_Update).optional(),
-                }
+                Type                  : joi.string().valid(...Object.values(NodeType)).optional(),
+                Name                  : joi.string().max(64).optional(),
+                Description           : joi.string().max(512).optional(),
+                ParentNodeId          : joi.string().uuid().optional(),
+                SchemaId              : joi.string().uuid().optional(),
+                ExecutionRuleId       : joi.string().uuid().optional(),
+                ExecutionDelaySeconds : joi.number().integer().optional(),
+                RawData               : joi.object().allow(null).optional(),
             });
             await node.validateAsync(request.body);
             return {
@@ -101,17 +208,9 @@ export class NodeValidator extends BaseValidator {
                 Description  : request.body.Description ?? null,
                 ParentNodeId : request.body.ParentNodeId ?? null,
                 SchemaId     : request.body.SchemaId ?? null,
-                Action       : request.body.Action ? {
-                    Name        : request.body.Action.Name ?? null,
-                    Description : request.body.Action.Description ?? null,
-                    ActionType  : request.body.Action.ActionType ?? null,
-                    InputParams : request.body.Action &&
-                                  request.body.Action?.InputParams ?
-                        request.body.Action?.InputParams : null,
-                    OutputParams : request.body.Action &&
-                                  request.body.Action?.OutputParams ?
-                        request.body.Action?.OutputParams : null,
-                } : null,
+                RuleId       : request.body.RuleId ?? null,
+                DelaySeconds : request.body.DelaySeconds ?? null,
+                RawData      : request.body.RawData ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

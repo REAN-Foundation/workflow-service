@@ -5,13 +5,19 @@ import {
 import {
     uuid
 } from "../miscellaneous/system.types";
-import { ContextType, EventActionType, ExecutionStatus, InputParams, NodeType, OperandDataType, OperatorType, OutputParams } from "./engine.types";
+import { ActionType, ExecutionStatus, NodeType } from "./engine.enums";
+import { ActionInputParams, ActionOutputParams } from "./intermediate.types/params.types";
+import { NodeActionResponseDto } from "./node.action.types";
+import { NodeResponseDto } from "./node.types";
 
 //////////////////////////////////////////////////////////////
 
 export interface NodeInstanceCreateModel {
+    Type            : NodeType;
+    Input           : ActionInputParams;
     NodeId          : uuid;
     SchemaInstanceId: uuid;
+    ExecutionStatus : ExecutionStatus;
 }
 
 export interface NodeInstanceUpdateModel {
@@ -20,48 +26,12 @@ export interface NodeInstanceUpdateModel {
 }
 
 export interface NodeInstanceResponseDto {
-    id         : uuid;
-    ExecutionStatus : ExecutionStatus;
-    StatusUpdateTimestamp : Date;
-    ApplicableRule: {
-        id         : uuid;
-        Name       : string;
-        Description: string;
-    };
-    AvailableFacts       : any[];
-    ExecutedDefaultAction: boolean;
+    id                   : uuid;
+    ExecutionStatus      : ExecutionStatus;
+    StatusUpdateTimestamp: Date;
     ExecutionResult      : any;
-    Node                 : {
-        id    : uuid;
-        Type  : NodeType;
-        Name  : string;
-        Action: {
-            id           : uuid;
-            Name         : string;
-            ActionType   : EventActionType;
-            InputParams  : InputParams;
-            OutputParams : OutputParams;
-        } | null,
-        Rules: {
-            id    : uuid,
-            Name  : string;
-            Action: {
-                id        : uuid;
-                Name      : string;
-                ActionType: EventActionType;
-                InputParams  : InputParams;
-                OutputParams : OutputParams;
-            },
-            Condition: {
-                id      : uuid;
-                Name    : string;
-                Operator: OperatorType,
-                DataType: OperandDataType,
-                Fact    : string;
-            }
-        }[],
-    };
-    SchemaInstance : {
+    Node                 : NodeResponseDto;
+    SchemaInstance       : {
         id    : uuid;
         Schema: {
             id         : uuid;
@@ -69,39 +39,23 @@ export interface NodeInstanceResponseDto {
             Description: string;
         };
     };
-    Context : {
-        id          : uuid;
-        ReferenceId : uuid;
-        Type        : ContextType;
-        Participant?: {
-            id         : uuid;
-            ReferenceId: uuid;
-            Prefix     : string;
-            FirstName  : string;
-            LastName   : string;
-        };
-        ParticipantGroup ?: {
-            id         : uuid;
-            Name       : string;
-            Description: string;
-        };
-    };
-    ParentNodeInstance : {
-        id: uuid;
-        Node: {
-            id: uuid;
-            Name: string;
-        };
-    } | null;
+    ParentNodeInstance   : {
+            id  : uuid;
+            Node: {
+                id  : uuid;
+                Name: string;
+            };
+        } | null;
     ChildrenNodeInstances : {
-        id  : uuid;
-        Node: {
-            id: uuid;
-            Name: string;
-        };
-    }[];
-    CreatedAt: Date;
-    UpdatedAt: Date;
+            id  : uuid;
+            Node: {
+                id  : uuid;
+                Name: string;
+            };
+        }[];
+    ActionInstances?: NodeActionInstanceResponseDto[];
+    CreatedAt       : Date;
+    UpdatedAt       : Date;
 }
 
 export interface NodeInstanceSearchFilters extends BaseSearchFilters {
@@ -111,4 +65,21 @@ export interface NodeInstanceSearchFilters extends BaseSearchFilters {
 
 export interface NodeInstanceSearchResults extends BaseSearchResults {
     Items: NodeInstanceResponseDto[];
+}
+
+export interface NodeActionInstanceResponseDto {
+    id                : uuid;
+    ActionType        : ActionType;
+    Sequence          : number;
+    NodeId            : uuid;
+    NodeInstanceId    : uuid;
+    ActionId          : uuid;
+    SchemaInstanceId  : uuid;
+    Executed          : boolean;
+    ExecutionTimestamp: Date;
+    Input             : ActionInputParams;
+    Output            : ActionOutputParams;
+    Action           ?: NodeActionResponseDto;
+    CreatedAt         : Date;
+    UpdatedAt         : Date;
 }

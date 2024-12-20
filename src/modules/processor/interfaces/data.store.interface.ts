@@ -1,18 +1,22 @@
+import { DataStorageInputParams } from '../../../domain.types/engine/intermediate.types/params.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { DataStorageInputParams, OutputParams, ProcessorResult } from '../../../domain.types/engine/engine.types';
+import { OutputParams } from '../../../domain.types/engine/intermediate.types/params.types';
+import { ProcessorResult } from '../../../domain.types/engine/intermediate.types/common.types';
+
+////////////////////////////////////////////////////////////////
 
 export interface IDataStore {
 
     storeData(
-        contextId: uuid, 
-        records:any[], 
-        inputParams: DataStorageInputParams, 
+        contextId: uuid,
+        records:any[],
+        inputParams: DataStorageInputParams,
         outputParams: OutputParams): Promise<ProcessorResult>;
 
     removeData(
-        contextId: uuid, 
-        records:any[], 
-        inputParams: DataStorageInputParams, 
+        contextId: uuid,
+        records:any[],
+        inputParams: DataStorageInputParams,
         outputParams: OutputParams): Promise<ProcessorResult>;
-    
+
 }

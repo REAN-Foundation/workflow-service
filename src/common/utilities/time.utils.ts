@@ -9,6 +9,7 @@ import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import weekday from 'dayjs/plugin/weekday';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
+import { logger } from '../../logger/logger';
 import { DateStringFormat, DurationType } from "../../domain.types/miscellaneous/time.types";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,6 +38,16 @@ export class TimeUtils {
         const day = ('00' + d.getDate().toString()).slice(-2);
         const year = d.getFullYear();
         return [year, month, day].join('-');
+    };
+
+    static formatDateToYYMMDD = (date: Date): string => {
+        const padZero = (num: number, size: number) => String(num).padStart(size, '0');
+
+        const year = date.getFullYear() % 100; // Get last 2 digits of the year
+        const month = padZero(date.getMonth() + 1, 2); // Months are 0-indexed
+        const day = padZero(date.getDate(), 2);
+
+        return `${year}${month}${day}`;
     };
 
     static getAgeFromBirthDate = (birthdate: Date, onlyYears = false): string => {
@@ -378,6 +389,69 @@ export class TimeUtils {
         var str = dateStr ? dateStr.split('T')[0] : todayStr.split('T')[0];
         var offsetMinutes = TimeUtils.getTimezoneOffsets(timezoneOffset, DurationType.Minute);
         return TimeUtils.strToUtc(str, offsetMinutes);
+    };
+
+    /**
+     * Compare two timestamps and check if they are within the given threshold.
+     *
+     * @param timestamp1 - The first timestamp to compare
+     * @param timestamp2 - The second timestamp to compare
+     * @param thresholdInMin - The maximum allowable time difference in minutes
+     * @returns True if the timestamps are within the threshold, otherwise false
+     */
+    static compareTimestamps = (
+        timestamp1: Date,
+        timestamp2: Date,
+        thresholdInMin = 5
+    ): boolean => {
+        if (timestamp1 == null || timestamp2 == null) {
+            logger.error("Both timestamps must be valid.");
+            return false;
+        }
+        const dt1 = new Date(timestamp1);
+        const dt2 = new Date(timestamp2);
+
+        // Convert timestamps to milliseconds
+        const time1 = dt1.getTime();
+        const time2 = dt2.getTime();
+
+        // Calculate absolute difference in milliseconds
+        const diffInMs = Math.abs(time1 - time2);
+
+        // Convert threshold into milliseconds based on the unit
+        const threshold: number = 1000 * 60 * thresholdInMin; // Default to minutes
+
+        // switch (unit) {
+        //     case 'ms': // Milliseconds
+        //         thresholdInMs = threshold;
+        //         break;
+        //     case 's': // Seconds
+        //         thresholdInMs = threshold * 1000;
+        //         break;
+        //     case 'm': // Minutes
+        //         thresholdInMs = threshold * 1000 * 60;
+        //         break;
+        //     case 'h': // Hours
+        //         thresholdInMs = threshold * 1000 * 60 * 60;
+        //         break;
+        //     case 'd': // Days
+        //         thresholdInMs = threshold * 1000 * 60 * 60 * 24;
+        //         break;
+        //     case 'w': // Weeks
+        //         thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 7;
+        //         break;
+        //     case 'mo': // Months
+        //         thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 30;
+        //         break;
+        //     case 'y': // Years
+        //         thresholdInMs = threshold * 1000 * 60 * 60 * 24 * 365;
+        //         break;
+        //     default:
+        //         logger.error("Unsupported unit. Use 'ms', 's', 'min', 'h', or 'd'.");
+        // }
+
+        // Check if the difference is within the threshold
+        return diffInMs <= threshold;
     };
 
 }

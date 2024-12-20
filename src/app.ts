@@ -5,7 +5,6 @@ import { logger } from './logger/logger';
 import { Scheduler } from './startup/scheduler';
 import { Seeder } from './startup/seeder';
 import { DatabaseConnector } from "./database/database.connector";
-import { FactsDatabaseConnector } from "./modules/fact.extractors/facts.db.connector";
 import { Injector } from "./startup/injector";
 import { MiddlewareHandler } from "./startup/middleware.handler";
 
@@ -47,7 +46,6 @@ export default class Application {
         try {
             await Injector.registerInjections();
             await DatabaseConnector.setup();
-            await FactsDatabaseConnector.setup();
             await MiddlewareHandler.setup(this.expressApp());
             await RouteHandler.setup(this.expressApp());
             await Seeder.seed();

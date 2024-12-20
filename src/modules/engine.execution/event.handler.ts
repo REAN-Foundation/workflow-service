@@ -1,12 +1,14 @@
 import { logger } from "../../logger/logger";
 import { EventResponseDto } from "../../domain.types/engine/event.types";
 import * as asyncLib from 'async';
-import { ContextService } from "../../database/services/engine/context.service";
-import { ContextType } from "../../domain.types/engine/engine.types";
-import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
-import { SchemaEngine } from "./schema.engine";
-import { SchemaService } from "../../database/services/engine/schema.service";
-import { SchemaInstanceResponseDto, SchemaInstanceSearchFilters } from "../../domain.types/engine/schema.instance.types";
+import { EventType } from "../../domain.types/enums/event.type";
+import { UserMessageEventHandler } from './user.message.event.handler';
+
+// import { ContextService } from "../../database/services/engine/context.service";
+// import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
+// import { SchemaEngine } from "./schema.engine";
+// import { SchemaService } from "../../database/services/engine/schema.service";
+// import { SchemaInstanceResponseDto, SchemaInstanceSearchFilters } from "../../domain.types/engine/schema.instance.types";
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -28,7 +30,8 @@ export default class EventHandler {
                 logger.error(`Error handling incoming event: ${JSON.stringify(error.stack, null, 2)}`);
             }
             else {
-                logger.info(`Recorded EHR record: ${JSON.stringify(model, null, 2)}`);
+                logger.info(`Event received and enqueued`);
+                // logger.debug(`Enqueued event: ${JSON.stringify(model, null, 2)}`);
             }
         });
     };
@@ -48,22 +51,24 @@ export default class EventHandler {
     private static processEvent = async (event: EventResponseDto) => {
 
         try {
-            logger.info(JSON.stringify(event, null, 2));
+            // logger.info(JSON.stringify(event, null, 2));
+            logger.info(`Processing event: ${event.EventType}`);
+
+            if (event.EventType === EventType.UserMessage) {
+                var handler = new UserMessageEventHandler();
+                await handler.handle(event);
+            }
+            else {
+                logger.info('Terminating workflow!');
+            }
             //Process incoming event here...
 
-            const contextService = new ContextService();
-            const schemaInstanceService = new SchemaInstanceService();
-            const schemaService = new SchemaService();
-            const referenceId = event.ReferenceId;
-            var context = await contextService.getByReferenceId(referenceId);
-            if (!context) {
-                context = await contextService.create({
-                    ReferenceId : referenceId,
-                    Type        : ContextType.Person
-                });
-            }
+            // const contextService = new ContextService();
+            // const schemaInstanceService = new SchemaInstanceService();
+            // const schemaService = new SchemaService();
+            // const referenceId = event.ReferenceId;
 
-            const eventType = event.EventType;
+            // const eventType = event.EventType;
             // const schemaForEventType = await schemaService.getByEventType(eventType.id);
             // const filtered: SchemaInstanceResponseDto[] = [];
             // for await (var s of schemaForEventType) {

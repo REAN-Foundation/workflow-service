@@ -77,4 +77,26 @@ export class SchemaInstanceController {
         }
     };
 
+    getActivityHistory = async (request: express.Request, response: express.Response) => {
+        try {
+            var id: uuid = await this._validator.requestParamAsUUID(request, 'id');
+            const activityHistory = await this._service.getActivityHistory(id);
+            const message = 'SchemaInstance activity history retrieved successfully!';
+            ResponseHandler.success(request, response, message, 200, activityHistory);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    getActivitySummary = async (request: express.Request, response: express.Response) => {
+        try {
+            var id: uuid = await this._validator.requestParamAsUUID(request, 'id');
+            const activitySummary = await this._service.getActivitySummary(id);
+            const message = 'SchemaInstance activity summary retrieved successfully!';
+            ResponseHandler.success(request, response, message, 200, activitySummary);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 }

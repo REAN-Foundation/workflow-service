@@ -12,7 +12,6 @@ import { logger } from './logger/logger';
     await app.start();
 })();
 
-
 /////////////////////////////////////////////////////////////////////////
 
 //Shutting down the service gracefully

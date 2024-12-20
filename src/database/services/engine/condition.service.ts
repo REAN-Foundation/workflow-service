@@ -30,21 +30,19 @@ export class ConditionService extends BaseService {
     public create = async (createModel: ConditionCreateModel)
         : Promise<ConditionResponseDto> => {
 
-        const rule = await this.getRule(createModel.RuleId);
-        const parentCondition = await this.getCondition(createModel.ParentConditionId);
-
         const condition = this._conditionRepository.create({
-            Name                 : createModel.Name,
-            Description          : createModel.Description,
-            Rule                 : rule,
-            ParentCondition      : parentCondition,
-            Operator             : createModel.Operator,
-            Fact                 : createModel.Fact,
-            DataType             : createModel.DataType,
-            Value                : createModel.Value,
-            LogicalOperator      : createModel.LogicalOperator,
-            MathematicalOperator : createModel.MathematicalOperator,
-            CompositionOperator  : createModel.CompositionOperator,
+            Name                    : createModel.Name,
+            Description             : createModel.Description,
+            ParentRuleId            : createModel.ParentRuleId,
+            ParentConditionId       : createModel.ParentConditionId,
+            ParentNodeId            : createModel.ParentNodeId,
+            NodePathId              : createModel.NodePathId,
+            OperatorType            : createModel.OperatorType,
+            LogicalOperatorType     : createModel.LogicalOperatorType,
+            CompositionOperatorType : createModel.CompositionOperatorType,
+            FirstOperand            : createModel.FirstOperand,
+            SecondOperand           : createModel.SecondOperand,
+            ThirdOperand            : createModel.ThirdOperand,
         });
         var record = await this._conditionRepository.save(condition);
         return ConditionMapper.toResponseDto(record);
@@ -64,13 +62,25 @@ export class ConditionService extends BaseService {
         }
     };
 
+    public getChildrenConditions = async (conditionId: uuid): Promise<ConditionResponseDto[]> => {
+        try {
+            var conditions = await this._conditionRepository.find({
+                where : {
+                    ParentConditionId : conditionId
+                }
+            });
+            return conditions.map(x => ConditionMapper.toResponseDto(x));
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public getConditionsForRule = async (ruleId: uuid): Promise<ConditionResponseDto[]> => {
         try {
             var conditions = await this._conditionRepository.find({
                 where : {
-                    Rule : {
-                        id : ruleId
-                    }
+                    ParentRuleId : ruleId
                 }
             });
             return conditions.map(x => ConditionMapper.toResponseDto(x));
@@ -113,19 +123,41 @@ export class ConditionService extends BaseService {
             if (!condition) {
                 ErrorHandler.throwNotFoundError('Condition not found!');
             }
-            if (model.RuleId != null) {
-                const rule = await this.getRule(model.RuleId);
-                condition.Rule = rule;
+            if (model.ParentRuleId != null) {
+                condition.ParentRuleId = model.ParentRuleId;
             }
             if (model.ParentConditionId != null) {
-                const parentCondition = await this.getCondition(model.ParentConditionId);
-                condition.ParentCondition = parentCondition;
+                condition.ParentConditionId = model.ParentConditionId;
             }
             if (model.Name != null) {
                 condition.Name = model.Name;
             }
             if (model.Description != null) {
                 condition.Description = model.Description;
+            }
+            if (model.NodePathId != null) {
+                condition.NodePathId = model.NodePathId;
+            }
+            if (model.ParentNodeId != null) {
+                condition.ParentNodeId = model.ParentNodeId;
+            }
+            if (model.OperatorType != null) {
+                condition.OperatorType = model.OperatorType;
+            }
+            if (model.LogicalOperatorType != null) {
+                condition.LogicalOperatorType = model.LogicalOperatorType;
+            }
+            if (model.CompositionOperatorType != null) {
+                condition.CompositionOperatorType = model.CompositionOperatorType;
+            }
+            if (model.FirstOperand != null) {
+                condition.FirstOperand = model.FirstOperand;
+            }
+            if (model.SecondOperand != null) {
+                condition.SecondOperand = model.SecondOperand;
+            }
+            if (model.ThirdOperand != null) {
+                condition.ThirdOperand = model.ThirdOperand;
             }
             var record = await this._conditionRepository.save(condition);
             return ConditionMapper.toResponseDto(record);
@@ -158,39 +190,14 @@ export class ConditionService extends BaseService {
             relations : {
             },
             where : {
-            },
-            select : {
-                id          : true,
-                Name        : true,
-                Description : true,
-                Rule        : {
-                    id          : true,
-                    Name        : true,
-                    Description : true,
-                    ParentNode  : {
-                        id : true,
-                    }
-                },
-                ParentCondition : {
-                    id          : true,
-                    Name        : true,
-                    Description : true,
-                },
-                ChildrenConditions : {
-                    id          : true,
-                    Name        : true,
-                    Description : true,
-                },
-                CreatedAt : true,
-                UpdatedAt : true,
             }
         };
 
-        if (filters.RuleId) {
-            search.where['Rule'].id = filters.RuleId;
+        if (filters.ParentRuleId) {
+            search.where['ParentRuleId'] = filters.ParentRuleId;
         }
         if (filters.ParentConditionId) {
-            search.where['ParentCondition'].id = filters.ParentConditionId;
+            search.where['ParentConditionId'] = filters.ParentConditionId;
         }
         if (filters.Name) {
             search.where['Name'] = Like(`%${filters.Name}%`);
@@ -201,34 +208,34 @@ export class ConditionService extends BaseService {
 
     //#endregion
 
-    private async getRule(ruleId: uuid) {
-        if (!ruleId) {
-            return null;
-        }
-        const rule = await this._ruleRepository.findOne({
-            where : {
-                id : ruleId
-            }
-        });
-        if (!rule) {
-            ErrorHandler.throwNotFoundError('Rule cannot be found');
-        }
-        return rule;
-    }
+    // private async getRule(ruleId: uuid) {
+    //     if (!ruleId) {
+    //         return null;
+    //     }
+    //     const rule = await this._ruleRepository.findOne({
+    //         where : {
+    //             id : ruleId
+    //         }
+    //     });
+    //     if (!rule) {
+    //         ErrorHandler.throwNotFoundError('Rule cannot be found');
+    //     }
+    //     return rule;
+    // }
 
-    private async getCondition(conditionId: uuid) {
-        if (!conditionId) {
-            return null;
-        }
-        const condition = await this._conditionRepository.findOne({
-            where : {
-                id : conditionId
-            }
-        });
-        if (!condition) {
-            ErrorHandler.throwNotFoundError('Condition cannot be found');
-        }
-        return condition;
-    }
+    // private async getCondition(conditionId: uuid) {
+    //     if (!conditionId) {
+    //         return null;
+    //     }
+    //     const condition = await this._conditionRepository.findOne({
+    //         where : {
+    //             id : conditionId
+    //         }
+    //     });
+    //     if (!condition) {
+    //         ErrorHandler.throwNotFoundError('Condition cannot be found');
+    //     }
+    //     return condition;
+    // }
 
 }

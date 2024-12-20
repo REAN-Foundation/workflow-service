@@ -1,0 +1,71 @@
+meta {
+  name: 05- Create base condition
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/engine/conditions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Base condition for location check",
+    "Description": "This is the base condition for the location check",
+    "ParentRuleId": "{{LOCATION_YES_NO_NODE_RULE_ID}}",
+    "ParentConditionId": null,
+    "OperatorType": "Logical",
+    "LogicalOperatorType": "Equal",
+    "FirstOperand": {
+      "DataType": "Boolean",
+      "Name": "Location Exists Expected",
+      "Value": true
+    },
+    "SecondOperand": {
+      "DataType": "Boolean",
+      "Name": "Does location exists?",
+      "Value": null,
+      "Source": "Almanac",
+      "Key": "ContextParams:Location"
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("LOCATION_YES_NO_NODE_RULE_BASE_CONDITION_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Question node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

@@ -1,61 +1,61 @@
 import joi from 'joi';
 import express from 'express';
-import { MessageEventCreateModel, EventSearchFilters } from '../../../domain.types/engine/event.types';
+import { EventCreateModel, EventSearchFilters } from '../../../domain.types/engine/event.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
+import { MessageChannelType, UserMessageType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 export class EventValidator extends BaseValidator {
 
     public validateCreateMessageEventRequest = async (request: express.Request)
-        : Promise<MessageEventCreateModel> => {
+        : Promise<EventCreateModel> => {
         try {
             const event = joi.object({
                 TenantId         : joi.string().uuid().required(),
                 EventType        : joi.string().required(),
-                ReferenceId      : joi.string().uuid().required(),
-                SchemaInstanceId : joi.string().uuid().optional(),
-                SchemaName       : joi.string().optional(),
                 SchemaId         : joi.string().uuid().optional(),
-                TimeStamp        : joi.date().required(),
-                Payload          : joi.object({
-                    QuestionOptions      : joi.array().items(joi.string()).optional(),
-                    ChosenOption         : joi.string().optional(),
-                    ChosenOptionSequence : joi.number().optional(),
-                    TextMessage          : joi.string().required(),
-                    Location             : joi.object({
+                SchemaInstanceId : joi.string().uuid().optional(),
+                UserMessage      : joi.object({
+                    Phone          : joi.string().required(),
+                    MessageType    : joi.string().valid(...Object.values(UserMessageType)).required(),
+                    MessageChannel : joi.string().valid(...Object.values(MessageChannelType)).required(),
+                    EventTimestamp : joi.date().required(),
+                    TextMessage    : joi.string().optional(),
+                    ImageUrl       : joi.string().optional(),
+                    VideoUrl       : joi.string().optional(),
+                    AudioUrl       : joi.string().optional(),
+                    Location       : joi.object({
+                        Name      : joi.string().optional(),
                         Latitude  : joi.number().required(),
                         Longitude : joi.number().required(),
                     }).optional(),
-                    Images            : joi.array().items(joi.string()).optional(),
-                    Videos            : joi.array().items(joi.string()).optional(),
-                    Audios            : joi.array().items(joi.string()).optional(),
-                    PreviousMessageId : joi.string().uuid().optional(),
-                    PreviousNodeId    : joi.string().uuid().optional(),
-                }).required(),
+                    QuestionResponse : joi.object({
+                        QuestionId      : joi.string().uuid().optional(),
+                        QuestionText    : joi.string().optional(),
+                        QuestionOptions : joi.array().items(joi.object({
+                            Text     : joi.string().allow(null).max(512).required(),
+                            ImageUrl : joi.string().allow(null).max(512).optional(),
+                            Sequence : joi.number().integer().allow(null).max(10).optional(),
+                            Metadata : joi.string().allow(null).max(1024).optional(),
+                        })).optional(),
+                        ChosenOption         : joi.string().allow(null).optional(),
+                        ChosenOptionSequence : joi.number().integer().allow(null).optional(),
+                        PreviousMessageId    : joi.string().allow(null).uuid().optional(),
+                        PreviousNodeId       : joi.string().allow(null).uuid().optional(),
+                    }).optional(),
+                }).optional(),
+                EventTimestamp : joi.date().required(),
+                Payload        : joi.object().allow(null).optional(),
             });
             await event.validateAsync(request.body);
-            const model: MessageEventCreateModel = {
+            const model: EventCreateModel = {
                 TenantId         : request.body.TenantId,
                 EventType        : request.body.EventType,
-                ReferenceId      : request.body.ReferenceId ?? null,
-                SchemaInstanceId : request.body.SchemaInstanceId ?? null,
-                SchemaName       : request.body.SchemaName ?? null,
                 SchemaId         : request.body.SchemaId ?? null,
-                TimeStamp        : request.body.TimeStamp,
-                Payload          : {
-                    QuestionOptions      : request.body.Payload.QuestionOptions ?? null,
-                    ChosenOption         : request.body.Payload.ChosenOption ?? null,
-                    ChosenOptionSequence : request.body.Payload.ChosenOptionSequence ?? null,
-                    TextMessage          : request.body.Payload.TextMessage,
-                    Location             : request.body.Payload.Location,
-                    Images               : request.body.Payload.Images ?? null,
-                    Videos               : request.body.Payload.Videos ?? null,
-                    Audios               : request.body.Payload.Audios ?? null,
-                    PreviousMessageId    : request.body.Payload.PreviousMessageId ?? null,
-                    PreviousNodeId       : request.body.Payload.PreviousNodeId ?? null,
-                },
+                SchemaInstanceId : request.body.SchemaInstanceId ?? null,
+                UserMessage      : request.body.UserMessage ?? null,
             };
             return model;
         } catch (error) {
@@ -67,8 +67,10 @@ export class EventValidator extends BaseValidator {
         : Promise<EventSearchFilters> => {
         try {
             const condition = joi.object({
-                typeId      : joi.string().uuid().optional(),
-                referenceId : joi.string().uuid().optional(),
+                eventType        : joi.string().uuid().optional(),
+                tenantId         : joi.string().uuid().optional(),
+                schemaId         : joi.string().uuid().optional(),
+                schemaInstanceId : joi.string().uuid().optional(),
             });
             await condition.validateAsync(request.query);
             const filters = this.getSearchFilters(request.query);
@@ -90,21 +92,17 @@ export class EventValidator extends BaseValidator {
         if (tenantId != null) {
             filters['TenantId'] = tenantId;
         }
-        var EventType = query.EventType ? query.EventType : null;
-        if (EventType != null) {
-            filters['EventType'] = EventType;
+        var eventType = query.eventType ? query.eventType : null;
+        if (eventType != null) {
+            filters['EventType'] = eventType;
         }
-        var ReferenceId = query.ReferenceId ? query.ReferenceId : null;
-        if (ReferenceId != null) {
-            filters['ReferenceId'] = ReferenceId;
+        var schemaId = query.schemaId ? query.schemaId : null;
+        if (schemaId != null) {
+            filters['ReferenceId'] = schemaId;
         }
-        var SchemaInstanceId = query.SchemaInstanceId ? query.SchemaInstanceId : null;
-        if (SchemaInstanceId != null) {
-            filters['SchemaInstanceId'] = SchemaInstanceId;
-        }
-        var SchemaName = query.SchemaName ? query.SchemaName : null;
-        if (SchemaName != null) {
-            filters['SchemaName'] = SchemaName;
+        var schemaInstanceId = query.SchemaInstanceId ? query.SchemaInstanceId : null;
+        if (schemaInstanceId != null) {
+            filters['SchemaInstanceId'] = schemaInstanceId;
         }
         return filters as EventSearchFilters;
     };

@@ -3,7 +3,7 @@ import { ResponseHandler } from '../../../common/handlers/response.handler';
 import { EventValidator } from './event.validator';
 import { EventService } from '../../../database/services/engine/event.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { MessageEventCreateModel, EventSearchFilters } from '../../../domain.types/engine/event.types';
+import { EventSearchFilters, EventCreateModel } from '../../../domain.types/engine/event.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import EventHandler from '../../../modules/engine.execution/event.handler';
 
@@ -21,7 +21,7 @@ export class EventController {
 
     createUserMessageEvent = async (request: express.Request, response: express.Response) => {
         try {
-            var model: MessageEventCreateModel = await this._validator.validateCreateMessageEventRequest(request);
+            var model: EventCreateModel = await this._validator.validateCreateMessageEventRequest(request);
             const record = await this._service.create(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add event!');

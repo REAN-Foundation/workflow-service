@@ -4,22 +4,12 @@ import { Config } from './database.config';
 import { logger } from '../logger/logger';
 import { DataSource } from "typeorm";
 import path from "path";
-import fs from 'fs';
 import { Client } from './models/client/client.model';
 import { User } from './models/user/user.model';
-import { AwardPointRedemption } from "./models/awards/award.points.redemption.model";
-import { BadgeCategory } from "./models/awards/badge.category.model";
-import { Badge } from "./models/awards/badge.model";
-import { DisbursedAwardPoint } from "./models/awards/disbursed.award.point.model";
-import { ParticipantGroup } from "./models/awards/participant.group.model";
-import { ParticipantBadge } from "./models/awards/participant.badge.model";
-import { Participant } from "./models/awards/participant.model";
 import { Condition } from './models/engine/condition.model';
-import { Context } from './models/engine/context.model';
 import { Node } from './models/engine/node.model';
 import { NodeInstance } from './models/engine/node.instance.model';
-import { NodeDefaultAction } from './models/engine/node.default.action.model';
-import { RuleAction } from './models/engine/rule.action.model';
+import { NodeAction } from './models/engine/node.action.model';
 import { Rule } from './models/engine/rule.model';
 import { SchemaInstance } from './models/engine/schema.instance.model';
 import { Schema } from './models/engine/schema.model';
@@ -30,8 +20,13 @@ import { Role } from "./models/user/role.model";
 import { Privilege } from "./models/user/privilege.model";
 import { DBLogger } from "./database.logger";
 import { FileResourceVersion } from "./models/general/file.resource.version.model";
-import { BadgeStockImage } from "./models/awards/badge.stock.image.model";
 import { DbClient } from "./db.clients/db.client";
+import { NodePath } from "./models/engine/node.path.model";
+import { NodeActionInstance } from "./models/engine/node.action.instance.model";
+import { Question } from "./models/engine/question.model";
+import { QuestionOption } from "./models/engine/question.option.model";
+import { Event } from "./models/engine/event.model";
+import { SchemaInstanceActivity } from "./models/engine/schema.instance.activity.model";
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -58,23 +53,18 @@ class DatabaseConnector {
         //entities    : [this._basePath + '/**/**{.model.ts}'],
         entities    : [
             Client,
-            AwardPointRedemption,
-            Badge,
-            BadgeCategory,
-            DisbursedAwardPoint,
-            ParticipantGroup,
-            ParticipantBadge,
-            Participant,
             Condition,
-            Context,
             Event,
-            NodeDefaultAction,
+            NodeAction,
             NodeInstance,
+            NodePath,
+            NodeAction,
+            NodeActionInstance,
             Node,
             Rule,
-            RuleAction,
             Schema,
             SchemaInstance,
+            Event,
             FileResource,
             Person,
             User,
@@ -82,13 +72,15 @@ class DatabaseConnector {
             Role,
             Privilege,
             FileResourceVersion,
-            BadgeStockImage,
+            Question,
+            QuestionOption,
+            SchemaInstanceActivity,
         ],
         migrations  : [],
         subscribers : [],
         //logger      : 'advanced-console', //Use console for the typeorm logging
-        logger      : new DBLogger(),
-        logging     : true,
+        // logger      : new DBLogger(),
+        logging     : false,
         poolSize    : Config.pool.max,
         cache       : true,
     });

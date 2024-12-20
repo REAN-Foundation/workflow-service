@@ -4,47 +4,44 @@ import {
     BaseSearchResults
 } from "../miscellaneous/base.search.types";
 import { uuid } from "../miscellaneous/system.types";
+import { WorkflowMessageEvent } from "./intermediate.types/user.event.types";
 
 ////////////////////////////////////////////////////////////
 
 export interface EventCreateModel {
-    TenantId         : uuid;
     EventType        : EventType;
-    ReferenceId     ?: uuid;
-    SchemaInstanceId?: uuid;
-    SchemaName      ?: string;
+    TenantId         : uuid;
     SchemaId        ?: uuid;
-    TimeStamp        : Date;
+    SchemaInstanceId?: uuid;
+    UserMessage     ?: WorkflowMessageEvent;
 }
 
 export interface EventUpdateModel {
     SchemaInstanceId?: uuid;
-    ReferenceId     ?: uuid;
-    Handled         ?: boolean;
-    SchemaName      ?: string;
-    SchemaId        ?: uuid;
 }
 
 export interface EventResponseDto {
-    id               : uuid;
-    TenantId         : uuid;
-    EventType        : EventType;
-    ReferenceId     ?: uuid;
-    SchemaInstanceId?: uuid;
-    SchemaName      ?: string;
-    SchemaId        ?: uuid;
-    TimeStamp        : Date;
-    Handled         ?: boolean;
-    CreatedAt        : Date;
-    UpdatedAt        : Date;
+    id                 : uuid;
+    EventType          : EventType;
+    TenantId           : uuid;
+    SchemaId          ?: uuid;
+    SchemaInstanceId  ?: uuid;
+    SchemaName        ?: string;
+    SchemaInstanceCode?: string;
+    UserMessage       ?: WorkflowMessageEvent;
+    Payload           ?: any;
+    EventTimestamp     : Date;
+    Handled           ?: boolean;
+    HandledTimestamp  ?: Date;
+    CreatedAt          : Date;
+    UpdatedAt          : Date;
 }
 
 export interface EventSearchFilters extends BaseSearchFilters {
     TenantId         : uuid;
     EventType        : EventType;
-    ReferenceId     ?: uuid;
+    SchemaId        ?: uuid;
     SchemaInstanceId?: uuid;
-    SchemaName      ?: string;
 }
 
 export interface EventSearchResults extends BaseSearchResults {

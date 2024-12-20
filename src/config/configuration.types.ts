@@ -2,15 +2,11 @@
 export type DatabaseType = 'SQL' | 'NoSQL';
 export type DatabaseORM = 'Sequelize' | 'Knex' | 'Mongoose';
 export type DatabaseFlavour = 'MySQL' | 'PostGreSQL' | 'MongoDB';
-export type EHRSpecification = 'FHIR'| 'OpenEHR' | 'Mock';
-export type FHIRProvider = 'GCP-FHIR' | 'Azure-FHIR' | 'AWS-HealthLake' | 'Hapi-FHIR';
-export type OpenEHRProvider = 'OpenEHRBase';
 export type FileStorageProvider = 'AWS-S3' | 'GCP-FileStore' | 'Custom';
 export type SMSServiceProvider = 'Twilio' | 'Mock';
 export type EmailServiceProvider = 'SendGrid' | 'Mock';
 export type InAppNotificationServiceProvider = 'Firebase' | 'Mock';
 export type ProcessorsProvider = 'Custom' | 'Mock';
-export type EHRProvider = FHIRProvider | OpenEHRProvider;
 export type AuthorizationType = 'Custom'; //TBD: Other options need to be supported
 export type AuthenticationType = 'Custom'; //TBD: Other options need to be supported
 
@@ -29,12 +25,6 @@ export interface DatabaseConfig {
 
 export interface Processor {
     Provider   : ProcessorsProvider;
-}
-
-export interface EHRConfig {
-    Enabled      : boolean;
-    Specification: EHRSpecification;
-    Provider     : EHRProvider;
 }
 
 export interface FileStorageConfig {

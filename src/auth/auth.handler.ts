@@ -13,9 +13,9 @@ export type AuthMiddleware = (request: Request, response: Response, next: NextFu
 export class AuthHandler {
 
     public static handle = (
-        context:string, 
-        authenticateClient = true, 
-        authenticateUser = true, 
+        context:string,
+        authenticateClient = true,
+        authenticateUser = true,
         authorizeUser = true): AuthMiddleware[] => {
 
         var middlewares: AuthMiddleware[] = [];
@@ -47,13 +47,15 @@ export class AuthHandler {
             var userAuthenticator = Injector.Container.resolve(UserAuthenticator);
             middlewares.push(userAuthenticator.authenticate);
         }
-        if (authorizeUser) {
-            var authorizer = Injector.Container.resolve(UserAuthorizer);
-            middlewares.push(authorizer.authorize);
-        }
+
+        // KK: Temporary commented out
+        // if (authorizeUser) {
+        //     var authorizer = Injector.Container.resolve(UserAuthorizer);
+        //     middlewares.push(authorizer.authorize);
+        // }
 
         return middlewares;
-    }
+    };
 
     public static verifyAccess = async(request: Request): Promise<boolean> => {
 

@@ -1,227 +1,454 @@
-import { Engine } from 'json-rules-engine';
-import { RuleConverter } from './rule.converter';
-import {
-    CContext,
-    CNodeInstance,
-    CSchemaInstance } from './execution.types';
-import { ContinuityInputParams, DataActionType, EventActionType, ExecutionStatus, OutputParams, RangeComparisonInputParams } from '../../domain.types/engine/engine.types';
-import { logger } from '../../logger/logger';
+import { ActionType, ExecutionStatus, InputSourceType, NodeType, ParamType, WorkflowActivityType } from '../../domain.types/engine/engine.enums';
 import { SchemaInstanceResponseDto } from '../../domain.types/engine/schema.instance.types';
-import { ExecutionTypesGenerator } from './execution.types.generator';
-import FactCollector from './fact.collector';
-import { ProcessorService } from '../processor/processor.service';
-import { Injector } from '../../startup/injector';
+import { EventResponseDto } from '../../domain.types/engine/event.types';
+import { SchemaResponseDto } from '../../domain.types/engine/schema.domain.types';
+import { NodeService } from "../../database/services/engine/node.service";
+import { SchemaService } from "../../database/services/engine/schema.service";
+import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
+import { NodeActionInstanceResponseDto, NodeInstanceResponseDto } from '../../domain.types/engine/node.instance.types';
+import { logger } from '../../logger/logger';
+import { NodeInstanceService } from '../../database/services/engine/node.instance.service';
+import { ConditionService } from '../../database/services/engine/condition.service';
+import { NodeResponseDto } from '../../domain.types/engine/node.types';
+import { CommonUtilsService } from '../../database/services/engine/common.utils.service';
+import { ActionExecutioner } from './action.executioner';
+import { Almanac } from './almanac';
+import { NodeActionResult } from "../../domain.types/engine/node.action.types";
+import { RuleService } from '../../database/services/engine/rule.service';
+import { ConditionProcessor } from './condition.processor';
+import { NodeActionService } from '../../database/services/engine/node.action.service';
+import { TimeUtils } from '../../common/utilities/time.utils';
+import { EngineUtils } from './engine.utils';
+import { EventType } from '../../domain.types/enums/event.type';
 
 ///////////////////////////////////////////////////////////////////////////////
 
 export class SchemaEngine {
 
-    public static execute = async (dbSchemaInstance: SchemaInstanceResponseDto) =>{
-        
-        const generator = new ExecutionTypesGenerator();
-        var schemaInstance = await generator.createSchemaInstance(dbSchemaInstance);
+    _almanac: Almanac;
 
-        const factCollector = new FactCollector();
-        const facts = await factCollector.collectFacts(dbSchemaInstance.Context.ReferenceId, schemaInstance.FactNames);
+    _schema: SchemaResponseDto | null = null;
 
-        var rootNodeInstance = schemaInstance.RootNodeInstance;
-        var currentNodeInstance = rootNodeInstance as CNodeInstance;
+    _schemaInstance: SchemaInstanceResponseDto | null = null;
 
-        logger.info(`Current node    : ${currentNodeInstance.Name}`);
-        logger.info(`Current node Id : ${currentNodeInstance.id}`);
+    _event: EventResponseDto | null = null;
 
-        while (currentNodeInstance &&
-               currentNodeInstance.ExecutionStatus === ExecutionStatus.Pending) {
-            currentNodeInstance = await SchemaEngine.traverse(
-                schemaInstance.Context,
-                schemaInstance,
-                currentNodeInstance,
-                facts,
-            );
+    _nodeService: NodeService = new NodeService();
+
+    _ruleService: RuleService = new RuleService();
+
+    _nodeInstanceService: NodeInstanceService = new NodeInstanceService();
+
+    _schemaService: SchemaService = new SchemaService();
+
+    _schemaInstanceService: SchemaInstanceService = new SchemaInstanceService();
+
+    _actionService: NodeActionService = new NodeActionService();
+
+    _conditionService: ConditionService = new ConditionService();
+
+    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+
+    _engineUtils: EngineUtils = new EngineUtils();
+
+    constructor(schema: SchemaResponseDto, schemaInstance: SchemaInstanceResponseDto, event: EventResponseDto) {
+        this._schema = schema;
+        this._schemaInstance = schemaInstance;
+        this._event = event;
+        if (schemaInstance) {
+            this._almanac = new Almanac(schemaInstance.id);
         }
-        return currentNodeInstance;
-    };
+    }
 
-    private static async traverse(
-        context: CContext,
-        schemaInstance: CSchemaInstance,
-        currentNodeInstance: CNodeInstance,
-        facts: any
-    ): Promise<CNodeInstance> {
+    public execute = async () => {
 
-        const processor = Injector.Container.resolve(ProcessorService);
+        // If found,
+        //    - Get the correct executing node, active listening nodes, triggered waiting nodes
+        // else,
+        //    a. Create a new schema instance
+        //    b. Set current node as root node
+        //    c. Start node execution
+        //    d. Initiate the listening nodes - Add this as an action from root node
 
-        const rules = currentNodeInstance.Rules;
-        if (rules.length > 0) {
-            var facts: any = SchemaEngine.extractFactsForNode(facts, currentNodeInstance);
-            var successEvent: any = undefined;
-    
-            for (var r of rules) {
-                const engine = new Engine();
-                var rule = RuleConverter.convertRule(r);
-                engine.addRule(rule);
-                engine.on('success', async (event, almanac) => {
-                    successEvent = event;
-                    logger.info(`%cRule Execution Result: '${r.Name}' has passed for context '${context}'.`);
-                });
-                engine.on('failure', async (event, almanac)=> {
-                    logger.error(`%cRule Execution Result: '${r.Name}' has failed for context '${context}'.`);
-                });
-                const results = await engine.run(facts);
-            }
-        }
-        else if (currentNodeInstance.Action) {
-
-            // Execute this node's default action and then move onto the next node
-            const action = currentNodeInstance.Action;
-            const actionType = action.ActionType;
-
-            if (actionType === EventActionType.ExtractData) {
-                //Extract data based on the action subject filters
-                const data = await processor.extractData(context.id, action.InputParams, action.OutputParams);
-                schemaInstance.Almanac.push({
-                    Name : data.Tag,
-                    Data : data.Data
-                });
-                return SchemaEngine.getNextNode(currentNodeInstance, schemaInstance);
-            }
-            else if (actionType === EventActionType.ProcessData) {
-                const subject = action.InputParams;
-                const dataActionType = subject.DataActionType;
-                const almanacObject = schemaInstance.fetchAlmanacData(subject.InputTag);
-                if (!almanacObject) {
-                    throw new Error(`Records with tag ${subject.InputTag} not found in schema almanac.`);
-                }
-                if (dataActionType === DataActionType.CalculateContinuity) {
-                    const data = await processor.calculateContinuity(
-                        almanacObject.Data,
-                        action.InputParams as ContinuityInputParams,
-                        action.OutputParams as OutputParams);
-                    schemaInstance.Almanac.push({
-                        Name : data.Tag,
-                        Data : data.Data
-                    });
-                }
-
-                return SchemaEngine.getNextNode(currentNodeInstance, schemaInstance);
-            }
-            else if (actionType === EventActionType.CompareData) {
-                const inputParams = action.InputParams;
-                const dataActionType = inputParams.DataActionType;
-                const almanacObjectFirst = schemaInstance.fetchAlmanacData(inputParams.InputTag);
-                if (!almanacObjectFirst) {
-                    throw new Error(`Records with tag ${inputParams.InputTag} not found in schema almanac.`);
-                }
-                const almanacObjectSecond = schemaInstance.fetchAlmanacData(inputParams.SecondaryInputTag);
-                if (!almanacObjectSecond) {
-                    throw new Error(`Records with tag ${inputParams.SecondaryInputTag} not found in schema almanac.`);
-                }
-                if (dataActionType === DataActionType.FindRangeDifference) {
-                    const data = await processor.compareRanges(
-                        almanacObjectFirst.Data,
-                        almanacObjectSecond.Data,
-                        action.InputParams as RangeComparisonInputParams,
-                        action.OutputParams as OutputParams);
-                    schemaInstance.Almanac.push({
-                        Name : data.Tag,
-                        Data : data.Data
-                    });
-                }
-
-                return SchemaEngine.getNextNode(currentNodeInstance, schemaInstance);
-            }
-            else if (actionType === EventActionType.StoreData) {
-                const inputParams = action.InputParams;
-                const almanacObject = schemaInstance.fetchAlmanacData(inputParams.InputTag);
-                if (!almanacObject) {
-                    throw new Error(`Records with tag ${inputParams.InputTag} not found in schema almanac.`);
-                }
-                var removedData = null;
-                if (almanacObject.Data.ToBeRemoved.length > 0) {
-                    const removed = await processor.removeData(context.id, almanacObject.Data.ToBeRemoved, action.InputParams, action.OutputParams);
-                    removedData = removed?.Data;
-                }
-                const added = await processor.storeData(context.id, almanacObject.Data.ToBeAdded, action.InputParams, action.OutputParams);
-                schemaInstance.Almanac.push({
-                    Name : action.OutputParams.OutputTag,
-                    Data : {
-                        Added   : added.Data,
-                        Removed : removedData,
-                    }
-                });
-                return SchemaEngine.getNextNode(currentNodeInstance, schemaInstance);
-            }
-            else if (actionType === EventActionType.Custom) {
-                //
-            }
-            else if (actionType === EventActionType.Exit) {
-                //
-            }
-            else if (actionType === EventActionType.ExecuteNext) {
-                //
-            }
-            else if (actionType === EventActionType.WaitForInputEvents) {
-                //
-            }
-        }
-
-        if (successEvent) {
-
-            //logger.info(`successEvent = ${JSON.stringify(successEvent, null, 2)}`);
-
-            var action = successEvent.params?.Action as EventActionType;
-            var nextNodeId = successEvent.params?.NextNodeId;
-            if (action === EventActionType.ExecuteNext && nextNodeId != null) {
-                var nextNode = schemaInstance.NodeInstances.find(x => x.NodeId === nextNodeId);
-                if (nextNode) {
-                    currentNodeInstance.ExecutionStatus = ExecutionStatus.Executed;
-                    currentNodeInstance = nextNode;
-                    logger.info(`\nCurrent node    : ${currentNodeInstance.Name}`);
-                    logger.info(`Current node Id : ${currentNodeInstance.id}\n`);
-                }
-            }
-            else if (action === EventActionType.WaitForInputEvents) {
-                currentNodeInstance.ExecutionStatus = ExecutionStatus.Waiting;
-                logger.warn(`%cWaiting for input events for necessary facts!`);
-            }
+        var currentNodeInstance: NodeInstanceResponseDto = null;
+        if (!this._schemaInstance) {
+            this._schemaInstance = await this.createSchemaInstance(this._schema, this._event);
+            currentNodeInstance = await this._nodeInstanceService.getById(this._schemaInstance.RootNodeInstance.id);
         }
         else {
-            currentNodeInstance.ExecutionStatus = ExecutionStatus.Executed;
+            currentNodeInstance = await this._nodeInstanceService.getById(this._schemaInstance.CurrentNodeInstance.id);
         }
 
+        const summary = {
+            Type      : "MessageEvent",
+            EventType : EventType.UserMessage,
+            Message   : this._event.UserMessage.TextMessage ?? null,
+            Location  : this._event.UserMessage.Location ?? null,
+            Timestamp : new Date(),
+        };
+
+        await this._schemaInstanceService.recordActivity(
+            this._schemaInstance.id, WorkflowActivityType.UserEvent, this._event, summary);
+
+        //Set up the almanac
+        this._almanac = new Almanac(this._schemaInstance.id);
+
+        //Sync the almanac with the schema instance
+        await this.syncWithAlmanac(this._schemaInstance);
+
+        //If there are any listening nodes, handle them
+        await this.handleListeningNodes();
+
+        currentNodeInstance = await this.processCurrentNode(currentNodeInstance);
+
+        return currentNodeInstance;
+    };
+
+    //#region Private methods
+
+    private async processCurrentNode(currentNodeInstance: NodeInstanceResponseDto) {
+
+        if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
+            const allExecuted = await this.executeNodeActions(currentNodeInstance);
+            if (allExecuted) {
+                currentNodeInstance.ExecutionStatus = ExecutionStatus.Executed;
+            }
+        }
+
+        var newNodeInstance = await this.traverse(currentNodeInstance);
+        if (!newNodeInstance) {
+            logger.error(`Error while executing workflow. Cannot find the node!`);
+        }
+
+        if (newNodeInstance.id !== currentNodeInstance.id) {
+            currentNodeInstance = newNodeInstance;
+            if (currentNodeInstance.Node.Type === NodeType.ExecutionNode) {
+                return await this.processCurrentNode(currentNodeInstance);
+            }
+        }
         return currentNodeInstance;
     }
 
-    private static extractFactsForNode(incomingFacts: any, currentNode: CNodeInstance) {
-        var factKeys = Object.keys(incomingFacts.Facts);
-        var nodeFactNames: string[] = currentNode.extractFacts();
-        var facts: any = {};
-        for (var fn of nodeFactNames) {
-            var foundFactKey = factKeys.find(x => x === fn);
-            if (foundFactKey) {
-                var factValue = incomingFacts.Facts[fn];
-                facts[fn] = factValue;
+    private async handleListeningNodes() {
+
+        var listeningNodeInstances = await this._commonUtilsService.getActiveListeningNodeInstances(this._schemaInstance.id);
+
+        for (var listeningNodeInstance of listeningNodeInstances) {
+            var listeningNode = await this._nodeService.getById(listeningNodeInstance.Node.id);
+            var input = listeningNode.Input;
+            var par = input.Params.length > 0 ? input.Params[0] : null;
+            if (!par) {
+                logger.error(`Error while executing workflow. Cannot find the input params!`);
+                continue;
             }
-            else {
-                facts[fn] = undefined;
-                logger.info(`Needed fact-${fn} is not yet available!`);
+            var expectedType = par.Type;
+            var expectedSource = par.Source;
+            var inputsFulfilled = false;
+            var inputValue = null;
+            if (expectedSource === InputSourceType.UserEvent) {
+                if (expectedType === ParamType.Location) {
+                    if (this._event.UserMessage.Location) {
+                        inputValue = this._event.UserMessage.Location;
+                        inputsFulfilled = true;
+                    }
+                }
             }
+            if (!inputsFulfilled) {
+                logger.error(`Error while executing workflow. Required inputs not fulfilled!`);
+                continue;
+            }
+            //Execute the actions
+            var actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
+            var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(listeningNodeInstance.id);
+            var results = new Map<string, NodeActionResult>();
+            for (var actionInstance of actionInstances) {
+                if (actionInstance.Executed !== true) {
+                    var params = actionInstance.Input?.Params;
+                    if (params && params.length === 0) {
+                        continue;
+                    }
+                    for (var p of actionInstance.Input.Params) {
+                        if (p.Type === expectedType && p.Source === expectedSource) {
+                            p.Value = inputValue;
+                        }
+                    }
+                    var result: NodeActionResult = await this.executeAction(actionInstance, actionExecutioner);
+                    results.set(actionInstance.id, result);
+                }
+            }
+
+            var keys = Array.from(results.keys());
+            var allExecuted = keys.every(k => results.get(k).Success === true);
+            if (allExecuted) {
+                await this._nodeInstanceService.setExecutionStatus(listeningNodeInstance.id, ExecutionStatus.Executed);
+            }
+            return allExecuted;
         }
-        return facts;
     }
 
-    private static getNextNode = (currentNodeInstance, schemaInstance) => {
-        if (currentNodeInstance.Action &&
-            currentNodeInstance.Action.OutputParams &&
-            currentNodeInstance.Action.OutputParams.NextNodeId) {
-            const nextNodeId = currentNodeInstance.Action.OutputParams.NextNodeId;
-            const nodeInstances = schemaInstance.NodeInstances;
-            const newCurrentNodeInstance = nodeInstances.find(x => x.NodeId === nextNodeId);
-            if (newCurrentNodeInstance) {
-                return newCurrentNodeInstance;
+    private async syncWithAlmanac(schemaInstance: SchemaInstanceResponseDto) {
+        var fact: any = null;
+        const params = schemaInstance.ContextParams.Params;
+        for await (var p of params) {
+            if (p.Type === ParamType.Phonenumber && p.Value) {
+                fact = await this._almanac.getFact(p.Key);
+                if (!fact) {
+                    await this._almanac.addFact(p.Key, p.Value);
+                }
+            }
+            if (p.Type === ParamType.Location && p.Value) {
+                fact = await this._almanac.getFact(p.Key);
+                if (!fact) {
+                    await this._almanac.addFact(p.Key, p.Value);
+                }
+            }
+            if (p.Type === ParamType.DateTime && p.Value) {
+                fact = await this._almanac.getFact(p.Key);
+                if (!fact) {
+                    await this._almanac.addFact(p.Key, p.Value);
+                }
+            }
+            if (p.Type === ParamType.Text && p.Value) {
+                if (p.Key === 'SchemaInstanceCode') {
+                    fact = await this._almanac.getFact(p.Key);
+                    if (!fact) {
+                        await this._almanac.addFact(p.Key, p.Value);
+                    }
+                }
             }
         }
-        return null;
-    };
+    }
+
+    private async traverse(currentNodeInstance: NodeInstanceResponseDto
+    ): Promise<NodeInstanceResponseDto> {
+
+        var currentNodeType = currentNodeInstance.Node.Type;
+
+        if (currentNodeType === NodeType.QuestionNode) {
+            return await this.traverseQuestionNode(currentNodeInstance);
+        }
+        else if (currentNodeType === NodeType.YesNoNode) {
+            return await this.traverseYesNoNode(currentNodeInstance);
+        }
+        else if (currentNodeType === NodeType.ExecutionNode) {
+            return await this.traverseExecutionNode(currentNodeInstance);
+        }
+        return currentNodeInstance;
+    }
+
+    private async traverseQuestionNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
+        // TODO: Implement the question node traversal logic
+        return currentNodeInstance;
+    }
+
+    private async traverseYesNoNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
+
+        var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+        var yesActionId = await currentNode.YesAction?.id;
+        var noActionId = await currentNode.NoAction?.id;
+
+        var yesAction = await this._actionService.getById(yesActionId);
+        var noAction = await this._actionService.getById(noActionId);
+
+        var yesActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, currentNodeInstance.id);
+        var noActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, currentNodeInstance.id);
+
+        var ruleId = currentNode.RuleId;
+        var rule = await this._ruleService.getById(ruleId);
+        if (!rule) {
+            logger.error(`Rule not found for Node ${currentNode.Name}`);
+            return null;
+        }
+
+        const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
+        var condition = rule.Condition;
+        if (!condition) {
+            condition = await this._conditionService.getById(rule.ConditionId);
+        }
+        var processor = new ConditionProcessor(this._almanac);
+        var conditionResult = await processor.processCondition(condition, null);
+        logger.info(`Yes/No Node ${currentNode.Name} Condition Result: ${conditionResult}`);
+        var result: NodeActionResult = {
+            Success : false,
+            Result  : null,
+        };
+        const actionToExecute = conditionResult ? yesActionInstance : noActionInstance;
+
+        if (actionToExecute.ActionType === ActionType.Continue) {
+            var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
+            if (!res || !res.currentNode || !res.currentNodeInstance) {
+                logger.error(`Error while setting next node instance!`);
+                return currentNodeInstance;
+            }
+            return res.currentNodeInstance;
+        }
+        else {
+            result = await this.executeAction(actionToExecute, actionExecutioner);
+            logger.info(`Yes/No Node Action Result: ${JSON.stringify(result)}`);
+        }
+        return currentNodeInstance;
+    }
+
+    private async traverseExecutionNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
+
+        if (currentNodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
+            var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+            var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
+            if (!res || !res.currentNode || !res.currentNodeInstance) {
+                logger.error(`Error while setting next node instance!`);
+                return currentNodeInstance;
+            }
+            return res.currentNodeInstance;
+        }
+        return currentNodeInstance;
+    }
+
+    private async executeNodeActions(currentNodeInstance: NodeInstanceResponseDto):
+        Promise<boolean> {
+
+        //Generate the action executioner
+        const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
+
+        const includePathActions = false;
+        const currentNodeId = currentNodeInstance.Node.id;
+        var actions = await this._commonUtilsService.getNodeActions(currentNodeId, includePathActions);
+        if (actions.length === 0) {
+            return true;
+        }
+        var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(currentNodeInstance.id, includePathActions);
+        actionInstances = actionInstances.sort((a, b) => a.Sequence - b.Sequence);
+
+        var results = new Map<string, NodeActionResult>();
+
+        for (var actionInstance of actionInstances) {
+            if (actionInstance.Executed !== true) {
+                var result: NodeActionResult = await this.executeAction(actionInstance, actionExecutioner);
+                results.set(actionInstance.id, result);
+            }
+        }
+
+        var keys = Array.from(results.keys());
+        var allExecuted = keys.every(k => results.get(k).Success === true);
+        if (allExecuted) {
+            await this._nodeInstanceService.setExecutionStatus(currentNodeInstance.id, ExecutionStatus.Executed);
+        }
+        return allExecuted;
+    }
+
+    private async executeAction(actionInstance: NodeActionInstanceResponseDto, actionExecutioner: ActionExecutioner) {
+        var result: NodeActionResult = {
+            Success : false,
+            Result  : null,
+        };
+
+        if (actionInstance.ActionType === ActionType.TriggerListeningNode) {
+            result = await actionExecutioner.ExecuteTriggerListeningNodeAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.SendMessage) {
+            result = await actionExecutioner.executeSendMessageAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.SendMultipleMessages) {
+            result = await actionExecutioner.executeSendMultipleMessagesAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.GetFromAlmanac) {
+            result = await actionExecutioner.executeGetFromAlmanacAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.StoreToAlmanac) {
+            result = await actionExecutioner.executeStoreToAlmanacAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.ExistsInAlmanac) {
+            result = await actionExecutioner.executeExistsInAlmanacAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.UpdateContextParams) {
+            result = await actionExecutioner.executeUpdateContextParamsAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.Continue) {
+            return {
+                Success : true,
+                Result  : true,
+            };
+        }
+        else if (actionInstance.ActionType === ActionType.RestApiCall) {
+            result = await actionExecutioner.executeRestApiCallAction(actionInstance);
+        }
+        return result;
+    }
+
+    private async setNextNodeInstance(currentNode: NodeResponseDto, currentNodeInstance: NodeInstanceResponseDto) {
+        var nextNodeId = currentNode.NextNodeId;
+        var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
+        var [nextNodeInstance, nextNode] = await this._engineUtils.createNodeInstance(nextNodeId, schemaInstanceId);
+        if (!nextNodeInstance || !nextNode) {
+            logger.error(`Error while setting next node instance!`);
+            return { currentNode, currentNodeInstance };
+        }
+
+        // Record the activity
+        const activityPayload = {
+            PreviousNodeInstance : currentNodeInstance,
+            PreviousNode         : currentNode,
+            NextNodeInstance     : nextNodeInstance,
+            NextNode             : nextNode,
+        };
+        const summary = {
+            Type        : WorkflowActivityType.SwitchCurrentNode,
+            CurrentNode : currentNode.Name,
+            NextNode    : nextNode.Name,
+            Timestamp   : new Date(),
+        };
+
+        await this._schemaInstanceService.recordActivity(
+            schemaInstanceId, WorkflowActivityType.SwitchCurrentNode, activityPayload, summary);
+
+        currentNodeInstance = nextNodeInstance;
+        currentNode = nextNode;
+        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
+        return { currentNode, currentNodeInstance };
+    }
+
+    private async createSchemaInstance(schema: SchemaResponseDto, event: EventResponseDto) {
+
+        const padZero = (num: number, size: number) => String(num).padStart(size, '0');
+        const pattern = TimeUtils.formatDateToYYMMDD(new Date());
+        var instanceCount = await this._schemaInstanceService.getCount(schema.TenantId, schema.id, pattern);
+        const formattedCount = padZero(instanceCount + 1, 3); // Count with leading zeros (e.g., 001)
+        var code = 'E-' + pattern + '-' + formattedCount;
+
+        var schemaInstanceContextParams = schema.ContextParams;
+        for (var p of schemaInstanceContextParams.Params) {
+            if (p.Type === ParamType.Phonenumber) {
+                p.Value = event.UserMessage.Phone;
+            }
+            if (p.Type === ParamType.Location) {
+                p.Value = event.UserMessage.Location;
+            }
+            if (p.Type === ParamType.DateTime) {
+                p.Value = new Date();
+            }
+            if (p.Type === ParamType.Text) {
+                if (p.Key === 'SchemaInstanceCode') {
+                    p.Value = code;
+                }
+            }
+        }
+        const schemaInstance = await this._schemaInstanceService.create({
+            TenantId      : schema.TenantId,
+            Code          : code,
+            SchemaId      : schema.id,
+            ContextParams : schemaInstanceContextParams,
+        });
+
+        if (!schemaInstance) {
+            logger.error(`Error while creating schema instance!`);
+            return null;
+        }
+
+        return schemaInstance;
+    }
+
+    //#endregion
 
 }

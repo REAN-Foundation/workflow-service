@@ -2,50 +2,32 @@ import { SchemaInstance } from '../../models/engine/schema.instance.model';
 import {
     SchemaInstanceResponseDto
 } from '../../../domain.types/engine/schema.instance.types';
-import { EventType } from '../../../domain.types/enums/event.type';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class SchemaInstanceMapper {
 
-    static toResponseDto = (instance: SchemaInstance, eventTypes?: EventType[]): SchemaInstanceResponseDto => {
+    static toResponseDto = (instance: SchemaInstance): SchemaInstanceResponseDto => {
         if (instance == null) {
             return null;
         }
         const dto: SchemaInstanceResponseDto = {
-            id     : instance.id,
-            Schema : {
+            id                     : instance.id,
+            TenantId               : instance.TenantId,
+            Code                   : instance.Code,
+            ParentSchemaInstanceId : instance.ParentSchemaInstanceId,
+            Schema                 : instance.Schema ? {
                 id          : instance.Schema.id,
                 Name        : instance.Schema.Name,
                 Description : instance.Schema.Description,
-                Client      : instance.Schema.Client ? {
-                    id   : instance.Schema.Client.id,
-                    Name : instance.Schema.Client.Name,
-                } : null,
-                EventTypes : eventTypes ?? [],
-            },
-            Context : {
-                id          : instance.Context.id,
-                ReferenceId : instance.Context.ReferenceId,
-                Type        : instance.Context.Type,
-                Participant : instance.Context.Participant ? {
-                    id          : instance.Context.Participant.id,
-                    ReferenceId : instance.Context.Participant.ReferenceId,
-                    Prefix      : instance.Context.Participant.Prefix,
-                    FirstName   : instance.Context.Participant.FirstName,
-                    LastName    : instance.Context.Participant.LastName,
-                } : null,
-                ParticipantGroup : instance.Context.Group ? {
-                    id          : instance.Context.Group.id,
-                    Name        : instance.Context.Group.Name,
-                    Description : instance.Context.Group.Description,
-                } : null,
-            },
+                TenantId    : instance.Schema.TenantId,
+            } : null,
             RootNodeInstance : instance.RootNodeInstance ? {
                 id   : instance.RootNodeInstance.id,
                 Node : instance.RootNodeInstance.Node ? {
                     id   : instance.RootNodeInstance.Node.id,
                     Name : instance.RootNodeInstance.Node.Name,
+                    Type : instance.RootNodeInstance.Node.Type,
                 } : null,
             } : null,
             CurrentNodeInstance : instance.CurrentNodeInstance ? {
@@ -53,6 +35,7 @@ export class SchemaInstanceMapper {
                 Node : instance.CurrentNodeInstance.Node ? {
                     id   : instance.CurrentNodeInstance.Node.id,
                     Name : instance.CurrentNodeInstance.Node.Name,
+                    Type : instance.CurrentNodeInstance.Node.Type,
                 } : null,
             } : null,
             NodeInstances : instance.NodeInstances ? instance.NodeInstances.map(x => {
@@ -61,11 +44,16 @@ export class SchemaInstanceMapper {
                     Node : x.Node ? {
                         id   : x.Node.id,
                         Name : x.Node.Name,
+                        Type : x.Node.Type,
                     } : null
                 };
             }) : [],
-            CreatedAt : instance.CreatedAt,
-            UpdatedAt : instance.UpdatedAt,
+            AlmanacObjects            : instance.AlmanacObjects,
+            ContextParams             : instance.ContextParams,
+            ExecutionStarted          : instance.ExecutionStarted,
+            ExecutionStartedTimestamp : instance.ExecutionStartedTimestamp,
+            CreatedAt                 : instance.CreatedAt,
+            UpdatedAt                 : instance.UpdatedAt,
         };
         return dto;
     };

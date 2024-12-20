@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import {
+    Column,
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
@@ -12,7 +13,8 @@ import {
 } from 'typeorm';
 import { Schema } from "./schema.model";
 import { NodeInstance } from "./node.instance.model";
-import { Context } from "./context.model";
+import { AlmanacObject } from "../../../modules/engine.execution/almanac";
+import { ContextParams } from "../../../domain.types/engine/intermediate.types/params.types";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -22,13 +24,21 @@ export class SchemaInstance {
     @PrimaryGeneratedColumn('uuid')
     id : string;
 
+    @Column({ type: 'uuid', nullable: false })
+    TenantId : string;
+
     @ManyToOne(() => Schema)
     @JoinColumn()
     Schema: Schema;
 
-    @ManyToOne(() => Context)
-    @JoinColumn()
-    Context: Context;
+    @Column({ type: 'uuid', nullable: true })
+    ParentSchemaInstanceId : string;
+
+    @Column({ type: 'varchar', length: 64, nullable: false })
+    Code : string;
+
+    @Column({ type: 'simple-json', nullable: true })
+    ContextParams: ContextParams;
 
     @OneToMany(() => NodeInstance, (nodeInstance) => nodeInstance.SchemaInstance)
     NodeInstances : NodeInstance[];
@@ -40,6 +50,15 @@ export class SchemaInstance {
     @OneToOne(() => NodeInstance)
     @JoinColumn()
     CurrentNodeInstance: NodeInstance;
+
+    @Column({ type: 'boolean', nullable: false, default: false })
+    ExecutionStarted: boolean;
+
+    @Column({ type: 'datetime', nullable: true })
+    ExecutionStartedTimestamp: Date;
+
+    @Column({ type: 'simple-json', nullable: true })
+    AlmanacObjects: AlmanacObject[];
 
     @CreateDateColumn()
     CreatedAt : Date;

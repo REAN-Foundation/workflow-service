@@ -47,7 +47,7 @@ export class ResponseHandler {
             ServiceVersion : process.env.SERVICE_VERSION,
         };
 
-        if (process.env.NODE_ENV !== 'test') {
+        if (process.env.NODE_ENV !== 'test' && process.env.RESPONSE_LOGGING === 'true') {
             logger.info(JSON.stringify(responseObject, null, 2));
         }
 
@@ -94,11 +94,11 @@ export class ResponseHandler {
             ServiceVersion : process.env.SERVICE_VERSION,
         };
 
-        if (process.env.NODE_ENV !== 'test') {
+        if (process.env.NODE_ENV !== 'test' && process.env.RESPONSE_LOGGING === 'true') {
             if (!logDataObject) {
                 responseObject.Data = null;
             }
-            if (process.env.HTTP_LOGGING != 'true') {
+            if (process.env.HTTP_LOGGING !== 'true') {
                 logger.info(JSON.stringify(responseObject, null, 2));
             }
         }

@@ -1,7 +1,7 @@
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
 import { MessageChannelType, UserMessageType } from "../engine.enums";
 import { Location } from "../common.types";
-import { Params } from "./params.types";
+import { Params } from "../params.types";
 
 ////////////////////////////////////////////////////////////////
 export interface QuestionOption {

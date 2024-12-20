@@ -7,7 +7,7 @@ import {
     uuid
 } from "../miscellaneous/system.types";
 import { NodeType } from "./engine.enums";
-import { ContextParams } from "./intermediate.types/params.types";
+import { ContextParams } from "./params.types";
 
 //////////////////////////////////////////////////////////////
 

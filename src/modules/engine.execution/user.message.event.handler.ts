@@ -7,7 +7,7 @@ import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.inst
 import { ParamType } from "../../domain.types/engine/engine.enums";
 import { SchemaEngine } from "./schema.engine";
 import { logger } from "../../logger/logger";
-import { ContextParams, Params } from "../../domain.types/engine/intermediate.types/params.types";
+import { ContextParams, Params } from "../../domain.types/engine/params.types";
 import { DistanceUnit } from "../../domain.types/engine/common.types";
 import { MiscUtils } from "../../common/utilities/misc.utils";
 import { TimeUtils } from "../../common/utilities/time.utils";

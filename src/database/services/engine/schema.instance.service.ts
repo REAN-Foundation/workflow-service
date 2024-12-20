@@ -17,7 +17,7 @@ import { NodeInstance } from '../../models/engine/node.instance.model';
 import { Node } from '../../models/engine/node.model';
 import { CommonUtilsService } from './common.utils.service';
 import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
-import { Params } from '../../../domain.types/engine/intermediate.types/params.types';
+import { Params } from '../../../domain.types/engine/params.types';
 import { ExecutionStatus, WorkflowActivityType } from '../../../domain.types/engine/engine.enums';
 import { SchemaInstanceActivity } from '../../../database/models/engine/schema.instance.activity.model';
 

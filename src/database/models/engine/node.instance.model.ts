@@ -16,7 +16,7 @@ import { Rule } from "./rule.model";
 import { Node } from './node.model';
 import { SchemaInstance } from "./schema.instance.model";
 import { NodePath } from "./node.path.model";
-import { ActionInputParams } from "../../../domain.types/engine/intermediate.types/params.types";
+import { ActionInputParams } from "../../../domain.types/engine/params.types";
 
 ////////////////////////////////////////////////////////////////////////
 

@@ -14,7 +14,7 @@ import {
 import { Schema } from "./schema.model";
 import { NodeInstance } from "./node.instance.model";
 import { AlmanacObject } from "../../../modules/engine.execution/almanac";
-import { ContextParams } from "../../../domain.types/engine/intermediate.types/params.types";
+import { ContextParams } from "../../../domain.types/engine/params.types";
 
 ////////////////////////////////////////////////////////////////////////
 

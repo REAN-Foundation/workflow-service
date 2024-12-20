@@ -1,6 +1,6 @@
 import needle = require('needle');
 import { InputSourceType, MessageChannelType, OutputDestinationType, ParamType, UserMessageType, WorkflowActivityType } from "../../domain.types/engine/engine.enums";
-import { ActionInputParams, ActionOutputParams, Params } from "../../domain.types/engine/intermediate.types/params.types";
+import { ActionInputParams, ActionOutputParams, Params } from "../../domain.types/engine/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
 import { ChatbotMessageService } from "../communication/chatbot.message.service";

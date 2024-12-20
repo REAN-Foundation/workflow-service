@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { Node } from "../engine/node.model";
 import { SchemaType } from "../../../domain.types/engine/engine.enums";
-import { ContextParams } from "../../../domain.types/engine/intermediate.types/params.types";
+import { ContextParams } from "../../../domain.types/engine/params.types";
 
 ////////////////////////////////////////////////////////////////////////
 

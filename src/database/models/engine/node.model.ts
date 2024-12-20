@@ -15,7 +15,7 @@ import { NodeAction } from "./node.action.model";
 import { Schema } from "./schema.model";
 import { NodePath } from "./node.path.model";
 import { NodeType } from "../../../domain.types/engine/engine.enums";
-import { ActionInputParams } from "../../../domain.types/engine/intermediate.types/params.types";
+import { ActionInputParams } from "../../../domain.types/engine/params.types";
 
 ////////////////////////////////////////////////////////////////////////
 

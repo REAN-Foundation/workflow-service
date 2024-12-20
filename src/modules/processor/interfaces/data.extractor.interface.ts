@@ -1,7 +1,7 @@
-import { DataExtractionInputParams } from '../../../domain.types/engine/intermediate.types/params.types';
+import { DataExtractionInputParams } from '../../../domain.types/engine/params.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { ProcessorResult } from '../../../domain.types/engine/common.types';
-import { OutputParams } from '../../../domain.types/engine/intermediate.types/params.types';
+import { OutputParams } from '../../../domain.types/engine/params.types';
 
 ////////////////////////////////////////////////////////////////
 

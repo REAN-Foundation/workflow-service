@@ -1,5 +1,5 @@
-import { uuid } from "../../../domain.types/miscellaneous/system.types";
-import { InputSourceType, OutputDestinationType, ParamType } from "../engine.enums";
+import { uuid } from "../miscellaneous/system.types";
+import { InputSourceType, OutputDestinationType, ParamType } from "./engine.enums";
 
 //////////////////////////////////////////////////////////////////////
 

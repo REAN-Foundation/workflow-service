@@ -42,15 +42,15 @@ export default class BaseValidator {
 
     public validateBaseSearchFilters = async(request: express.Request) => {
         try {
-            const schema = joi.object({
-                createdDateFrom : joi.date().optional(),
-                createdDateTo   : joi.date().optional(),
-                orderBy         : joi.string().optional(),
-                order           : joi.string().allow('ascending', 'descending').optional(),
-                pageIndex       : joi.number().integer().sign('positive').optional(),
-                itemsPerPage    : joi.number().integer().sign('positive').optional(),
-            });
-            await schema.validateAsync(request.query);
+            // const schema = joi.object({
+            //     createdDateFrom : joi.date().optional(),
+            //     createdDateTo   : joi.date().optional(),
+            //     orderBy         : joi.string().optional(),
+            //     order           : joi.string().allow('ascending', 'descending').optional(),
+            //     pageIndex       : joi.number().integer().sign('positive').optional(),
+            //     itemsPerPage    : joi.number().integer().sign('positive').optional(),
+            // });
+            // await schema.validateAsync(request.query);
             return this.getBaseSearchFilters(request);
         } catch (error) {
             ErrorHandler.handleValidationError(error);

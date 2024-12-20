@@ -8,7 +8,7 @@ import {
     DeleteDateColumn,
 } from 'typeorm';
 import { CompositionOperatorType, LogicalOperatorType, OperatorType } from "../../../domain.types/engine/engine.enums";
-import { ConditionOperand } from "../../../domain.types/engine/intermediate.types/rule.types";
+import { ConditionOperand } from "../../../domain.types/engine/rule.types";
 
 ////////////////////////////////////////////////////////////////////////
 

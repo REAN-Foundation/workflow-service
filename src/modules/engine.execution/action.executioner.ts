@@ -17,7 +17,7 @@ import { NodeActionResult } from "../../domain.types/engine/node.action.types";
 import { EngineUtils } from "./engine.utils";
 import { uuid } from "../../domain.types/miscellaneous/system.types";
 import { TimeUtils } from "../../common/utilities/time.utils";
-import { WorkflowMessageEvent } from '../../domain.types/engine/intermediate.types/user.event.types';
+import { WorkflowMessageEvent } from '../../domain.types/engine/user.event.types';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
 
 ////////////////////////////////////////////////////////////////

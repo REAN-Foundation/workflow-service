@@ -1,4 +1,4 @@
-import { WorkflowMessageEvent } from '../../domain.types/engine/intermediate.types/user.event.types';
+import { WorkflowMessageEvent } from '../../domain.types/engine/user.event.types';
 import { logger } from '../../logger/logger';
 import needle = require('needle');
 

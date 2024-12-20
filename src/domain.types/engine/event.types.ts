@@ -4,7 +4,7 @@ import {
     BaseSearchResults
 } from "../miscellaneous/base.search.types";
 import { uuid } from "../miscellaneous/system.types";
-import { WorkflowMessageEvent } from "./intermediate.types/user.event.types";
+import { WorkflowMessageEvent } from "./user.event.types";
 
 ////////////////////////////////////////////////////////////
 

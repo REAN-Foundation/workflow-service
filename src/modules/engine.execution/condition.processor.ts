@@ -1,4 +1,4 @@
-import { ConditionOperand } from "../../domain.types/engine/intermediate.types/rule.types";
+import { ConditionOperand } from "../../domain.types/engine/rule.types";
 import { ConditionService } from "../../database/services/engine/condition.service";
 import { RuleService } from "../../database/services/engine/rule.service";
 import { uuid } from "../../domain.types/miscellaneous/system.types";

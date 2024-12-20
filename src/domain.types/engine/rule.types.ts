@@ -1,6 +1,6 @@
-import { uuid } from "../../../domain.types/miscellaneous/system.types";
-import { StringUtils } from "../../../common/utilities/string.utils";
-import { CompositionOperatorType, InputSourceType, OperandDataType, OperatorType } from "../engine.enums";
+import { uuid } from "../miscellaneous/system.types";
+import { StringUtils } from "../../common/utilities/string.utils";
+import { CompositionOperatorType, InputSourceType, OperandDataType, OperatorType } from "./engine.enums";
 
 ////////////////////////////////////////////////////////////////
 

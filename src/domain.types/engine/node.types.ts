@@ -7,7 +7,7 @@ import {
 } from "../miscellaneous/system.types";
 import { NodeType, QuestionResponseType } from "./engine.enums";
 import { ActionInputParams } from "./params.types";
-import { QuestionOption } from "./intermediate.types/user.event.types";
+import { QuestionOption } from "./user.event.types";
 import { NodeActionCreateModel, NodeActionResponseDto } from "./node.action.types";
 
 //////////////////////////////////////////////////////////////

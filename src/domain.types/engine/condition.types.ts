@@ -9,7 +9,7 @@ import {
     CompositionOperatorType,
     LogicalOperatorType,
     OperatorType } from "./engine.enums";
-import { ConditionOperand } from "./intermediate.types/rule.types";
+import { ConditionOperand } from "./rule.types";
 
 //////////////////////////////////////////////////////////////
 

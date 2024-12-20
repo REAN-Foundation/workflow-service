@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
 import { EventType } from "../../../domain.types/enums/event.type";
-import { WorkflowMessageEvent } from "../../../domain.types/engine/intermediate.types/user.event.types";
+import { WorkflowMessageEvent } from "../../../domain.types/engine/user.event.types";
 
 ////////////////////////////////////////////////////////////////////////
 

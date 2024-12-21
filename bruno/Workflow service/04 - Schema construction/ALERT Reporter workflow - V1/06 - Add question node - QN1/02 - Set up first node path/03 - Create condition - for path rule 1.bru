@@ -1,7 +1,7 @@
 meta {
-  name: 05 - Create condition - for path rule 1
+  name: 03 - Create condition - for path rule 1
   type: http
-  seq: 5
+  seq: 3
 }
 
 post {
@@ -20,7 +20,7 @@ body:json {
   {
     "Name": "Base rule condition for option 1",
     "Description": "This is the base rule condition for the first option. Mark the incident as handled.",
-    "ParentRuleId": "{{QUESTION_NODE_1_ID}}",
+    "ParentRuleId": "{{QN1_NODE_PATH_1_RULE_ID}}",
     "ParentConditionId": null,
     "OperatorType": "Logical",
     "LogicalOperatorType": "Equal",

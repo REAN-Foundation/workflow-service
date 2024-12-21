@@ -52,11 +52,13 @@ export class RuleService extends BaseService {
                     Rule     : true,
                 }
             });
-        }
-
-        if (nodePath) {
-            if (nodePath.Rule) {
-                ErrorHandler.throwConflictError('Node Path is already associated with another rule!');
+            if (!nodePath) {
+                ErrorHandler.throwNotFoundError('Node Path not found!');
+            }
+            else {
+                if (nodePath.Rule) {
+                    ErrorHandler.throwConflictError('Node Path is already associated with another rule!');
+                }
             }
         }
 
@@ -67,6 +69,11 @@ export class RuleService extends BaseService {
             NodePath    : nodePath,
         });
         var record = await this._ruleRepository.save(rule);
+
+        if (nodePath) {
+            nodePath.Rule = record;
+            await this._pathRepository.save(nodePath);
+        }
 
         return RuleMapper.toResponseDto(record);
     };

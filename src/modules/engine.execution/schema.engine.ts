@@ -240,6 +240,16 @@ export class SchemaEngine {
     private async traverseQuestionNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
         // TODO: Implement the question node traversal logic
+
+        var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+        var ruleId = currentNode.RuleId;
+        var rule = await this._ruleService.getById(ruleId);
+        if (!rule) {
+            logger.error(`Rule not found for Node ${currentNode.Name}`);
+            return null;
+        }
+        var condition = rule.Condition;
+
         return currentNodeInstance;
     }
 

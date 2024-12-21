@@ -26,9 +26,7 @@ export class NodePathController {
             if (path == null) {
                 throw new ApiError(400, 'Cannot create record for path!');
             }
-            ResponseHandler.success(request, response, 'Path record created successfully!', 201, {
-                NodePath : path,
-            });
+            ResponseHandler.success(request, response, 'Path record created successfully!', 201, path);
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
@@ -107,14 +105,9 @@ export class NodePathController {
     setNextNodeToPath = async (request: express.Request, response: express.Response) => {
         try {
             const pathId: uuid = await this._validator.requestParamAsUUID(request, 'id');
-            const nextNodeId: uuid = await this._validator.requestParamAsUUID(request, 'nextNodeId');
-            const updatedPath = await this._service.setNextNodeToPath(pathId, nextNodeId);
-            if (updatedPath == null) {
-                throw new ApiError(400, 'Cannot update record for path!');
-            }
-            ResponseHandler.success(request, response, 'Path record updated successfully!', 200, {
-                NodePath : updatedPath,
-            });
+            const nextNodeId: uuid = await this._validator.requestParamAsUUID(request, 'nodeId');
+            const result = await this._service.setNextNodeToPath(pathId, nextNodeId);
+            ResponseHandler.success(request, response, 'Path record updated successfully!', 200, result);
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }

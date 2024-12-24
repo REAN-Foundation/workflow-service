@@ -18,7 +18,7 @@ export interface QuestionResponseMessage {
     QuestionText                    ?: string;
     QuestionOptions                 ?: QuestionAnswerOption[];
     ResponseType                    ?: QuestionResponseType;
-    ResponseContent                 ?: string | number | boolean | Date | Location | string[] | number[] | boolean[];
+    ResponseContent                 ?: string | number | boolean | any[];
     SingleChoiceChosenOption        ?: string;
     SingleChoiceChosenOptionSequence?: number;
     PreviousMessageId               ?: uuid;

@@ -242,16 +242,7 @@ export class SchemaEngine {
         // TODO: Implement the question node traversal logic
 
         var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
-        var ruleId = currentNode.RuleId;
-        var rule = await this._ruleService.getById(ruleId);
-        if (!rule) {
-            logger.error(`Rule not found for Node ${currentNode.Name}`);
-            return currentNodeInstance;
-        }
-        var condition = rule.Condition;
-        if (!condition) {
-            condition = await this._conditionService.getById(rule.ConditionId);
-        }
+
         const userMessage = this._event.UserMessage;
         if (!userMessage) {
             logger.error(`User message not found!`);
@@ -281,6 +272,7 @@ export class SchemaEngine {
         }
 
         if (response.ResponseType === QuestionResponseType.SingleChoiceSelection) {
+
             var chosenOption = response.SingleChoiceChosenOption;
             var chosenOptionSequence = response.SingleChoiceChosenOptionSequence;
             var options = response.QuestionOptions;
@@ -308,11 +300,49 @@ export class SchemaEngine {
                 return currentNodeInstance;
             }
 
-            // TODO: Implement the question node traversal logic for single choice selection
-            var processor = new ConditionProcessor(this._almanac);
-            var conditionResult = await processor.processCondition(condition, null);
-            logger.info(`Question Node ${currentNode.Name} Condition Result: ${conditionResult}`);
+            const paths = await this._commonUtilsService.getNodePaths(questionId);
+            if (!paths || paths.length === 0) {
+                logger.error(`Paths not found for Question Node ${currentNode.Name}`);
 
+                // In this case, we will just set the next node instance
+                var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
+                if (!res || !res.currentNode || !res.currentNodeInstance) {
+                    logger.error(`Error while setting next node instance!`);
+                    return currentNodeInstance;
+                }
+                return res.currentNodeInstance;
+            }
+
+            for await (var path of paths) {
+                var ruleId = path.Rule.id;
+                var rule = await this._ruleService.getById(ruleId);
+                if (!rule) {
+                    logger.error(`Rule not found for path ${path.Name}`);
+                    continue;
+                }
+                var condition = rule.Condition;
+                if (!condition) {
+                    condition = await this._conditionService.getById(rule.ConditionId);
+                }
+                var processor = new ConditionProcessor(this._almanac, this._event);
+                var passed = await processor.processCondition(condition, null);
+                if (passed) {
+                    var nextNodeId = path.NextNode.id;
+                    var nextNode = await this._nodeService.getById(nextNodeId);
+                    if (!nextNode) {
+                        logger.error(`Next node not found for path ${path.Name}`);
+                        continue;
+                    }
+                    var nextNodeInstance = await this._nodeInstanceService.getByNodeIdAndSchemaInstance(nextNodeId, this._schemaInstance.id);
+                    if (!nextNodeInstance) {
+                        logger.error(`Error while creating next node instance!`);
+                        return currentNodeInstance;
+                    }
+                    await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, nextNodeInstance.id);
+                    return nextNodeInstance;
+                }
+            }
+            return currentNodeInstance;
         }
         else if (response.ResponseType === QuestionResponseType.Integer) {
             const responseContent = response.ResponseContent;
@@ -320,16 +350,11 @@ export class SchemaEngine {
                 logger.error(`Response content not found!`);
                 return currentNodeInstance;
             }
-            var processor = new ConditionProcessor(this._almanac);
+            var processor = new ConditionProcessor(this._almanac, this._event);
             var conditionResult = await processor.processCondition(condition, null);
             logger.info(`Question Node ${currentNode.Name} Condition Result: ${conditionResult}`);
-            var result: NodeActionResult = {
-                Success : false,
-                Result  : null,
-            };
+            return currentNodeInstance;
         }
-
-        var processor = new ConditionProcessor(this._almanac);
 
         return currentNodeInstance;
     }
@@ -359,7 +384,7 @@ export class SchemaEngine {
         if (!condition) {
             condition = await this._conditionService.getById(rule.ConditionId);
         }
-        var processor = new ConditionProcessor(this._almanac);
+        var processor = new ConditionProcessor(this._almanac, this._event);
         var conditionResult = await processor.processCondition(condition, null);
         logger.info(`Yes/No Node ${currentNode.Name} Condition Result: ${conditionResult}`);
         var result: NodeActionResult = {

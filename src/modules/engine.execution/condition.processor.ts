@@ -2,9 +2,10 @@ import { ConditionOperand } from "../../domain.types/engine/rule.types";
 import { ConditionService } from "../../database/services/engine/condition.service";
 import { RuleService } from "../../database/services/engine/rule.service";
 import { uuid } from "../../domain.types/miscellaneous/system.types";
-import { CompositionOperatorType, InputSourceType, LogicalOperatorType, OperandDataType, OperatorType } from "../../domain.types/engine/engine.enums";
+import { CompositionOperatorType, InputSourceType, LogicalOperatorType, OperandDataType, OperatorType, QuestionResponseType, UserMessageType } from "../../domain.types/engine/engine.enums";
 import { ConditionResponseDto } from "../../domain.types/engine/condition.types";
 import { Almanac } from "./almanac";
+import { EventResponseDto } from "../../domain.types/engine/event.types";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -18,8 +19,11 @@ export class ConditionProcessor {
 
     private _almanac: Almanac = null;
 
-    constructor(almanac: Almanac) {
+    _event: EventResponseDto | null = null;
+
+    constructor(almanac: Almanac, event: EventResponseDto) {
         this._almanac = almanac;
+        this._event = event;
     }
 
     public processCondition = async (condition: ConditionResponseDto, argument?: any): Promise<boolean> => {
@@ -78,23 +82,13 @@ export class ConditionProcessor {
         third?: ConditionOperand): Promise<boolean> {
 
         if (!first.Value) {
-            if (first.Source === InputSourceType.Almanac) {
-                first.Value = await this._almanac.getFact(first.Key);
-                if (first.DataType === OperandDataType.Boolean) {
-                    var isBoolean = typeof first.Value === 'boolean';
-                    first.Value = isBoolean ? first.Value : first.Value !== null && first.Value !== undefined;
-                }
-
-            }
+            first.Value = await this.fetchOperandValue(first, first.Value);
         }
         if (!second.Value) {
-            if (second.Source === InputSourceType.Almanac) {
-                second.Value = await this._almanac.getFact(second.Key);
-                if (second.DataType === OperandDataType.Boolean) {
-                    var isBoolean = typeof second.Value === 'boolean';
-                    second.Value = isBoolean ? second.Value : second.Value !== null && second.Value !== undefined;
-                }
-            }
+            second.Value = await this.fetchOperandValue(second, second.Value);
+        }
+        if (third && !third.Value) {
+            third.Value = await this.fetchOperandValue(third, third.Value);
         }
 
         var resolved = false;
@@ -146,6 +140,56 @@ export class ConditionProcessor {
         }
 
         return resolved;
+    }
+
+    private async fetchOperandValue(operand: ConditionOperand, value: string | number | boolean | any[])
+        : Promise<string | number | boolean | any[]> {
+
+        if (operand.Source === InputSourceType.Almanac) {
+            value = await this._almanac.getFact(operand.Key);
+            if (operand.DataType === OperandDataType.Boolean) {
+                var isBoolean = typeof value === 'boolean';
+                value = isBoolean ? value : value !== null && value !== undefined;
+            }
+        }
+        else if (operand.Source === InputSourceType.UserEvent) {
+
+            var message = this._event.UserMessage;
+            const isQuestionResponse = message &&
+                message.QuestionResponse &&
+                message.MessageType === UserMessageType.Question;
+
+            if (isQuestionResponse) {
+                const isSingleChoice = message.QuestionResponse.ResponseType === QuestionResponseType.SingleChoiceSelection;
+                if (isSingleChoice) {
+                    value = message.QuestionResponse.SingleChoiceChosenOption;
+                }
+                else {
+                    value = message.QuestionResponse.ResponseContent;
+                }
+            }
+            else {
+                if (message.MessageType === UserMessageType.Text) {
+                    value = message.TextMessage;
+                }
+                else if (message.MessageType === UserMessageType.Image) {
+                    value = message.ImageUrl;
+                }
+                else if (message.MessageType === UserMessageType.Audio) {
+                    value = message.AudioUrl;
+                }
+                else if (message.MessageType === UserMessageType.Video) {
+                    value = message.VideoUrl;
+                }
+                else if (message.MessageType === UserMessageType.File) {
+                    value = message.FileUrl;
+                }
+            }
+        }
+        else {
+            value = operand.Value;
+        }
+        return value;
     }
 
     private compareArray(first: ConditionOperand, second: ConditionOperand): boolean {

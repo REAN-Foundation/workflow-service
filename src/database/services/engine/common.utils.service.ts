@@ -22,6 +22,9 @@ import { QuestionNodeResponseDto } from '../../../domain.types/engine/node.types
 import { NodeMapper } from '../../../database/mappers/engine/node.mapper';
 import { QuestionOption } from '../../../database/models/engine/question.option.model';
 import { QuestionAnswerOption } from '../../../domain.types/engine/user.event.types';
+import { NodePathResponseDto } from '../../../domain.types/engine/node.path.types';
+import { NodePath } from '../../../database/models/engine/node.path.model';
+import { NodePathMapper } from '../../../database/mappers/engine/node.path.mapper';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -48,6 +51,8 @@ export class CommonUtilsService {
     _questionRepository: Repository<Question> = Source.getRepository(Question);
 
     _questionOptionRepository: Repository<QuestionOption> = Source.getRepository(QuestionOption);
+
+    _nodePathRepository: Repository<NodePath> = Source.getRepository(NodePath);
 
     //#endregion
 
@@ -339,6 +344,30 @@ export class CommonUtilsService {
                 ErrorHandler.throwNotFoundError('Question not found');
             }
             return question;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getNodePaths = async (nodeId: uuid): Promise<NodePathResponseDto[]> => {
+        try {
+            var nodePaths = await this._nodePathRepository.find({
+                where : {
+                    ParentNode : {
+                        id : nodeId
+                    }
+                },
+                relations : {
+                    ParentNode : true,
+                    NextNode   : true,
+                    Rule       : true,
+                }
+            });
+            if (!nodePaths) {
+                ErrorHandler.throwNotFoundError('Node path not found');
+            }
+            return nodePaths.map(x => NodePathMapper.toResponseDto(x));
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

@@ -87,7 +87,7 @@ export class RuleService extends BaseService {
                 relations : {
                     ParentNode : true,
                     NodePath   : true,
-                    Schema     : true
+                    Schema     : true,
                 }
             });
             var conditionDto: ConditionResponseDto = null;

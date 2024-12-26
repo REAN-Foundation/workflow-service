@@ -1,7 +1,7 @@
 meta {
-  name: 08- Create condition - for path rule 2
+  name: 03- Create condition - for path rule 2
   type: http
-  seq: 8
+  seq: 3
 }
 
 post {
@@ -20,7 +20,7 @@ body:json {
   {
     "Name": "Base rule condition for option 2",
     "Description": "This is the base rule condition for the second option. Keep providing information.",
-    "ParentRuleId": "{{QUESTION_NODE_1_ID}}",
+    "ParentRuleId": "{{QN1_NODE_PATH_2_RULE_ID}}",
     "ParentConditionId": null,
     "OperatorType": "Logical",
     "LogicalOperatorType": "Equal",
@@ -55,7 +55,7 @@ tests {
       expect(jsonRes.Status).to.eql('success');
   });
   
-  test("Question node is created", function () {
+  test("Question node second path condition is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');

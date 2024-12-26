@@ -46,8 +46,20 @@ export class RuleService extends BaseService {
             nodePath = await this._pathRepository.findOne({
                 where : {
                     id : createModel.NodePathId
+                },
+                relations : {
+                    NextNode : true,
+                    Rule     : true,
                 }
             });
+            if (!nodePath) {
+                ErrorHandler.throwNotFoundError('Node Path not found!');
+            }
+            else {
+                if (nodePath.Rule) {
+                    ErrorHandler.throwConflictError('Node Path is already associated with another rule!');
+                }
+            }
         }
 
         const rule = this._ruleRepository.create({
@@ -57,7 +69,11 @@ export class RuleService extends BaseService {
             NodePath    : nodePath,
         });
         var record = await this._ruleRepository.save(rule);
-        record = await this._ruleRepository.save(rule);
+
+        if (nodePath) {
+            nodePath.Rule = record;
+            await this._pathRepository.save(nodePath);
+        }
 
         return RuleMapper.toResponseDto(record);
     };

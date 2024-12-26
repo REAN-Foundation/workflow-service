@@ -260,13 +260,17 @@ export const MathematicalOperatorList: MathematicalOperatorType[] = [
 ];
 
 export enum OperandDataType {
-    Float   = 'Float',
-    Integer = 'Integer',
-    Boolean = 'Boolean',
-    Text    = 'Text',
-    Array   = 'Array',
-    Object  = 'Object',
-    Date    = 'Date',
+    Float        = 'Float',
+    Integer      = 'Integer',
+    Boolean      = 'Boolean',
+    Text         = 'Text',
+    Array        = 'Array',
+    Object       = 'Object',
+    Date         = 'Date',
+    TextArray    = 'TextArray',
+    IntegerArray = 'IntegerArray',
+    FloatArray   = 'FloatArray',
+    BooleanArray = 'BooleanArray',
 }
 
 export const ConditionOperandDataTypeList: OperandDataType[] = [
@@ -277,6 +281,10 @@ export const ConditionOperandDataTypeList: OperandDataType[] = [
     OperandDataType.Array,
     OperandDataType.Object,
     OperandDataType.Date,
+    OperandDataType.TextArray,
+    OperandDataType.IntegerArray,
+    OperandDataType.FloatArray,
+    OperandDataType.BooleanArray,
 ];
 
 export enum ExecutionStatus {

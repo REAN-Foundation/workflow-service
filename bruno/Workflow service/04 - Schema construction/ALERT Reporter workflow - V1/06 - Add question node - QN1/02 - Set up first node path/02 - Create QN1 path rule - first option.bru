@@ -1,7 +1,7 @@
 meta {
-  name: 07 - Create QN1 path rule - second option
+  name: 02 - Create QN1 path rule - first option
   type: http
-  seq: 7
+  seq: 2
 }
 
 post {
@@ -21,7 +21,7 @@ body:json {
     "Name": "Close incident option check rule",
     "Description": "This is rule to check if the user has chosen option to mark the incident handled and closed.",
     "ParentNodeId": "{{QUESTION_NODE_1_ID}}",
-    "NodePathId": "{{QN1_NODE_PATH_2_ID}}",
+    "NodePathId": "{{QN1_NODE_PATH_1_ID}}",
     "SchemaId": "{{SCHEMA_ID}}"
   }
 }
@@ -30,7 +30,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("QN1_NODE_PATH_2_RULE_ID", res.body.Data.id);
+    bru.setEnvVar("QN1_NODE_PATH_1_RULE_ID", res.body.Data.id);
   }
   
 }

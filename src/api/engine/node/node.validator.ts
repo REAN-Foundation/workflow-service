@@ -163,7 +163,10 @@ export class NodeValidator extends BaseValidator {
                     Text     : joi.string().allow(null).max(512).required(),
                     ImageUrl : joi.string().allow(null).max(512).optional(),
                     Sequence : joi.number().integer().allow(null).max(10).optional(),
-                    Metadata : joi.string().allow(null).max(1024).optional(),
+                    Metadata : joi.array().allow(null).items(joi.object({
+                        Key   : joi.string().max(64).required(),
+                        Value : joi.any().required(),
+                    })).optional(),
                 })).optional(),
                 RuleId       : joi.string().uuid().optional(),
                 DelaySeconds : joi.number().integer().optional(),

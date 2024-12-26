@@ -1,4 +1,4 @@
-import { ActionType, ExecutionStatus, InputSourceType, NodeType, ParamType, WorkflowActivityType } from '../../domain.types/engine/engine.enums';
+import { ActionType, ExecutionStatus, InputSourceType, NodeType, ParamType, QuestionResponseType, UserMessageType, WorkflowActivityType } from '../../domain.types/engine/engine.enums';
 import { SchemaInstanceResponseDto } from '../../domain.types/engine/schema.instance.types';
 import { EventResponseDto } from '../../domain.types/engine/event.types';
 import { SchemaResponseDto } from '../../domain.types/engine/schema.domain.types';
@@ -240,6 +240,97 @@ export class SchemaEngine {
     private async traverseQuestionNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
         // TODO: Implement the question node traversal logic
+
+        var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+        var ruleId = currentNode.RuleId;
+        var rule = await this._ruleService.getById(ruleId);
+        if (!rule) {
+            logger.error(`Rule not found for Node ${currentNode.Name}`);
+            return currentNodeInstance;
+        }
+        var condition = rule.Condition;
+        if (!condition) {
+            condition = await this._conditionService.getById(rule.ConditionId);
+        }
+        const userMessage = this._event.UserMessage;
+        if (!userMessage) {
+            logger.error(`User message not found!`);
+            return currentNodeInstance;
+        }
+        if (userMessage.MessageType !== UserMessageType.Question) {
+            logger.error(`User message is not a question response!`);
+            return currentNodeInstance;
+        }
+        if (!userMessage.QuestionResponse) {
+            logger.error(`Question response not found!`);
+            return currentNodeInstance;
+        }
+
+        const questionId = currentNode.id; // Question node id is same as question id
+        const question = await this._commonUtilsService.getQuestion(questionId);
+        if (!question) {
+            logger.error(`Question not found!`);
+            return currentNodeInstance;
+        }
+
+        const response = userMessage.QuestionResponse;
+        const incomingResponseType = response.ResponseType;
+        if (incomingResponseType !== question.ResponseType) {
+            logger.error(`Incoming response type does not match the question response type!`);
+            return currentNodeInstance;
+        }
+
+        if (response.ResponseType === QuestionResponseType.SingleChoiceSelection) {
+            var chosenOption = response.SingleChoiceChosenOption;
+            var chosenOptionSequence = response.SingleChoiceChosenOptionSequence;
+            var options = response.QuestionOptions;
+            if (!options || options.length === 0) {
+                options = await this._commonUtilsService.getQuestionOptions(questionId);
+            }
+            if (options.length === 0) {
+                logger.error(`Question options not found!`);
+                return currentNodeInstance;
+            }
+
+            const sequenceArray = Array.from(options, (o) => o.Sequence);
+            const maxSequenceValue = Math.max(...sequenceArray);
+            const minSequenceValue = Math.min(...sequenceArray);
+
+            if (!chosenOption && !chosenOptionSequence) {
+                logger.error(`Chosen option not found!`);
+                return currentNodeInstance;
+            }
+            if (!chosenOptionSequence) {
+                chosenOptionSequence = response.QuestionOptions.findIndex(o => o.Text === chosenOption);
+            }
+            if (chosenOptionSequence < minSequenceValue || chosenOptionSequence > maxSequenceValue) {
+                logger.error(`Chosen option sequence out of range!`);
+                return currentNodeInstance;
+            }
+
+            // TODO: Implement the question node traversal logic for single choice selection
+            var processor = new ConditionProcessor(this._almanac);
+            var conditionResult = await processor.processCondition(condition, null);
+            logger.info(`Question Node ${currentNode.Name} Condition Result: ${conditionResult}`);
+
+        }
+        else if (response.ResponseType === QuestionResponseType.Integer) {
+            const responseContent = response.ResponseContent;
+            if (!responseContent) {
+                logger.error(`Response content not found!`);
+                return currentNodeInstance;
+            }
+            var processor = new ConditionProcessor(this._almanac);
+            var conditionResult = await processor.processCondition(condition, null);
+            logger.info(`Question Node ${currentNode.Name} Condition Result: ${conditionResult}`);
+            var result: NodeActionResult = {
+                Success : false,
+                Result  : null,
+            };
+        }
+
+        var processor = new ConditionProcessor(this._almanac);
+
         return currentNodeInstance;
     }
 

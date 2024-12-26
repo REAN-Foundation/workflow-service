@@ -151,7 +151,7 @@ export class NodePathService extends BaseService {
         }
     };
 
-    public setNextNodeToPath = async (pathId: uuid, nextNodeId: uuid): Promise<NodePathResponseDto> => {
+    public setNextNodeToPath = async (pathId: uuid, nextNodeId: uuid): Promise<boolean> => {
         try {
             const path = await this._pathRepository.findOne({
                 where : {
@@ -164,7 +164,10 @@ export class NodePathService extends BaseService {
             const nextNode = await this.getNode(nextNodeId);
             path.NextNode = nextNode;
             var record = await this._pathRepository.save(path);
-            return NodePathMapper.toResponseDto(record);
+            if (!record) {
+                ErrorHandler.throwInternalServerError('Unable to set next node to path!');
+            }
+            return true;
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

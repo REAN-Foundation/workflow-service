@@ -74,8 +74,8 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("SCHEMA_ID", res.body.Data.id);
     bru.setEnvVar("BASE_SCHEMA_ID", res.body.Data.id);
-    bru.setEnvVar("SCHEMA_ROOT_NODE_ID", jsonRes.Data.RootNode.id);
-    bru.setEnvVar("NODE_01_ID", jsonRes.Data.RootNode.id);
+    bru.setEnvVar("SCHEMA_ROOT_NODE_ID", res.body.Data.RootNode.id);
+    bru.setEnvVar("NODE_01_ID", res.body.Data.RootNode.id);
   }
   
 }
@@ -83,8 +83,7 @@ script:post-response {
 tests {
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(201);
-      var jsonRes = res.getBody();
-      expect(jsonRes.Status).to.eql('success');
+      expect(res.body.Status).to.eql('success');
   });
   
   test("Schema is created", function () {

@@ -73,22 +73,22 @@ body:json {
         }
       },
       {
-        "Type": "SendMultipleMessages",
-        "Name": "Send message to CFRs",
+        "Type": "TriggerMultipleChildrenWorkflow",
+        "Name": "Trigger multiple workflows one for each CFR in the vicinity.",
         "Sequence": 1,
         "Input": {
           "Params": [
             {
-              "Name": "List of phonenumbers",
+              "Name": "List of CFR phonenumbers",
               "Type": "Array",
               "Value": null,
               "Source": "Almanac",
               "Key": "ContextParams:CFR:Phonenumbers"
             },
             {
-              "Name": "MessageText",
-              "Type": "Text",
-              "Value": "There is an emergency reported at {{Timestamp}}."
+              "Name": "Child Schema Id",
+              "Type": "SchemaId",
+              "Value": "{{CHILD_SCHEMA_ID}}"
             },
             {
               "Name": "Timestamp",
@@ -96,6 +96,14 @@ body:json {
               "Value": null,
               "Source": "SystemData",
               "Key": "Timestamp"
+            },
+            {
+              "Name": "Incident Code",
+              "Description": "This is the code of the reported emergency incident. This value is generated on schema instance generation",
+              "Type": "Text",
+              "Value": null,
+              "Key": "IncidenceCode",
+              "Source": "Almanac"
             }
           ]
         }

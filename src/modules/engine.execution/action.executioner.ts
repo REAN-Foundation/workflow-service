@@ -24,6 +24,8 @@ import { NodeResponseDto } from '../../domain.types/engine/node.types';
 
 export class ActionExecutioner {
 
+    //#region Construction
+
     _almanac: Almanac;
 
     _schema: SchemaResponseDto | null = null;
@@ -53,6 +55,10 @@ export class ActionExecutioner {
         this._event = event;
         this._almanac = almanac;
     }
+
+    //#endregion
+
+    //#region Publics
 
     public ExecuteTriggerListeningNodeAction = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
@@ -575,6 +581,129 @@ export class ActionExecutioner {
         };
     };
 
+    public executeTriggerChildWorkflowAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+
+        // Get the input parameters
+        var childSchemaId = await this.getActionParamValue(input, ParamType.SchemaId);
+        if (!childSchemaId) {
+            logger.error('SchemaId not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var params = input.Params.filter(x => x.Type !== ParamType.SchemaId);
+        var childSchemaInstance = await this.createChildSchemaInstance(childSchemaId, this._schemaInstance, params);
+        if (!childSchemaInstance) {
+            logger.error('Error while creating child schema instance');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, childSchemaInstance);
+
+        return {
+            Success : true,
+            Result  : childSchemaInstance
+        };
+    };
+
+    public executeTriggerMultipleChildrenWorkflowAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        // Get the input parameters
+        var inputArrayParam: Params = input.Params.find(x => x.Type === ParamType.Array);
+        if (!inputArrayParam) {
+            logger.error('Input parameters not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+        var values = null;
+        if (!inputArrayParam.Value) {
+            const source = inputArrayParam.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                values = await this._almanac.getFact(inputArrayParam.Key);
+            }
+        }
+        else {
+            values = inputArrayParam.Value;
+        }
+
+        var pChildSchemaId = input.Params.find(x => x.Type === ParamType.SchemaId);
+        if (!pChildSchemaId) {
+            logger.error('SchemaId not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var childSchemaId = pChildSchemaId.Value;
+        if (!childSchemaId) {
+            logger.error('SchemaId not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        const childInputParams = input.Params.filter(x => x.Type !== ParamType.SchemaId && x.Type !== ParamType.Array);
+        const childOutputParams = output.Params.filter(x => x.Type !== ParamType.SchemaId && x.Type !== ParamType.Array);
+
+        for (let i = 0; i < values.length; i++) {
+            const arrayItem = values[i];
+            const arrayElementType = inputArrayParam.ArrayElementType;
+            var outputParams: Params[] = [];
+            for (let j = 0; j < childOutputParams.length; j++) {
+                const op = childOutputParams[j];
+                if (op.Type === arrayElementType) {
+                    const outputParam = {
+                        Name     : op.Name,
+                        Type     : op.Type,
+                        Key      : op.Key,
+                        Value    : arrayItem[op.Key],
+                        Required : true,
+                    };
+                    outputParams.push(outputParam);
+                }
+            }
+            var params = childInputParams.concat(outputParams);
+
+            var childSchemaInstance = await this.createChildSchemaInstance(childSchemaId, this._schemaInstance, params);
+            if (!childSchemaInstance) {
+                logger.error('Error while creating child schema instance');
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, values);
+
+        return {
+            Success : true,
+            Result  : values
+        };
+    };
+
+    //#endregion
+
+    //#region Privates
+
     private getActionParamValue = async (
         input: ActionInputParams,
         type: ParamType,
@@ -751,6 +880,8 @@ export class ActionExecutioner {
         var result = await messageService.send(phonenumber, messageEvent);
         return result;
     };
+
+    //#endregion
 
 }
 

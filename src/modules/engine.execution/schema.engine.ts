@@ -491,6 +491,12 @@ export class SchemaEngine {
         else if (actionInstance.ActionType === ActionType.RestApiCall) {
             result = await actionExecutioner.executeRestApiCallAction(actionInstance);
         }
+        else if (actionInstance.ActionType === ActionType.TriggerMultipleChildrenWorkflow) {
+            result = await actionExecutioner.executeTriggerMultipleChildrenWorkflowAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.TriggerChildWorkflow) {
+            result = await actionExecutioner.executeTriggerChildWorkflowAction(actionInstance);
+        }
         return result;
     }
 

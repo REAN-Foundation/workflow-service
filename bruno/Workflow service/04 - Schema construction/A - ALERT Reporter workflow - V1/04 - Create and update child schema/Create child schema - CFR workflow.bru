@@ -89,9 +89,9 @@ script:post-response {
 tests {
   try {
       var jsonRes = res.getBody();
-      bru.setEnvVar("SCHEMA_ID", jsonRes.Data.id);
-      bru.setEnvVar("SCHEMA_ROOT_NODE_ID", jsonRes.Data.RootNode.id);
-      bru.setEnvVar("NODE_01_ID", jsonRes.Data.RootNode.id);
+      bru.setEnvVar("CHILD_SCHEMA_ID", jsonRes.Data.id);
+      bru.setEnvVar("CHILD_SCHEMA_ROOT_NODE_ID", jsonRes.Data.RootNode.id);
+      bru.setEnvVar("CHILD_NODE_01_ID", jsonRes.Data.RootNode.id);
   }
   catch (error) {
       console.log(error.message);

@@ -37,18 +37,18 @@ body:json {
                 "Method": "GET",
                 "QueryParams": [
                   {
-                    "Key": "longitude",
-                    "Value": null,
+                    "QueryParamKey": "longitude",
+                    "QueryParamValue": null,
                     "Source": "Almanac",
                     "SourceKey": "ContextParams:Location",
                     "SourceValueKey": "Longitude"
                   },
                   {
-                    "Key": "latitude",
-                    "Value": null,
+                    "QueryParamKey": "latitude",
+                    "QueryParamValue": null,
                     "Source": "Almanac",
                     "SourceKey": "ContextParams:Location",
-                    "SourceValueKey": "Longitude"
+                    "SourceValueKey": "Latitude"
                   }
                 ],
                 "Headers": {
@@ -104,6 +104,17 @@ body:json {
               "Value": null,
               "Key": "IncidenceCode",
               "Source": "Almanac"
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "CFR Phonenumber",
+              "Type": "Phonenumber",
+              "Value": null,
+              "Destination": "Almanac",
+              "Key": "ContextParams:CFR:Phonenumber"
             }
           ]
         }

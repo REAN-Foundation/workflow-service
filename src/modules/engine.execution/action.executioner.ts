@@ -516,21 +516,18 @@ export class ActionExecutioner {
                 updatedUrl = url + '?';
                 var paramList = [];
                 for (var param of queryParams) {
-                    if (!param.Value) {
+                    if (!param.QueryParamValue) {
                         var source = param.Source || InputSourceType.Almanac;
                         if (source === InputSourceType.Almanac) {
-                            var v = await this._almanac.getFact(param.Key);
+                            var v = await this._almanac.getFact(param.SourceKey);
                             if (v && param.SourceValueKey) {
                                 v = v[param.SourceValueKey];
                             }
                             param.Value = v;
                         }
                     }
-                    paramList.push(`${param.Key}=${param.Value}`);
+                    paramList.push(`${param.QueryParamKey}=${param.Value}`);
                 }
-                queryParams.forEach((param) => {
-                    paramList.push(`${param.Key}=${param.Value}`);
-                });
                 updatedUrl += paramList.join('&');
             }
             var methodToUse = method.toLowerCase();

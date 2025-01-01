@@ -21,7 +21,7 @@ body:json {
     "Name": "Availability question",
     "Description": "This question node asks the CFR question with options enquiring whether he/she is available for the emergency incident handling.",
     "Type": "QuestionNode",
-    "ParentNodeId": "{{EXECUTION_NODE_SEND_LOCATION_ID}}",
+    "ParentNodeId": "{{CFR_EN1_ID}}",
     "SchemaId": "{{CHILD_SCHEMA_ID}}",
     "Actions": [],
     "DelaySeconds": 180,
@@ -56,7 +56,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("CFR_QUESTION_NODE_1_ID", res.body.Data.id);
+    bru.setEnvVar("CFR_QN1_ID", res.body.Data.id);
   }
 
 }

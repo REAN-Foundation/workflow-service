@@ -18,18 +18,18 @@ headers {
 
 body:json {
   {
-    "Name": "QN1-Closing question",
-    "Description": "This question node asks the reporter question with options enquiring about satisfactory conclusion of the incident handling.",
+    "Name": "Availability question",
+    "Description": "This question node asks the CFR question with options enquiring whether he/she is available for the emergency incident handling.",
     "Type": "QuestionNode",
-    "ParentNodeId": "{{EXECUTION_NODE_2_ID}}",
+    "ParentNodeId": "{{CHILD_SCHEMA_ROOT_NODE_ID}}",
     "SchemaId": "{{SCHEMA_ID}}",
     "Actions": [],
     "DelaySeconds": 180,
-    "QuestionText": "I Hope everything is under control now. Please let us know whether you want to mark the incident handled or give additional information.",
+    "QuestionText": "Will you be available to attend to the incident?",
     "ResponseType": "Single Choice Selection",
     "Options": [
       {
-        "Text": "Mark incident as handled and closed",
+        "Text": "Available",
         "Sequence": 1,
         "Metadata": [
           {
@@ -39,7 +39,7 @@ body:json {
         ]
       },
       {
-        "Text": "Keep giving additional information",
+        "Text": "Not Available",
         "Sequence": 2,
         "Metadata": [
           {
@@ -56,9 +56,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("QUESTION_NODE_1_ID", res.body.Data.id);
+    bru.setEnvVar("CFR_QUESTION_NODE_1_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -67,18 +67,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
-  test("Question node 1 is created", function () {
+
+  test("Question node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

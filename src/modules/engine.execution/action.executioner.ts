@@ -146,7 +146,7 @@ export class ActionExecutioner {
         messagePlaceholders.forEach(async (placeholder) => {
             var placeholderKey = placeholder.Key;
             var placeholderValue = placeholder.Value;
-            if (placeholderKey === 'Timestamp') {
+            if (placeholderKey === 'Timestamp' || placeholderKey === 'ContextParams:Timestamp') {
                 placeholderValue = new Date().toISOString();
             }
             placeholders.push({ Key: placeholderKey, Value: placeholderValue });
@@ -684,18 +684,18 @@ export class ActionExecutioner {
         for (let i = 0; i < items.length; i++) {
 
             const arrayItem = items[i];
-            const arrayElementType = inputArrayParam.ArrayElementType;
+            const subElementType = inputArrayParam.SubElementType;
 
             const childContextParams: Params[] = [];
 
             for (let j = 0; j < actionOutputParams.length; j++) {
                 const op = actionOutputParams[j];
-                if (op.Type === arrayElementType) {
+                if (op.Type === subElementType) {
                     const outputParam = {
                         Name     : op.Name,
                         Type     : op.Type,
                         Key      : op.Key,
-                        Value    : arrayItem[arrayElementType],
+                        Value    : arrayItem[subElementType],
                         Required : true,
                     };
                     childContextParams.push(outputParam);

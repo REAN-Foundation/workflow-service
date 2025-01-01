@@ -1,11 +1,11 @@
 meta {
-  name: 02 - Create QN1 path rule - second option
+  name: 01 - Create QN - first node path
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
-  url: {{BASE_URL}}/engine/rules
+  url: {{BASE_URL}}/engine/node-paths
   body: json
   auth: none
 }
@@ -18,10 +18,9 @@ headers {
 
 body:json {
   {
-    "Name": "Close incident option check rule",
-    "Description": "This is rule to check if the user has chosen option to mark the incident handled and closed.",
+    "Name": "QN - First node path - CFR available",
+    "Description": "This is node path if the user is available.",
     "ParentNodeId": "{{QUESTION_NODE_1_ID}}",
-    "NodePathId": "{{QN1_NODE_PATH_2_ID}}",
     "SchemaId": "{{SCHEMA_ID}}"
   }
 }
@@ -30,7 +29,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("QN1_NODE_PATH_2_RULE_ID", res.body.Data.id);
+    bru.setEnvVar("QN1_NODE_PATH_1_ID", res.body.Data.id);
   }
   
 }

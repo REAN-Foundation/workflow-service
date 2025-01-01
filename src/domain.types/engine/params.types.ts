@@ -6,14 +6,13 @@ import { InputSourceType, OutputDestinationType, ParamType } from "./engine.enum
 export interface Params {
     Name                : string;
     Type                : ParamType;
-    ArrayElementType   ?: ParamType;
+    SubElementType     ?: ParamType;
     Description        ?: string;
     Value               : any | null | undefined;
     Source             ?: InputSourceType;
     Destination        ?: OutputDestinationType;
     Key                ?: string;
     Required           ?: boolean;
-
     ComparisonThreshold?: number;
     ComparisonUnit     ?: string;
 }

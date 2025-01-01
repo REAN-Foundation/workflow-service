@@ -1,5 +1,5 @@
 meta {
-  name: Create execution node - EN2
+  name: Create execution node - Send location
   type: http
   seq: 2
 }
@@ -18,10 +18,10 @@ headers {
 
 body:json {
   {
-    "Name": "EN2-Send Messages to Incident Reporter",
-    "Description": "This execution node holds actions to send assuring message to the incident reporter.",
+    "Name": "Send Location Messages to CFR",
+    "Description": "This execution node holds actions to send location message to the CFR near the location.",
     "Type": "ExecutionNode",
-    "ParentNodeId": "{{EXECUTION_NODE_1_ID}}",
+    "ParentNodeId": "{{CHILD_SCHEMA_ROOT_NODE_ID}}",
     "SchemaId": "{{SCHEMA_ID}}",
     "Actions": [
       {
@@ -37,8 +37,14 @@ body:json {
               "Key": "ContextParams:Reporter:Phonenumber"
             },
             {
-              "Type": "Text",
-              "Value": "We have notified nearby responders. Help is on the way!"
+              "Type": "Location",
+              "Name": "Incident Location",
+              "Source": "Almanac",
+              "Key": "ContextParams:Location",
+              "Value": {
+                "Latitude": null,
+                "Longitude": null
+              }
             }
           ]
         }
@@ -51,7 +57,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("EXECUTION_NODE_2_ID", res.body.Data.id);
+    bru.setEnvVar("EXECUTION_NODE_SEND_LOCATION_ID", res.body.Data.id);
   }
   
 }

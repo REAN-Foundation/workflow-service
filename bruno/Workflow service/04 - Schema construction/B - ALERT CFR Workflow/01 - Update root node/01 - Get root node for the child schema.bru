@@ -1,12 +1,12 @@
 meta {
-  name: 02 - Set next node of EN2 node
+  name: 01 - Get root node for the child schema
   type: http
-  seq: 2
+  seq: 1
 }
 
-put {
-  url: {{BASE_URL}}/engine/nodes/{{EXECUTION_NODE_2_ID}}/next-node/{{QUESTION_NODE_1_ID}}
-  body: json
+get {
+  url: {{BASE_URL}}/engine/nodes/{{CHILD_SCHEMA_ROOT_NODE_ID}}
+  body: none
   auth: none
 }
 
@@ -21,6 +21,11 @@ tests {
       expect(res.getStatus()).to.equal(200);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Event is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
   });
   
 }

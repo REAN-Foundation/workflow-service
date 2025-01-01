@@ -1,5 +1,5 @@
 meta {
-  name: 01 - Create QN1 - second node path
+  name: 01 - Create QN1 - first node path
   type: http
   seq: 1
 }
@@ -18,8 +18,8 @@ headers {
 
 body:json {
   {
-    "Name": "QN1 - Second node path - Keep giving additional information",
-    "Description": "This is node path if the user has chosen option to continue giving the information.",
+    "Name": "QN - First node path - CFR available",
+    "Description": "This is node path if the user is available.",
     "ParentNodeId": "{{QUESTION_NODE_1_ID}}",
     "SchemaId": "{{SCHEMA_ID}}"
   }
@@ -29,9 +29,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("QN1_NODE_PATH_2_ID", res.body.Data.id);
+    bru.setEnvVar("QN1_NODE_PATH_1_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -40,11 +40,11 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

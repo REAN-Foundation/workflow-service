@@ -1,6 +1,6 @@
 import needle = require('needle');
 import { InputSourceType, MessageChannelType, OutputDestinationType, ParamType, UserMessageType, WorkflowActivityType } from "../../domain.types/engine/engine.enums";
-import { ActionInputParams, ActionOutputParams, Params } from "../../domain.types/engine/params.types";
+import { ActionInputParams, ActionOutputParams, ContextParams, Params } from "../../domain.types/engine/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
 import { ChatbotMessageService } from "../communication/chatbot.message.service";
@@ -716,15 +716,15 @@ export class ActionExecutioner {
 
             for (let k = 0; k < actionInputParams.length; k++) {
                 const ip = actionInputParams[k];
-                const parentParam = parentContextParams.Params.find(x => x.Key === ip.Key && x.Type === ip.Type);
-                if (!parentParam || !parentParam.Value) {
+                const actionParam = parentContextParams.Params.find(x => x.Key === ip.Key && x.Type === ip.Type);
+                if (!actionParam || !actionParam.Value) {
                     continue;
                 }
                 if (ip.Value) {
                     childContextParams.push(ip);
                 }
                 else {
-                    childContextParams.push(parentParam);
+                    childContextParams.push(actionParam);
                 }
             }
 
@@ -752,12 +752,23 @@ export class ActionExecutioner {
                     childContextParams.push(outputParam);
                     continue;
                 }
+                if (cp.Type === ParamType.Text || cp.Key === 'SchemaInstanceCode') {
+                    const outputParam = {
+                        Name     : cp.Name,
+                        Type     : cp.Type,
+                        Key      : cp.Key,
+                        Value    : null,
+                        Required : true,
+                    };
+                    childContextParams.push(outputParam);
+                    continue;
+                }
 
-                const parentParam = parentContextParams.Params.find(x => x.Key === cp.Key && x.Type === cp.Type);
+                const parentParam = parentContextParams.Params.find(x => x.Key === cp.Key);
                 if (!parentParam || !parentParam.Value) {
                     continue;
                 }
-                const exists = childContextParams.find(x => x.Key === cp.Key && x.Type === cp.Type);
+                const exists = childContextParams.find(x => x.Key === cp.Key);
                 if (exists) {
                     continue;
                 }
@@ -850,25 +861,17 @@ export class ActionExecutioner {
             const formattedCount = padZero(instanceCount + 1, 3); // Count with leading zeros (e.g., 001)
             var code = 'E-' + pattern + '-' + formattedCount;
 
-            const schemaInstanceContextParams = childSchema.ContextParams;
-            for (var p of schemaInstanceContextParams.Params) {
-                if (p.Type === ParamType.Phonenumber) {
-                    p.Value = params.find(x => x.Type === ParamType.Phonenumber).Value;
-                }
-                if (p.Type === ParamType.Location) {
-                    p.Value = params.find(x => x.Type === ParamType.Location).Value;
-                }
-                if (p.Type === ParamType.DateTime) {
-                    p.Value = new Date();
+            const schemaInstanceContextParams: ContextParams = {
+                Name   : 'ContextParams',
+                Params : params
+            };
+            for (var p of params) {
+                if (p.Value) {
+                    continue;
                 }
                 if (p.Type === ParamType.Text) {
                     if (p.Key === 'SchemaInstanceCode') {
                         p.Value = code;
-                    }
-                }
-                if (p.Type === ParamType.SchemaInstanceId) {
-                    if (p.Key === 'ParentSchemaInstanceId') {
-                        p.Value = parentSchemaInstance.id;
                     }
                 }
             }

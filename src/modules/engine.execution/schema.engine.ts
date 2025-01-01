@@ -420,6 +420,10 @@ export class SchemaEngine {
 
         if (currentNodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
             var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+            if (!currentNode?.NextNodeId) {
+                logger.error(`Next node not found for Node ${currentNode.Name}`);
+                return currentNodeInstance;
+            }
             var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
             if (!res || !res.currentNode || !res.currentNodeInstance) {
                 logger.error(`Error while setting next node instance!`);
@@ -509,6 +513,10 @@ export class SchemaEngine {
 
     private async setNextNodeInstance(currentNode: NodeResponseDto, currentNodeInstance: NodeInstanceResponseDto) {
         var nextNodeId = currentNode.NextNodeId;
+        if (!nextNodeId) {
+            logger.error(`Next node not found for Node ${currentNode.Name}`);
+            return { currentNode, currentNodeInstance };
+        }
         var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
         var [nextNodeInstance, nextNode] = await this._engineUtils.createNodeInstance(nextNodeId, schemaInstanceId);
         if (!nextNodeInstance || !nextNode) {

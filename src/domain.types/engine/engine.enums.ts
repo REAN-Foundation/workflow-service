@@ -21,6 +21,7 @@ export enum ParamType {
     Integer          = 'Integer',
     Boolean          = 'Boolean',
     Text             = 'Text',
+    RandomCode       = 'RandomCode',
     Array            = 'Array',
     Object           = 'Object',
     Placeholder      = 'Placeholder',

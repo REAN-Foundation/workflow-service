@@ -20,6 +20,7 @@ import { NodeActionService } from '../../database/services/engine/node.action.se
 import { TimeUtils } from '../../common/utilities/time.utils';
 import { EngineUtils } from './engine.utils';
 import { EventType } from '../../domain.types/enums/event.type';
+import { StringUtils } from '../../common/utilities/string.utils';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -215,6 +216,12 @@ export class SchemaEngine {
                     if (!fact) {
                         await this._almanac.addFact(p.Key, p.Value);
                     }
+                }
+            }
+            if (p.Type === ParamType.RandomCode && p.Value) {
+                fact = await this._almanac.getFact(p.Key);
+                if (!fact) {
+                    await this._almanac.addFact(p.Key, p.Value);
                 }
             }
         }
@@ -555,6 +562,9 @@ export class SchemaEngine {
                 if (p.Key === 'SchemaInstanceCode') {
                     p.Value = code;
                 }
+            }
+            if (p.Type === ParamType.RandomCode) {
+                p.Value = StringUtils.generateDisplayCode_RandomChars(6);
             }
         }
         const schemaInstance = await this._schemaInstanceService.create({

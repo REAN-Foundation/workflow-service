@@ -1,5 +1,5 @@
 meta {
-  name: 01 - Create question node - QN1
+  name: 01 - Create question node - QN
   type: http
   seq: 1
 }
@@ -21,8 +21,8 @@ body:json {
     "Name": "Availability question",
     "Description": "This question node asks the CFR question with options enquiring whether he/she is available for the emergency incident handling.",
     "Type": "QuestionNode",
-    "ParentNodeId": "{{CHILD_SCHEMA_ROOT_NODE_ID}}",
-    "SchemaId": "{{SCHEMA_ID}}",
+    "ParentNodeId": "{{EXECUTION_NODE_SEND_LOCATION_ID}}",
+    "SchemaId": "{{CHILD_SCHEMA_ID}}",
     "Actions": [],
     "DelaySeconds": 180,
     "QuestionText": "Will you be available to attend to the incident?",

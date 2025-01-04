@@ -643,6 +643,12 @@ export class ActionExecutioner {
         else {
             items = inputArrayParam.Value;
         }
+        if (items === null || items.length === 0) {
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
 
         var pChildSchemaId = input.Params.find(x => x.Type === ParamType.SchemaId);
         if (!pChildSchemaId) {

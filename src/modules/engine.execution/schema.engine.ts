@@ -505,9 +505,9 @@ export class SchemaEngine {
         else if (actionInstance.ActionType === ActionType.TriggerMultipleChildrenWorkflow) {
             result = await actionExecutioner.executeTriggerMultipleChildrenWorkflowAction(actionInstance);
         }
-        else if (actionInstance.ActionType === ActionType.TriggerChildWorkflow) {
-            result = await actionExecutioner.executeTriggerChildWorkflowAction(actionInstance);
-        }
+        // else if (actionInstance.ActionType === ActionType.TriggerChildWorkflow) {
+        //     result = await actionExecutioner.executeTriggerChildWorkflowAction(actionInstance);
+        // }
         return result;
     }
 

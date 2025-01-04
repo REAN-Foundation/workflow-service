@@ -13,31 +13,34 @@ import { NodeCreateModel } from "./node.types";
 //////////////////////////////////////////////////////////////
 
 export interface SchemaCreateModel {
-    TenantId       : uuid;
-    Type           : SchemaType;
-    Name           : string;
-    Description?   : string;
-    RootNode      ?: NodeCreateModel;
-    ContextParams ?: ContextParams;
-    ParentSchemaId?: uuid;
+    TenantId           : uuid;
+    Type               : SchemaType;
+    Name               : string;
+    Description?       : string;
+    RootNode          ?: NodeCreateModel;
+    ExecuteImmediately?: boolean;
+    ContextParams     ?: ContextParams;
+    ParentSchemaId    ?: uuid;
 }
 
 export interface SchemaUpdateModel {
-    Type?           : SchemaType;
-    Name?           : string;
-    Description?    : string;
-    ParentSchemaId? : uuid;
-    ContextParams  ?: ContextParams;
+    Type?              : SchemaType;
+    Name?              : string;
+    Description?       : string;
+    ParentSchemaId?    : uuid;
+    ExecuteImmediately?: boolean;
+    ContextParams     ?: ContextParams;
 }
 
 export interface SchemaResponseDto {
-    id             : uuid;
-    Type           : SchemaType;
-    TenantId       : uuid;
-    Name           : string;
-    Description    : string;
-    ParentSchemaId?: uuid;
-    RootNode      ?: {
+    id                 : uuid;
+    Type               : SchemaType;
+    TenantId           : uuid;
+    Name               : string;
+    Description        : string;
+    ParentSchemaId    ?: uuid;
+    ExecuteImmediately?: boolean;
+    RootNode          ?: {
        id         : uuid,
        Name       : string;
        Description: string;

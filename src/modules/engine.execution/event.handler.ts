@@ -3,6 +3,7 @@ import { EventResponseDto } from "../../domain.types/engine/event.types";
 import * as asyncLib from 'async';
 import { EventType } from "../../domain.types/enums/event.type";
 import { UserMessageEventHandler } from './user.message.event.handler';
+import ChildSchemaTriggerHandler from "./child.schema.trigger.handler";
 
 // import { ContextService } from "../../database/services/engine/context.service";
 // import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
@@ -55,8 +56,8 @@ export default class EventHandler {
             logger.info(`Processing event: ${event.EventType}`);
 
             if (event.EventType === EventType.UserMessage) {
-                var handler = new UserMessageEventHandler();
-                await handler.handle(event);
+                var userMessageHandler = new UserMessageEventHandler();
+                await userMessageHandler.handle(event);
             }
             else {
                 logger.info('Terminating workflow!');

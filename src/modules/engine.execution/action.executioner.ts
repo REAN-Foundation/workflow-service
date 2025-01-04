@@ -578,39 +578,45 @@ export class ActionExecutioner {
         };
     };
 
-    public executeTriggerChildWorkflowAction = async (
-        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+    // public executeTriggerChildWorkflowAction = async (
+    //     action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
-        const input = action.Input as ActionInputParams;
+    //     const input = action.Input as ActionInputParams;
 
-        // Get the input parameters
-        var childSchemaId = await this.getActionParamValue(input, ParamType.SchemaId);
-        if (!childSchemaId) {
-            logger.error('SchemaId not found in input parameters');
-            return {
-                Success : false,
-                Result  : null
-            };
-        }
+    //     // Get the input parameters
+    //     var childSchemaId = await this.getActionParamValue(input, ParamType.SchemaId);
+    //     if (!childSchemaId) {
+    //         logger.error('SchemaId not found in input parameters');
+    //         return {
+    //             Success : false,
+    //             Result  : null
+    //         };
+    //     }
 
-        var params = input.Params.filter(x => x.Type !== ParamType.SchemaId);
-        var childSchemaInstance = await this.createChildSchemaInstance(childSchemaId, this._schemaInstance, params);
-        if (!childSchemaInstance) {
-            logger.error('Error while creating child schema instance');
-            return {
-                Success : false,
-                Result  : null
-            };
-        }
+    //     var params = input.Params.filter(x => x.Type !== ParamType.SchemaId);
+    //     var childSchemaInstance = await this.createChildSchemaInstance(childSchemaId, this._schemaInstance, params);
+    //     if (!childSchemaInstance) {
+    //         logger.error('Error while creating child schema instance');
+    //         return {
+    //             Success : false,
+    //             Result  : null
+    //         };
+    //     }
 
-        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
-        await this.recordActionActivity(action, childSchemaInstance);
+    //     await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+    //     await this.recordActionActivity(action, childSchemaInstance);
 
-        return {
-            Success : true,
-            Result  : childSchemaInstance
-        };
-    };
+    //     const childSchema = await this._schemaService.getById(childSchemaInstance.Schema?.id);
+
+    //     if (childSchema.ExecuteImmediately) {
+    //         await this._engineUtils.executeSchema(childSchemaInstance);
+    //     }
+
+    //     return {
+    //         Success : true,
+    //         Result  : childSchemaInstance
+    //     };
+    // };
 
     public executeTriggerMultipleChildrenWorkflowAction = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {

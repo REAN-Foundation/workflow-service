@@ -19,6 +19,7 @@ import { uuid } from "../../domain.types/miscellaneous/system.types";
 import { TimeUtils } from "../../common/utilities/time.utils";
 import { WorkflowMessageEvent } from '../../domain.types/engine/user.event.types';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
+import ChildSchemaTriggerHandler from './child.schema.trigger.handler';
 
 ////////////////////////////////////////////////////////////////
 
@@ -805,6 +806,8 @@ export class ActionExecutioner {
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         await this.recordActionActivity(action, items);
+
+        await ChildSchemaTriggerHandler.handle(childSchemaInstance);
 
         return {
             Success : true,

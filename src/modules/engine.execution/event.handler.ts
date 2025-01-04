@@ -3,7 +3,6 @@ import { EventResponseDto } from "../../domain.types/engine/event.types";
 import * as asyncLib from 'async';
 import { EventType } from "../../domain.types/enums/event.type";
 import { UserMessageEventHandler } from './user.message.event.handler';
-import ChildSchemaTriggerHandler from "./child.schema.trigger.handler";
 
 // import { ContextService } from "../../database/services/engine/context.service";
 // import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";

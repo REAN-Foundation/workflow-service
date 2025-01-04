@@ -26,7 +26,7 @@ export class EventController {
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add event!');
             }
-            EventHandler.handle(record);
+            await EventHandler.handle(record);
             const message = 'Event created successfully!';
             return ResponseHandler.success(request, response, message, 201, record);
         } catch (error) {

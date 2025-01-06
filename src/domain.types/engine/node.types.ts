@@ -7,7 +7,7 @@ import {
 } from "../miscellaneous/system.types";
 import { NodeType, QuestionResponseType } from "./engine.enums";
 import { ActionInputParams } from "./params.types";
-import { QuestionOption } from "./user.event.types";
+import { QuestionAnswerOption } from "./user.event.types";
 import { NodeActionCreateModel, NodeActionResponseDto } from "./node.action.types";
 
 //////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ export interface YesNoNodeCreateModel extends NodeCreateModel {
 export interface QuestionNodeCreateModel extends NodeCreateModel {
     QuestionText : string;
     ResponseType : QuestionResponseType;
-    Options      : QuestionOption[];
+    Options      : QuestionAnswerOption[];
 }
 
 export interface NodeUpdateModel {
@@ -71,7 +71,7 @@ export interface NodeResponseDto {
     Question ? : {
         ResponseType : QuestionResponseType;
         QuestionText?: string;
-        Options?     : QuestionOption[];
+        Options?     : QuestionAnswerOption[];
     },
     NextNodeId  ?: uuid;
     Actions      : NodeActionResponseDto[];

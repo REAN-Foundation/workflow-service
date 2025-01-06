@@ -1,0 +1,85 @@
+meta {
+  name: Create execution node - Send location
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Send Location Messages to CFR",
+    "Description": "This execution node holds actions to send location message to the CFR near the location.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{CHILD_SCHEMA_ROOT_NODE_ID}}",
+    "SchemaId": "{{CHILD_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - To Incident Reporter",
+        "Description": "Sending reassuring message to the reporter that help is on the way",
+        "Input": {
+          "Params": [
+            {
+              "Type": "Phonenumber",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phonenumber"
+            },
+            {
+              "Type": "Location",
+              "Name": "Incident Location",
+              "Source": "Almanac",
+              "Key": "ContextParams:Location",
+              "Value": {
+                "Latitude": null,
+                "Longitude": null
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("CFR_EN1_ID", res.body.Data.id);
+  }
+
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+
+}
+
+docs {
+  User login with username/phone/email and password.
+
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

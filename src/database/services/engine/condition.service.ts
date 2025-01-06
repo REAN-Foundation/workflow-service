@@ -30,6 +30,15 @@ export class ConditionService extends BaseService {
     public create = async (createModel: ConditionCreateModel)
         : Promise<ConditionResponseDto> => {
 
+        var rule = await this._ruleRepository.findOne({
+            where : {
+                id : createModel.ParentRuleId
+            }
+        });
+        if (!rule) {
+            ErrorHandler.throwNotFoundError('Parent Rule not found!');
+        }
+
         const condition = this._conditionRepository.create({
             Name                    : createModel.Name,
             Description             : createModel.Description,
@@ -45,6 +54,12 @@ export class ConditionService extends BaseService {
             ThirdOperand            : createModel.ThirdOperand,
         });
         var record = await this._conditionRepository.save(condition);
+        if (!record) {
+            ErrorHandler.throwInternalServerError('Unable to create condition');
+        }
+        rule.ConditionId = record.id;
+        await this._ruleRepository.save(rule);
+
         return ConditionMapper.toResponseDto(record);
     };
 

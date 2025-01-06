@@ -1,12 +1,12 @@
 import { uuid } from "../miscellaneous/system.types";
-import { MessageChannelType, UserMessageType } from "./engine.enums";
+import { MessageChannelType, QuestionResponseType, UserMessageType } from "./engine.enums";
 import { Location } from "./common.types";
 import { Params } from "./params.types";
 
 ////////////////////////////////////////////////////////////////
-export interface QuestionOption {
+
+export interface QuestionAnswerOption {
     id?               : uuid;
-    NodeId?           : uuid;
     Text              : string;
     ImageUrl?         : string;
     Sequence          : number;
@@ -14,13 +14,15 @@ export interface QuestionOption {
 }
 
 export interface QuestionResponseMessage {
-    QuestionId          ?: uuid;
-    QuestionText        ?: string;
-    QuestionOptions     ?: QuestionOption[];
-    ChosenOption        ?: string;
-    ChosenOptionSequence?: number;
-    PreviousMessageId   ?: uuid;
-    PreviousNodeId      ?: uuid;
+    QuestionId                      ?: uuid;
+    QuestionText                    ?: string;
+    QuestionOptions                 ?: QuestionAnswerOption[];
+    ResponseType                    ?: QuestionResponseType;
+    ResponseContent                 ?: string | number | boolean | any[];
+    SingleChoiceChosenOption        ?: string;
+    SingleChoiceChosenOptionSequence?: number;
+    PreviousMessageId               ?: uuid;
+    PreviousNodeId                  ?: uuid;
 }
 
 export interface MessagePayload {
@@ -56,7 +58,7 @@ export interface WorkflowMessageEvent {
     Location        ?: Location;
     FileUrl         ?: string;
     Question        ?: string;
-    QuestionOptions ?: QuestionOption[];
+    QuestionOptions ?: QuestionAnswerOption[];
     QuestionResponse?: QuestionResponseMessage;
     Placeholders    ?: { Key: string, Value: string }[];
     Payload         ?: MessagePayload;

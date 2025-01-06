@@ -1,6 +1,6 @@
 import needle = require('needle');
 import { InputSourceType, MessageChannelType, OutputDestinationType, ParamType, UserMessageType, WorkflowActivityType } from "../../domain.types/engine/engine.enums";
-import { ActionInputParams, ActionOutputParams, Params } from "../../domain.types/engine/params.types";
+import { ActionInputParams, ActionOutputParams, ContextParams, Params } from "../../domain.types/engine/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
 import { ChatbotMessageService } from "../communication/chatbot.message.service";
@@ -19,10 +19,13 @@ import { uuid } from "../../domain.types/miscellaneous/system.types";
 import { TimeUtils } from "../../common/utilities/time.utils";
 import { WorkflowMessageEvent } from '../../domain.types/engine/user.event.types';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
+import ChildSchemaTriggerHandler from './child.schema.trigger.handler';
 
 ////////////////////////////////////////////////////////////////
 
 export class ActionExecutioner {
+
+    //#region Construction
 
     _almanac: Almanac;
 
@@ -53,6 +56,10 @@ export class ActionExecutioner {
         this._event = event;
         this._almanac = almanac;
     }
+
+    //#endregion
+
+    //#region Publics
 
     public ExecuteTriggerListeningNodeAction = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
@@ -140,7 +147,7 @@ export class ActionExecutioner {
         messagePlaceholders.forEach(async (placeholder) => {
             var placeholderKey = placeholder.Key;
             var placeholderValue = placeholder.Value;
-            if (placeholderKey === 'Timestamp') {
+            if (placeholderKey === 'Timestamp' || placeholderKey === 'ContextParams:Timestamp') {
                 placeholderValue = new Date().toISOString();
             }
             placeholders.push({ Key: placeholderKey, Value: placeholderValue });
@@ -510,21 +517,18 @@ export class ActionExecutioner {
                 updatedUrl = url + '?';
                 var paramList = [];
                 for (var param of queryParams) {
-                    if (!param.Value) {
+                    if (!param.QueryParamValue) {
                         var source = param.Source || InputSourceType.Almanac;
                         if (source === InputSourceType.Almanac) {
-                            var v = await this._almanac.getFact(param.Key);
+                            var v = await this._almanac.getFact(param.SourceKey);
                             if (v && param.SourceValueKey) {
                                 v = v[param.SourceValueKey];
                             }
                             param.Value = v;
                         }
                     }
-                    paramList.push(`${param.Key}=${param.Value}`);
+                    paramList.push(`${param.QueryParamKey}=${param.Value}`);
                 }
-                queryParams.forEach((param) => {
-                    paramList.push(`${param.Key}=${param.Value}`);
-                });
                 updatedUrl += paramList.join('&');
             }
             var methodToUse = method.toLowerCase();
@@ -575,6 +579,246 @@ export class ActionExecutioner {
         };
     };
 
+    // public executeTriggerChildWorkflowAction = async (
+    //     action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+    //     const input = action.Input as ActionInputParams;
+
+    //     // Get the input parameters
+    //     var childSchemaId = await this.getActionParamValue(input, ParamType.SchemaId);
+    //     if (!childSchemaId) {
+    //         logger.error('SchemaId not found in input parameters');
+    //         return {
+    //             Success : false,
+    //             Result  : null
+    //         };
+    //     }
+
+    //     var params = input.Params.filter(x => x.Type !== ParamType.SchemaId);
+    //     var childSchemaInstance = await this.createChildSchemaInstance(childSchemaId, this._schemaInstance, params);
+    //     if (!childSchemaInstance) {
+    //         logger.error('Error while creating child schema instance');
+    //         return {
+    //             Success : false,
+    //             Result  : null
+    //         };
+    //     }
+
+    //     await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+    //     await this.recordActionActivity(action, childSchemaInstance);
+
+    //     const childSchema = await this._schemaService.getById(childSchemaInstance.Schema?.id);
+
+    //     if (childSchema.ExecuteImmediately) {
+    //         await this._engineUtils.executeSchema(childSchemaInstance);
+    //     }
+
+    //     return {
+    //         Success : true,
+    //         Result  : childSchemaInstance
+    //     };
+    // };
+
+    public executeTriggerMultipleChildrenWorkflowAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        // Get the input parameters
+        var inputArrayParam: Params = input.Params.find(x => x.Type === ParamType.Array);
+        if (!inputArrayParam) {
+            logger.error('Input parameters not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+        var items = null;
+        if (!inputArrayParam.Value) {
+            const source = inputArrayParam.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                items = await this._almanac.getFact(inputArrayParam.Key);
+            }
+        }
+        else {
+            items = inputArrayParam.Value;
+        }
+        if (items === null || items.length === 0) {
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var pChildSchemaId = input.Params.find(x => x.Type === ParamType.SchemaId);
+        if (!pChildSchemaId) {
+            logger.error('SchemaId not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var childSchemaId = pChildSchemaId.Value;
+        if (!childSchemaId) {
+            logger.error('SchemaId not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        const childSchema = await this._schemaService.getById(childSchemaId);
+        if (!childSchema) {
+            logger.error(`Child schema not found for Id: ${childSchemaId}`);
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        const parentSchemaInstanceId = action.SchemaInstanceId;
+        const parentSchemaInstance = await this._schemaInstanceService.getById(parentSchemaInstanceId);
+        if (!parentSchemaInstance) {
+            logger.error(`Parent schema instance not found for Id: ${parentSchemaInstanceId}`);
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        const parentContextParams = parentSchemaInstance.ContextParams;
+        const childSchemaContextParams = childSchema.ContextParams.Params;
+        const actionInputParams = input.Params.filter(x => x.Type !== ParamType.SchemaId && x.Type !== ParamType.Array);
+        const actionOutputParams = output.Params.filter(x => x.Type !== ParamType.SchemaId && x.Type !== ParamType.Array);
+
+        // For each value in the array, create a child schema instance
+        for (let i = 0; i < items.length; i++) {
+
+            const arrayItem = items[i];
+            const subElementType = inputArrayParam.SubElementType;
+
+            const childContextParams: Params[] = [];
+
+            for (let j = 0; j < actionOutputParams.length; j++) {
+                const op = actionOutputParams[j];
+                if (op.Type === subElementType) {
+                    const outputParam = {
+                        Name     : op.Name,
+                        Type     : op.Type,
+                        Key      : op.Key,
+                        Value    : arrayItem[subElementType],
+                        Required : true,
+                    };
+                    childContextParams.push(outputParam);
+                }
+            }
+
+            const schemaIdParam = input.Params.find(x => x.Type === ParamType.SchemaId);
+            if (schemaIdParam) {
+                const outputParam = {
+                    Name     : schemaIdParam.Name,
+                    Type     : schemaIdParam.Type,
+                    Key      : schemaIdParam.Key,
+                    Value    : schemaIdParam.Value,
+                    Required : true,
+                };
+                childContextParams.push(outputParam);
+            }
+
+            for (let k = 0; k < actionInputParams.length; k++) {
+                const ip = actionInputParams[k];
+                const actionParam = parentContextParams.Params.find(x => x.Key === ip.Key && x.Type === ip.Type);
+                if (!actionParam || !actionParam.Value) {
+                    continue;
+                }
+                if (ip.Value) {
+                    childContextParams.push(ip);
+                }
+                else {
+                    childContextParams.push(actionParam);
+                }
+            }
+
+            for (let l = 0; l < childSchemaContextParams.length; l++) {
+                const cp = childSchemaContextParams[l];
+                if (cp.Type === ParamType.SchemaInstanceId && cp.Key === 'ParentSchemaInstanceId') {
+                    const outputParam = {
+                        Name     : cp.Name,
+                        Type     : cp.Type,
+                        Key      : cp.Key,
+                        Value    : parentSchemaInstanceId,
+                        Required : true,
+                    };
+                    childContextParams.push(outputParam);
+                    continue;
+                }
+                if (cp.Type === ParamType.SchemaId && cp.Key === 'ParentSchemaId') {
+                    const outputParam = {
+                        Name     : cp.Name,
+                        Type     : cp.Type,
+                        Key      : cp.Key,
+                        Value    : parentSchemaInstance.Schema?.id,
+                        Required : true,
+                    };
+                    childContextParams.push(outputParam);
+                    continue;
+                }
+                if (cp.Type === ParamType.Text || cp.Key === 'SchemaInstanceCode') {
+                    const outputParam = {
+                        Name     : cp.Name,
+                        Type     : cp.Type,
+                        Key      : cp.Key,
+                        Value    : null,
+                        Required : true,
+                    };
+                    childContextParams.push(outputParam);
+                    continue;
+                }
+
+                const parentParam = parentContextParams.Params.find(x => x.Key === cp.Key);
+                if (!parentParam || !parentParam.Value) {
+                    continue;
+                }
+                const exists = childContextParams.find(x => x.Key === cp.Key);
+                if (exists) {
+                    continue;
+                }
+                if (cp.Value) {
+                    childContextParams.push(cp);
+                }
+                else {
+                    childContextParams.push(parentParam);
+                }
+            }
+
+            var childSchemaInstance = await this.createChildSchemaInstance(
+                childSchemaId, this._schemaInstance, childContextParams);
+            if (!childSchemaInstance) {
+                logger.error('Error while creating child schema instance');
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, items);
+
+        await ChildSchemaTriggerHandler.handle(childSchemaInstance);
+
+        return {
+            Success : true,
+            Result  : items
+        };
+    };
+
+    //#endregion
+
+    //#region Privates
+
     private getActionParamValue = async (
         input: ActionInputParams,
         type: ParamType,
@@ -614,66 +858,65 @@ export class ActionExecutioner {
         params: Params[]
     ) => {
 
-        if (!parentSchemaInstance) {
-            logger.error(`Parent schema instance not found!`);
-            return null;
-        }
-
-        const childSchema = await this._schemaService.getById(childSchemaId);
-        if (!childSchema) {
-            logger.error(`Child schema not found!`);
-            return null;
-        }
-
-        const padZero = (num: number, size: number) => String(num).padStart(size, '0');
-        const pattern = TimeUtils.formatDateToYYMMDD(new Date());
-        var instanceCount = await this._schemaInstanceService.getCount(childSchema.TenantId, childSchema.id, pattern);
-        const formattedCount = padZero(instanceCount + 1, 3); // Count with leading zeros (e.g., 001)
-        var code = 'E-' + pattern + '-' + formattedCount;
-
-        const schemaInstanceContextParams = childSchema.ContextParams;
-        for (var p of schemaInstanceContextParams.Params) {
-            if (p.Type === ParamType.Phonenumber) {
-                p.Value = params.find(x => x.Type === ParamType.Phonenumber).Value;
+        try {
+            if (!parentSchemaInstance) {
+                logger.error(`Parent schema instance not found!`);
+                return null;
             }
-            if (p.Type === ParamType.Location) {
-                p.Value = params.find(x => x.Type === ParamType.Location).Value;
+
+            const childSchema = await this._schemaService.getById(childSchemaId);
+            if (!childSchema) {
+                logger.error(`Child schema not found!`);
+                return null;
             }
-            if (p.Type === ParamType.DateTime) {
-                p.Value = new Date();
-            }
-            if (p.Type === ParamType.Text) {
-                if (p.Key === 'SchemaInstanceCode') {
-                    p.Value = code;
+
+            const padZero = (num: number, size: number) => String(num).padStart(size, '0');
+            const pattern = TimeUtils.formatDateToYYMMDD(new Date());
+            var instanceCount = await this._schemaInstanceService.getCount(childSchema.TenantId, childSchema.id, pattern);
+            const formattedCount = padZero(instanceCount + 1, 3); // Count with leading zeros (e.g., 001)
+            var code = 'E-' + pattern + '-' + formattedCount;
+
+            const schemaInstanceContextParams: ContextParams = {
+                Name   : 'ContextParams',
+                Params : params
+            };
+            for (var p of params) {
+                if (p.Value) {
+                    continue;
+                }
+                if (p.Type === ParamType.Text) {
+                    if (p.Key === 'SchemaInstanceCode') {
+                        p.Value = code;
+                    }
                 }
             }
-            if (p.Type === ParamType.SchemaInstanceId) {
-                if (p.Key === 'ParentSchemaInstanceId') {
-                    p.Value = parentSchemaInstance.id;
-                }
+
+            const rootNode = await this._commonUtilsService.getNode(childSchema.RootNode.id);
+            if (!rootNode) {
+                logger.error(`Root node not found for child schema!`);
+                return null;
             }
-        }
 
-        const rootNode = await this._commonUtilsService.getNode(childSchema.RootNode.id);
-        if (!rootNode) {
-            logger.error(`Root node not found for child schema!`);
+            const childSchemaInstance = await this._schemaInstanceService.create({
+                TenantId               : childSchema.TenantId,
+                SchemaId               : childSchema.id,
+                ParentSchemaInstanceId : parentSchemaInstance.id,
+                ContextParams          : schemaInstanceContextParams,
+                Code                   : code,
+            });
+
+            if (!childSchemaInstance) {
+                logger.error(`Error while creating schema instance!`);
+                return null;
+            }
+
+            return childSchemaInstance;
+        }
+        catch (error) {
+            logger.error(`Error while creating child schema instance: ${error.message}`);
+            logger.error(`Stack: ${error.stack}`);
             return null;
         }
-
-        const childSchemaInstance = await this._schemaInstanceService.create({
-            TenantId               : childSchema.TenantId,
-            SchemaId               : childSchema.id,
-            ParentSchemaInstanceId : parentSchemaInstance.id,
-            ContextParams          : schemaInstanceContextParams,
-            Code                   : code,
-        });
-
-        if (!childSchemaInstance) {
-            logger.error(`Error while creating schema instance!`);
-            return null;
-        }
-
-        return childSchemaInstance;
     };
 
     private recordActionActivity = async (
@@ -751,6 +994,8 @@ export class ActionExecutioner {
         var result = await messageService.send(phonenumber, messageEvent);
         return result;
     };
+
+    //#endregion
 
 }
 

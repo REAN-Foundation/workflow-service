@@ -1,0 +1,104 @@
+meta {
+  name: Create schema
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/schema
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "Name": "Alert Report Workflow - V1",
+    "Description": "This schema represents a workflow for ALERT emergency response management.",
+    "Type": "ChatBot",
+    "ContextParams": {
+      "Name": "Schema instance context",
+      "Params": [
+        {
+          "Name": "Reporter Phonenumber",
+          "Type": "Phonenumber",
+          "Description": "This is phone number of person reporting an emergency incident",
+          "Value": null,
+          "Key": "ContextParams:Reporter:Phonenumber"
+        },
+        {
+          "Name": "Location",
+          "Description": "This is the location where the emergency has occurred.",
+          "Type": "Location",
+          "Value": {
+            "Longitude": null,
+            "Latitude": null
+          },
+          "Key": "ContextParams:Location"
+        },
+        {
+          "Name": "Timestamp",
+          "Description": "This is the timestamp the emergency has been reported.",
+          "Type": "DateTime",
+          "Value": null,
+          "Key": "ContextParams:Timestamp"
+        },
+        {
+          "Name": "Schema Instance Code",
+          "Description": "This is the code of the schema instance",
+          "Type": "Text",
+          "Value": null,
+          "Key": "SchemaInstanceCode"
+        },
+        {
+          "Name": "Incident Code",
+          "Description": "This is the code of the reported emergency incident. This value is generated on schema instance generation",
+          "Type": "RandomCode",
+          "Value": null,
+          "Key": "IncidenceCode"
+        }
+      ]
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("SCHEMA_ID", res.body.Data.id);
+    bru.setEnvVar("BASE_SCHEMA_ID", res.body.Data.id);
+    bru.setEnvVar("SCHEMA_ROOT_NODE_ID", res.body.Data.RootNode.id);
+    bru.setEnvVar("NODE_01_ID", res.body.Data.RootNode.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      expect(res.body.Status).to.eql('success');
+  });
+  
+  test("Schema is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('TenantId');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+      expect(jsonRes.Data).to.have.property('RootNode');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

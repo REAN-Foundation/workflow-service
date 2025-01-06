@@ -1,0 +1,32 @@
+meta {
+  name: 05 - Get QN path rule - second option
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{BASE_URL}}/engine/rules/{{QN_NODE_PATH_2_RULE_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+}
+
+docs {
+  User login with username/phone/email and password.
+
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

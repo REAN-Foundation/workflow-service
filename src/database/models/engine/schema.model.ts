@@ -38,6 +38,9 @@ export class Schema {
     @Column({ type: 'uuid', nullable: true })
     RootNodeId: string;
 
+    @Column({ type: 'boolean', nullable: false, default: false })
+    ExecuteImmediately: boolean;
+
     @OneToMany(() => Node, (node) => node.Schema, {
         cascade : true,
     })

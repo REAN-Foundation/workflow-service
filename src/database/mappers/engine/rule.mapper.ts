@@ -27,12 +27,12 @@ export class RuleMapper {
                 id          : rule.NodePath.id,
                 Name        : rule.NodePath.Name,
                 Description : rule.NodePath.Description,
-                NextNode    : {
+                NextNode    : rule.NodePath.NextNode ? {
                     id          : rule.NodePath.NextNode.id,
                     Name        : rule.NodePath.NextNode.Name,
                     Code        : rule.NodePath.NextNode.Code,
                     Description : rule.NodePath.NextNode.Description,
-                }
+                } : null,
             } : null,
             CreatedAt : rule.CreatedAt,
             UpdatedAt : rule.UpdatedAt,

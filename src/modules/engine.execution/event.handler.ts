@@ -55,8 +55,8 @@ export default class EventHandler {
             logger.info(`Processing event: ${event.EventType}`);
 
             if (event.EventType === EventType.UserMessage) {
-                var handler = new UserMessageEventHandler();
-                await handler.handle(event);
+                var userMessageHandler = new UserMessageEventHandler();
+                await userMessageHandler.handle(event);
             }
             else {
                 logger.info('Terminating workflow!');

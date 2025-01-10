@@ -1,8 +1,8 @@
 
 export interface Location {
     Name     ?: string;
-    Latitude ?: number;
-    Longitude?: number;
+    Latitude ?: number | null;
+    Longitude?: number | null;
 }
 
 export type DistanceUnit = 'km' | 'mi' | 'm';

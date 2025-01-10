@@ -22,15 +22,15 @@ export class EventValidator extends BaseValidator {
                     MessageType    : joi.string().valid(...Object.values(UserMessageType)).required(),
                     MessageChannel : joi.string().valid(...Object.values(MessageChannelType)).required(),
                     EventTimestamp : joi.date().required(),
-                    TextMessage    : joi.string().optional(),
-                    ImageUrl       : joi.string().optional(),
-                    VideoUrl       : joi.string().optional(),
-                    AudioUrl       : joi.string().optional(),
+                    TextMessage    : joi.string().allow(null).optional(),
+                    ImageUrl       : joi.string().allow(null).optional(),
+                    VideoUrl       : joi.string().allow(null).optional(),
+                    AudioUrl       : joi.string().allow(null).optional(),
                     Location       : joi.object({
-                        Name      : joi.string().optional(),
-                        Latitude  : joi.number().required(),
-                        Longitude : joi.number().required(),
-                    }).optional(),
+                        Name      : joi.string().allow(null).optional(),
+                        Latitude  : joi.number().allow(null).required(),
+                        Longitude : joi.number().allow(null).required(),
+                    }).allow(null).optional(),
                     QuestionResponse : joi.object({
                         QuestionId      : joi.string().uuid().optional(),
                         QuestionText    : joi.string().optional(),
@@ -39,7 +39,7 @@ export class EventValidator extends BaseValidator {
                             ImageUrl : joi.string().allow(null).max(512).optional(),
                             Sequence : joi.number().integer().allow(null).max(10).optional(),
                             Metadata : joi.string().allow(null).max(1024).optional(),
-                        })).optional(),
+                        })).allow(null).optional(),
                         ChosenOption         : joi.string().allow(null).optional(),
                         ChosenOptionSequence : joi.number().integer().allow(null).optional(),
                         PreviousMessageId    : joi.string().allow(null).uuid().optional(),
@@ -50,6 +50,7 @@ export class EventValidator extends BaseValidator {
                 Payload        : joi.object().allow(null).optional(),
             });
             await event.validateAsync(request.body);
+            
             const model: EventCreateModel = {
                 TenantId         : request.body.TenantId,
                 EventType        : request.body.EventType,
@@ -57,6 +58,14 @@ export class EventValidator extends BaseValidator {
                 SchemaInstanceId : request.body.SchemaInstanceId ?? null,
                 UserMessage      : request.body.UserMessage ?? null,
             };
+            if (model.UserMessage != null && model.UserMessage.Location != null) {
+                model.UserMessage.Location = {
+                    Name      : model.UserMessage.Location.Name ?? null,
+                    Latitude  : typeof model.UserMessage.Location.Latitude === 'string' ? parseFloat(model.UserMessage.Location.Latitude) : model.UserMessage.Location.Latitude,
+                    Longitude : typeof model.UserMessage.Location.Longitude === 'string' ? parseFloat(model.UserMessage.Location.Longitude) : model.UserMessage.Location.Longitude,
+                };
+                
+            }
             return model;
         } catch (error) {
             ErrorHandler.handleValidationError(error);

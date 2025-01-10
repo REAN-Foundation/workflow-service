@@ -115,6 +115,9 @@ export class UserMessageEventHandler {
             }
             if (p.Type === ParamType.Location) {
                 var distUnit = p.ComparisonUnit as DistanceUnit ?? 'm';
+                if (!event.UserMessage.Location || !p.Value) {
+                    continue;
+                }
                 if (!MiscUtils.compareLocations(p.Value, event.UserMessage.Location, p.ComparisonThreshold, distUnit)) {
                     if (p.Required) {
                         return [];

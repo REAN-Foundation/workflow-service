@@ -124,7 +124,8 @@ export class UserController {
             const accessToken = await AuthHandler.generateUserSessionToken(currentUser);
             const result = {
                 User        : currentUser,
-                AccessToken : accessToken
+                AccessToken : accessToken,
+                ExpiresIn   : loginSession.ValidTill
             };
             const message = 'User logged in successfully!';
             ResponseHandler.success(request, response, message, 200, result);
@@ -179,6 +180,7 @@ export class UserController {
     //         const result = {
     //             User        : currentUser,
     //             AccessToken : accessToken
+    //         };  ExpiresIn   : loginSession.ValidTill
     //         };
     //         const message = 'User logged in successfully!';
     //         ResponseHandler.success(request, response, message, 200, result);

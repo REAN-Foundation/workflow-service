@@ -156,7 +156,7 @@ export class SchemaEngine {
                 }
             }
             if (!inputsFulfilled) {
-                logger.error(`Error while executing workflow. Required inputs not fulfilled!`);
+                logger.error(`Listening Node: While executing workflow. Required inputs not fulfilled! Continuing...`);
                 continue;
             }
             //Execute the actions

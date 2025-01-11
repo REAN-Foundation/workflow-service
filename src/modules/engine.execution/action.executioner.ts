@@ -765,7 +765,7 @@ export class ActionExecutioner {
                     childContextParams.push(outputParam);
                     continue;
                 }
-                if (cp.Type === ParamType.Text || cp.Key === 'SchemaInstanceCode') {
+                if (cp.Type === ParamType.Text && cp.Key === 'SchemaInstanceCode') {
                     const outputParam = {
                         Name     : cp.Name,
                         Type     : cp.Type,
@@ -781,11 +781,17 @@ export class ActionExecutioner {
                 if (!parentParam || !parentParam.Value) {
                     continue;
                 }
-                const exists = childContextParams.find(x => x.Key === cp.Key);
+                const exists = childContextParams.find(x => x.Key === cp.Key && x.Value);
                 if (exists) {
                     continue;
                 }
-                if (cp.Value) {
+
+                var cpValueExists = cp.Value !== null && cp.Value !== undefined;
+                if (cp.Type === ParamType.Location && cpValueExists) {
+                    cpValueExists = cp.Value.Latitude && cp.Value.Longitude;
+                }
+
+                if (cpValueExists) {
                     childContextParams.push(cp);
                 }
                 else {

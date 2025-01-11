@@ -192,36 +192,80 @@ export class SchemaEngine {
         var fact: any = null;
         const params = schemaInstance.ContextParams.Params;
         for await (var p of params) {
-            if (p.Type === ParamType.Phonenumber && p.Value) {
+
+            if (p.Type === ParamType.Phonenumber) {
                 fact = await this._almanac.getFact(p.Key);
-                if (!fact) {
-                    await this._almanac.addFact(p.Key, p.Value);
+                if (p.Value) {
+                    if (!fact) {
+                        await this._almanac.addFact(p.Key, p.Value);
+                    }
                 }
-            }
-            if (p.Type === ParamType.Location && p.Value) {
-                fact = await this._almanac.getFact(p.Key);
-                if (!fact) {
-                    await this._almanac.addFact(p.Key, p.Value);
-                }
-            }
-            if (p.Type === ParamType.DateTime && p.Value) {
-                fact = await this._almanac.getFact(p.Key);
-                if (!fact) {
-                    await this._almanac.addFact(p.Key, p.Value);
-                }
-            }
-            if (p.Type === ParamType.Text && p.Value) {
-                if (p.Key === 'SchemaInstanceCode') {
-                    fact = await this._almanac.getFact(p.Key);
+                else if (this._event.UserMessage.Phone) {
+                    p.Value = fact ?? this._event.UserMessage.Phone;
                     if (!fact) {
                         await this._almanac.addFact(p.Key, p.Value);
                     }
                 }
             }
-            if (p.Type === ParamType.RandomCode && p.Value) {
+
+            if (p.Type === ParamType.Location) {
                 fact = await this._almanac.getFact(p.Key);
-                if (!fact) {
-                    await this._almanac.addFact(p.Key, p.Value);
+                if (p.Value) {
+                    if (!fact) {
+                        await this._almanac.addFact(p.Key, p.Value);
+                    }
+                }
+                else if (this._event.UserMessage.Location) {
+                    p.Value = fact ?? this._event.UserMessage.Location;
+                    if (!fact) {
+                        await this._almanac.addFact(p.Key, p.Value);
+                    }
+                }
+            }
+
+            if (p.Type === ParamType.DateTime) {
+                fact = await this._almanac.getFact(p.Key);
+                if (p.Value) {
+                    if (!fact) {
+                        await this._almanac.addFact(p.Key, p.Value);
+                    }
+                }
+                else {
+                    p.Value = fact ?? new Date();
+                    if (!fact) {
+                        await this._almanac.addFact(p.Key, p.Value);
+                    }
+                }
+            }
+
+            if (p.Type === ParamType.Text) {
+
+                if (p.Key === 'SchemaInstanceCode') {
+                    fact = await this._almanac.getFact(p.Key);
+                    const schemaInstanceCode = schemaInstance.Code;
+                    if (!fact) {
+                        await this._almanac.addFact(p.Key, schemaInstanceCode);
+                    }
+                    if (!p.Value) {
+                        p.Value = schemaInstanceCode;
+                    }
+                }
+
+                // Add any other text parameters here
+            }
+
+            if (p.Type === ParamType.RandomCode) {
+                fact = await this._almanac.getFact(p.Key);
+                if (p.Value) {
+                    if (!fact) {
+                        await this._almanac.addFact(p.Key, p.Value);
+                    }
+                }
+                else {
+                    p.Value = fact ?? StringUtils.generateDisplayCode_RandomChars(6);
+                    if (!fact) {
+                        await this._almanac.addFact(p.Key, p.Value);
+                    }
                 }
             }
         }

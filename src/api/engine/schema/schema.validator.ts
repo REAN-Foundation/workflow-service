@@ -21,11 +21,14 @@ export class SchemaValidator extends BaseValidator {
                 ContextParams      : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
-                        Name        : joi.string().max(128).required(),
-                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
-                        Description : joi.string().max(512).optional(),
-                        Value       : joi.any().allow(null).optional(),
-                        Key         : joi.string().max(256).optional(),
+                        Name                : joi.string().max(128).required(),
+                        Type                : joi.string().valid(...Object.values(ParamType)).required(),
+                        Description         : joi.string().max(512).optional(),
+                        Value               : joi.any().allow(null).optional(),
+                        Key                 : joi.string().max(256).optional(),
+                        Required            : joi.boolean().optional(),
+                        ComparisonThreshold : joi.number().allow(null).optional(),
+                        ComparisonUnit      : joi.string().allow(null).optional(),
                     })).required()
                 }).optional(),
                 RootNode : joi.object({
@@ -84,10 +87,13 @@ export class SchemaValidator extends BaseValidator {
                 ContextParams      : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
-                        Name        : joi.string().max(128).required(),
-                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
-                        Description : joi.string().max(512).optional(),
-                        Value       : joi.any().required(),
+                        Name                : joi.string().max(128).required(),
+                        Type                : joi.string().valid(...Object.values(ParamType)).required(),
+                        Description         : joi.string().max(512).optional(),
+                        Value               : joi.any().required(),
+                        Required            : joi.boolean().optional(),
+                        ComparisonThreshold : joi.number().allow(null).optional(),
+                        ComparisonUnit      : joi.string().allow(null).optional(),
                     })).required()
                 }).optional(),
             });

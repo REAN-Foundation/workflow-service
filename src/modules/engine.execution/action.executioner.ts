@@ -12,14 +12,15 @@ import { NodeInstanceService } from '../../database/services/engine/node.instanc
 import { CommonUtilsService } from '../../database/services/engine/common.utils.service';
 import { SchemaResponseDto } from "../../domain.types/engine/schema.domain.types";
 import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.instance.types";
-import { EventResponseDto } from "../../domain.types/engine/event.types";
+import { EventResponseDto, WorkflowEvent } from "../../domain.types/engine/event.types";
 import { NodeActionResult } from "../../domain.types/engine/node.action.types";
 import { EngineUtils } from "./engine.utils";
 import { uuid } from "../../domain.types/miscellaneous/system.types";
 import { TimeUtils } from "../../common/utilities/time.utils";
-import { WorkflowMessageEvent } from '../../domain.types/engine/user.event.types';
+import { WorkflowMessage } from '../../domain.types/engine/user.event.types';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
 import ChildSchemaTriggerHandler from './child.schema.trigger.handler';
+import { EventType } from '../../domain.types/enums/event.type';
 
 ////////////////////////////////////////////////////////////////
 
@@ -155,7 +156,7 @@ export class ActionExecutioner {
 
         const payload = this._event.Payload;
 
-        const message: WorkflowMessageEvent = {
+        const message: WorkflowMessage = {
             MessageType     : UserMessageType.Text,
             EventTimestamp  : new Date(),
             MessageChannel  : this._event.UserMessage.MessageChannel,
@@ -264,7 +265,7 @@ export class ActionExecutioner {
 
         const payload = this._event.Payload;
 
-        const message: WorkflowMessageEvent = {
+        const message: WorkflowMessage = {
             MessageType     : UserMessageType.Text,
             EventTimestamp  : new Date(),
             MessageChannel  : this._event.UserMessage.MessageChannel,
@@ -790,6 +791,7 @@ export class ActionExecutioner {
                 if (cp.Type === ParamType.Location && cpValueExists) {
                     cpValueExists = cp.Value.Latitude && cp.Value.Longitude;
                 }
+                //Similarly check for other types...
 
                 if (cpValueExists) {
                     childContextParams.push(cp);
@@ -808,12 +810,12 @@ export class ActionExecutioner {
                     Result  : null
                 };
             }
+
+            await ChildSchemaTriggerHandler.handle(childSchemaInstance);
         }
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         await this.recordActionActivity(action, items);
-
-        await ChildSchemaTriggerHandler.handle(childSchemaInstance);
 
         return {
             Success : true,
@@ -951,7 +953,7 @@ export class ActionExecutioner {
 
     private sendBotMessage = async (
         action: NodeActionInstanceResponseDto,
-        message: WorkflowMessageEvent)
+        message: WorkflowMessage)
         : Promise<boolean> => {
 
         var messageService = new ChatbotMessageService();
@@ -968,36 +970,42 @@ export class ActionExecutioner {
         const questionOptions = message.QuestionOptions || null;
         const messageType = message.MessageType;
 
-        const messageEvent: WorkflowMessageEvent = {
-            MessageType     : messageType,
-            EventTimestamp  : new Date(),
-            MessageChannel  : this._event.UserMessage.MessageChannel,
-            Phone           : phonenumber,
-            TextMessage     : textMessage,
-            Location        : location,
-            ImageUrl        : imageUrl,
-            AudioUrl        : audioUrl,
-            VideoUrl        : videoUrl,
-            Question        : question,
-            QuestionOptions : questionOptions,
-            Payload         : {
-                MessageType              : UserMessageType.Text,
-                ProcessingEventId        : this._event.id,
-                ChannelMessageId         : null,
-                BotMessageId             : null,
-                ChannelType              : eventPayload ? eventPayload.MessageChannel as MessageChannelType : null,
-                PreviousChannelMessageId : eventPayload ? eventPayload.ChannelMessageId : null,
-                PreviousBotMessageId     : eventPayload ? eventPayload.BotMessageId : null,
-                SchemaId                 : this._schema.id,
-                SchemaInstanceId         : this._schemaInstance.id,
-                SchemaInstanceCode       : this._schemaInstance.Code,
-                SchemaName               : this._schema.Name,
-                NodeInstanceId           : action.NodeInstanceId,
-                NodeId                   : action.NodeId,
-                ActionId                 : action.id,
+        const ev: WorkflowEvent = {
+            EventType        : EventType.WorkflowSystemMessage,
+            TenantId         : this._event.TenantId,
+            SchemaId         : this._schema.id,
+            SchemaInstanceId : this._schemaInstance.id,
+            UserMessage      : {
+                MessageType     : messageType,
+                EventTimestamp  : new Date(),
+                MessageChannel  : this._event.UserMessage.MessageChannel,
+                Phone           : phonenumber,
+                TextMessage     : textMessage,
+                Location        : location,
+                ImageUrl        : imageUrl,
+                AudioUrl        : audioUrl,
+                VideoUrl        : videoUrl,
+                Question        : question,
+                QuestionOptions : questionOptions,
+                Payload         : {
+                    MessageType              : UserMessageType.Text,
+                    ProcessingEventId        : this._event.id,
+                    ChannelMessageId         : null,
+                    BotMessageId             : null,
+                    ChannelType              : eventPayload ? eventPayload.MessageChannel as MessageChannelType : null,
+                    PreviousChannelMessageId : eventPayload ? eventPayload.ChannelMessageId : null,
+                    PreviousBotMessageId     : eventPayload ? eventPayload.BotMessageId : null,
+                    SchemaId                 : this._schema.id,
+                    SchemaInstanceId         : this._schemaInstance.id,
+                    SchemaInstanceCode       : this._schemaInstance.Code,
+                    SchemaName               : this._schema.Name,
+                    NodeInstanceId           : action.NodeInstanceId,
+                    NodeId                   : action.NodeId,
+                    ActionId                 : action.id,
+                }
             }
         };
-        var result = await messageService.send(phonenumber, messageEvent);
+        var result = await messageService.send(phonenumber, ev);
         return result;
     };
 

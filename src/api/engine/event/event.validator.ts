@@ -45,6 +45,7 @@ export class EventValidator extends BaseValidator {
                         PreviousMessageId    : joi.string().allow(null).uuid().optional(),
                         PreviousNodeId       : joi.string().allow(null).uuid().optional(),
                     }).optional(),
+                    Payload : joi.object().allow(null).optional(),
                 }).optional(),
                 EventTimestamp : joi.date().required(),
                 Payload        : joi.object().allow(null).optional(),

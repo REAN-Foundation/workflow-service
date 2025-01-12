@@ -46,7 +46,7 @@ export interface MessagePayload {
 }
 
 // Back and forth
-export interface WorkflowMessageEvent {
+export interface WorkflowMessage {
     Phone?           : string;
     EventTimestamp   : Date;
     MessageType      : UserMessageType;

@@ -1,12 +1,14 @@
-import { WorkflowMessageEvent } from '../../domain.types/engine/user.event.types';
 import { logger } from '../../logger/logger';
-import needle = require('needle');
+import { Agent as HttpAgent } from 'http'; // For HTTP
+import { Agent as HttpsAgent } from 'https'; // For HTTPS
+import needle from 'needle';
+import { WorkflowEvent } from '../../domain.types/engine/event.types';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class ChatbotMessageService {
 
-    send = async (toPhone: string, message: WorkflowMessageEvent): Promise<boolean> => {
+    send = async (toPhone: string, message: WorkflowEvent): Promise<boolean> => {
         try {
             const str = JSON.stringify(message);
             logger.info(`Sending message to \nPhone: '${toPhone}',\nMessage Payload: '${str}'`);
@@ -14,22 +16,26 @@ export class ChatbotMessageService {
             const botApiUrl = process.env.BOT_API_URL;
             const botApiKey = process.env.BOT_API_KEY;
 
-            const headers = {
-                'Content-Type'    : 'application/json',
-                Accept            : '*/*',
-                'Cache-Control'   : 'no-cache',
-                'Accept-Encoding' : 'gzip, deflate, br',
-                Connection        : 'keep-alive',
-                'x-api-key'       : botApiKey,
-            };
+            var agent = new HttpAgent({ keepAlive: true });
+            if (botApiUrl.startsWith('https')) {
+                agent = new HttpsAgent({ keepAlive: true });
+            }
             const options = {
-                headers    : headers,
-                compressed : true,
-                json       : true,
+                httpAgent : agent,
+                headers   : {
+                    'Content-Type'    : 'application/json',
+                    Accept            : '*/*',
+                    'Cache-Control'   : 'no-cache',
+                    'Accept-Encoding' : 'gzip, deflate, br',
+                    Connection        : 'keep-alive',
+                    'x-api-key'       : botApiKey,
+                }
             };
 
             const url = `${botApiUrl}/message/send`;
-            const response = await needle.post(url, message, options);
+            logger.info(url);
+
+            const response = await needle('post', url, message, options);
             if (response.statusCode !== 200) {
                 logger.error(`Failed to send message to \nPhone: '${toPhone}',\nMessage Payload: '${str}'`);
                 return true;
@@ -38,7 +44,7 @@ export class ChatbotMessageService {
 
             return Promise.resolve(true);
         } catch (error) {
-            logger.info(error.message);
+            logger.error(error.message);
             return false;
         }
     };

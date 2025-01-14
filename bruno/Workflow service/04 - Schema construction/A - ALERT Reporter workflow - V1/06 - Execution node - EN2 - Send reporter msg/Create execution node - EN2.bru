@@ -1,0 +1,81 @@
+meta {
+  name: Create execution node - EN2
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN2-Send message to reporter assuring help",
+    "Description": "This execution node holds actions to send message to reporter reassuring that help is on the way and reponsers have been notified.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{EXECUTION_NODE_1_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - Prompt for location",
+        "IsPathAction": true,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phonenumber",
+              "Type": "Phonenumber",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phonenumber"
+            },
+            {
+              "Name": "CFR notified message",
+              "Type": "Text",
+              "Value": "We have notified nearby responders. Help is on the way!"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("EXECUTION_NODE_2_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

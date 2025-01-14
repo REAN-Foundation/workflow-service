@@ -54,6 +54,9 @@ export class NodeInstance {
     @Column({ type: 'simple-json', nullable: true })
     ExecutionResult : any;
 
+    @Column({ type: 'int', nullable: false, default: 0 })
+    TimerNumberOfTriesCompleted: number;
+
     @OneToOne(() => Rule, { nullable: true })
     ChosenNodePath: NodePath;
 

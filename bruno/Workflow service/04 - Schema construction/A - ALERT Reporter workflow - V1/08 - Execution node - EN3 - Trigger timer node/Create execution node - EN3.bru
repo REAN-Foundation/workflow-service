@@ -1,0 +1,78 @@
+meta {
+  name: Create execution node - EN3
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN3-Trigger timer node",
+    "Description": "This execution node holds actions to trigger timer node.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{EXECUTION_NODE_2_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "TriggerTimerNode",
+        "Name": "Trigger location listener node",
+        "Description": "This action triggers a timer node, which checks CFR response after certain intervals",
+        "Input": {
+          "Params": [
+            {
+              "Name": "Timer Node to trigger",
+              "Description": "Node Id ofthe timer node which should be triggered",
+              "ActionType": "TriggerTimerNode",
+              "Type": "NodeId",
+              "Value": "{{CFR_RESPONSE_TIMER_NODE_ID}}",
+              "Key": "CFR:Responders:TimerNode",
+              "Required": true
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("EXECUTION_NODE_3_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

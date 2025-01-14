@@ -2,7 +2,14 @@ import { ConditionOperand } from "../../domain.types/engine/rule.types";
 import { ConditionService } from "../../database/services/engine/condition.service";
 import { RuleService } from "../../database/services/engine/rule.service";
 import { uuid } from "../../domain.types/miscellaneous/system.types";
-import { CompositionOperatorType, InputSourceType, LogicalOperatorType, OperandDataType, OperatorType, QuestionResponseType, UserMessageType } from "../../domain.types/engine/engine.enums";
+import {
+    CompositionOperatorType,
+    InputSourceType,
+    LogicalOperatorType,
+    OperandDataType,
+    OperatorType,
+    QuestionResponseType,
+    UserMessageType } from "../../domain.types/engine/engine.enums";
 import { ConditionResponseDto } from "../../domain.types/engine/condition.types";
 import { Almanac } from "./almanac";
 import { EventResponseDto } from "../../domain.types/engine/event.types";
@@ -21,7 +28,7 @@ export class ConditionProcessor {
 
     _event: EventResponseDto | null = null;
 
-    constructor(almanac: Almanac, event: EventResponseDto) {
+    constructor(almanac: Almanac, event?: EventResponseDto) {
         this._almanac = almanac;
         this._event = event;
     }

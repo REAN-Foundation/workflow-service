@@ -478,7 +478,7 @@ export class SchemaEngine {
         return currentNodeInstance;
     }
 
-    private async executeNodeActions(currentNodeInstance: NodeInstanceResponseDto):
+    public async executeNodeActions(currentNodeInstance: NodeInstanceResponseDto):
         Promise<boolean> {
 
         //Generate the action executioner
@@ -517,7 +517,10 @@ export class SchemaEngine {
         };
 
         if (actionInstance.ActionType === ActionType.TriggerListeningNode) {
-            result = await actionExecutioner.ExecuteTriggerListeningNodeAction(actionInstance);
+            result = await actionExecutioner.triggerListeningNode(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.TriggerTimerNode) {
+            result = await actionExecutioner.triggerTimerNode(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.SendMessage) {
             result = await actionExecutioner.executeSendMessageAction(actionInstance);

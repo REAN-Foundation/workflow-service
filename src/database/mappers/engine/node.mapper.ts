@@ -53,16 +53,18 @@ export class NodeMapper {
                     };
                 }) : null,
             } : null,
-            NextNodeId   : node.NextNodeId,
-            Actions      : actions,
-            DelaySeconds : node.DelaySeconds,
-            RuleId       : node.RuleId,
-            YesAction    : yesActionDto,
-            NoAction     : noActionDto,
-            RawData      : node.RawData,
-            Input        : node.Input,
-            CreatedAt    : node.CreatedAt,
-            UpdatedAt    : node.UpdatedAt,
+            NextNodeId    : node.NextNodeId,
+            Actions       : actions,
+            DelaySeconds  : node.DelaySeconds,
+            NumberOfTries : node.NumberOfTries,
+            TimerSeconds  : node.TimerSeconds,
+            RuleId        : node.RuleId,
+            YesAction     : yesActionDto,
+            NoAction      : noActionDto,
+            RawData       : node.RawData,
+            Input         : node.Input,
+            CreatedAt     : node.CreatedAt,
+            UpdatedAt     : node.UpdatedAt,
         };
         return dto;
     };

@@ -78,7 +78,7 @@ export enum NodeType {
     QuestionNode  = 'QuestionNode',
     ListeningNode = 'ListeningNode',
     YesNoNode     = 'YesNoNode',
-    WaitNode      = 'WaitNode',
+    TimerNode     = 'TimerNode',
 }
 
 export const NodeTypeList: NodeType[] = [
@@ -86,12 +86,12 @@ export const NodeTypeList: NodeType[] = [
     NodeType.QuestionNode,
     NodeType.ListeningNode,
     NodeType.YesNoNode,
-    NodeType.WaitNode,
+    NodeType.TimerNode,
 ];
 
 export enum ActionType {
     TriggerListeningNode            = 'TriggerListeningNode',
-    TriggerWaitNode                 = 'TriggerWaitNode',
+    TriggerTimerNode                = 'TriggerTimerNode',
     TriggerChildWorkflow            = 'TriggerChildWorkflow',
     TriggerMultipleChildrenWorkflow = 'TriggerMultipleChildrenWorkflow',
     SendMessage                     = 'SendMessage',
@@ -113,7 +113,7 @@ export enum ActionType {
 
 export const ActionTypeList: ActionType[] = [
     ActionType.TriggerListeningNode,
-    ActionType.TriggerWaitNode,
+    ActionType.TriggerTimerNode,
     ActionType.TriggerChildWorkflow,
     ActionType.TriggerMultipleChildrenWorkflow,
     ActionType.SendMessage,
@@ -218,6 +218,7 @@ export enum LogicalOperatorType {
     In                        = 'In',
     NotIn                     = 'NotIn',
     Contains                  = 'Contains',
+    IsEmpty                   = 'IsEmpty',
     DoesNotContain            = 'DoesNotContain',
     Between                   = 'Between',
     IsTrue                    = 'IsTrue',
@@ -238,6 +239,7 @@ export const LogicalOperatorList: LogicalOperatorType[] = [
     LogicalOperatorType.In,
     LogicalOperatorType.NotIn,
     LogicalOperatorType.Contains,
+    LogicalOperatorType.IsEmpty,
     LogicalOperatorType.DoesNotContain,
     LogicalOperatorType.Between,
     LogicalOperatorType.IsTrue,
@@ -325,6 +327,7 @@ export enum InputSourceType {
 export const InputSourceTypeList: InputSourceType[] = [
     InputSourceType.UserEvent,
     InputSourceType.SystemEvent,
+    InputSourceType.SystemData,
     InputSourceType.Database,
     InputSourceType.Almanac,
     InputSourceType.ApiEndpoint,
@@ -346,4 +349,5 @@ export const OutputSourceTypeList: OutputDestinationType[] = [
     OutputDestinationType.Database,
     OutputDestinationType.Almanac,
     OutputDestinationType.ApiEndpoint,
+    OutputDestinationType.None,
 ];

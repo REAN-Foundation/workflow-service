@@ -53,9 +53,10 @@ export interface NodeInstanceResponseDto {
                 Name: string;
             };
         }[];
-    ActionInstances?: NodeActionInstanceResponseDto[];
-    CreatedAt       : Date;
-    UpdatedAt       : Date;
+    ActionInstances            ?: NodeActionInstanceResponseDto[];
+    TimerNumberOfTriesCompleted : number;
+    CreatedAt                   : Date;
+    UpdatedAt                   : Date;
 }
 
 export interface NodeInstanceSearchFilters extends BaseSearchFilters {

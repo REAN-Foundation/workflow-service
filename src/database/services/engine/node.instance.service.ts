@@ -43,11 +43,12 @@ export class NodeInstanceService extends BaseService {
         const schemaInstance = await this.getSchemaInstance(createModel.SchemaInstanceId);
 
         const nodeInstance = this._nodeInstanceRepository.create({
-            Node            : node,
-            SchemaInstance  : schemaInstance,
-            ExecutionStatus : createModel.ExecutionStatus,
-            Type            : node.Type,
-            Input           : createModel.Input,
+            Node                        : node,
+            SchemaInstance              : schemaInstance,
+            ExecutionStatus             : createModel.ExecutionStatus,
+            Type                        : node.Type,
+            Input                       : createModel.Input,
+            TimerNumberOfTriesCompleted : 0,
         });
         var record = await this._nodeInstanceRepository.save(nodeInstance);
         var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(record.id);
@@ -197,6 +198,29 @@ export class NodeInstanceService extends BaseService {
             record.ExecutionStatus = status;
             record.StatusUpdateTimestamp = new Date();
             record.ExecutionResult = executionResult ? executionResult : null;
+            await this._nodeInstanceRepository.save(record);
+            return true;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public updateTimerTries = async (nodeInstanceId: uuid, tries: number): Promise<boolean> => {
+        try {
+            var record = await this._nodeInstanceRepository.findOne({
+                where : {
+                    id : nodeInstanceId
+                }
+            });
+            if (!record) {
+                ErrorHandler.throwNotFoundError(`NodeInstance with ID ${nodeInstanceId} not found.`);
+            }
+            if (tries < 0) {
+                logger.error('Number of tries cannot be negative.');
+                tries = 0;
+            }
+            record.TimerNumberOfTriesCompleted = tries;
             await this._nodeInstanceRepository.save(record);
             return true;
         } catch (error) {

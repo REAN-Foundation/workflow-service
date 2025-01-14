@@ -16,7 +16,8 @@ import {
     NodeSearchFilters,
     NodeSearchResults,
     NodeUpdateModel,
-    QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
+    QuestionNodeCreateModel,
+    TimerNodeCreateModel } from '../../../domain.types/engine/node.types';
 import { CommonUtilsService } from './common.utils.service';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 import { Question } from '../../../database/models/engine/question.model';
@@ -189,6 +190,46 @@ export class NodeService extends BaseService {
 
         return NodeMapper.toResponseDto(record, nodeActions, null, yesActionDto, noActionDto);
 
+    };
+
+    public createTimerNode = async (createModel: TimerNodeCreateModel) : Promise<NodeResponseDto> => {
+
+        const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
+        const parentNode = await this.getNode(createModel.ParentNodeId);
+        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+
+        const node = this._nodeRepository.create({
+            Code          : StringUtils.generateDisplayCode_RandomChars(12, prefix),
+            Type          : NodeType.TimerNode,
+            Schema        : schema,
+            ParentNode    : parentNode,
+            Name          : createModel.Name,
+            Description   : createModel.Description,
+            DelaySeconds  : createModel.DelaySeconds,
+            RuleId        : createModel.RuleId,
+            RawData       : createModel.RawData,
+            Input         : createModel.Input,
+            NumberOfTries : createModel.NumberOfTries,
+            TimerSeconds  : createModel.TimerSeconds,
+            YesActionId   : null,
+            NoActionId    : null,
+        });
+        var record = await this._nodeRepository.save(node);
+        if (record == null)
+        {
+            return null;
+        }
+
+        var nodeActions: NodeActionResponseDto[] = [];
+        if (createModel.Actions && createModel.Actions?.length > 0) {
+            for await (const actionModel of createModel.Actions) {
+                var actionRecord = await this._commonUtilsService.createAction(actionModel, node);
+                var actionDto = NodeActionMapper.toResponseDto(actionRecord);
+                nodeActions.push(actionDto);
+            }
+        }
+
+        return NodeMapper.toResponseDto(record, nodeActions, null, null, null);
     };
 
     public getById = async (id: uuid): Promise<NodeResponseDto> => {

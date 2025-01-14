@@ -21,6 +21,7 @@ import { WorkflowMessage } from '../../domain.types/engine/user.event.types';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
 import ChildSchemaTriggerHandler from './child.schema.trigger.handler';
 import { EventType } from '../../domain.types/enums/event.type';
+import TimerNodeTriggerHandler from './timer.node.trigger.handler';
 
 ////////////////////////////////////////////////////////////////
 
@@ -62,7 +63,7 @@ export class ActionExecutioner {
 
     //#region Publics
 
-    public ExecuteTriggerListeningNodeAction = async (
+    public triggerListeningNode = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
         const input = action.Input as ActionInputParams;
@@ -103,6 +104,98 @@ export class ActionExecutioner {
             Success : true,
             Result  : nodeInstance
         };
+    };
+
+    public triggerTimerNode = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+
+        // Get the input parameters
+        var nodeId = await this.getActionParamValue(input, ParamType.NodeId);
+        if (!nodeId) {
+            logger.error('NodeId not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+        // Execute the action
+        var node = await this._nodeService.getById(nodeId);
+        if (!node) {
+            logger.error(`Node not found for id: ${nodeId}`);
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var [nodeInstance, node] = await this._engineUtils.createNodeInstance(nodeId, this._schemaInstance.id);
+        if (!nodeInstance) {
+            logger.error(`Unable to create node instance for Node Id: ${nodeId}`);
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        await TimerNodeTriggerHandler.handle({
+            Node         : node,
+            NodeInstance : nodeInstance,
+        });
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, nodeInstance);
+
+        return {
+            Success : true,
+            Result  : nodeInstance
+        };
+
+        // var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+        // var yesActionId = await currentNode.YesAction?.id;
+        // var noActionId = await currentNode.NoAction?.id;
+
+        // var yesAction = await this._actionService.getById(yesActionId);
+        // var noAction = await this._actionService.getById(noActionId);
+
+        // var yesActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, currentNodeInstance.id);
+        // var noActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, currentNodeInstance.id);
+
+        // var ruleId = currentNode.RuleId;
+        // var rule = await this._ruleService.getById(ruleId);
+        // if (!rule) {
+        //     logger.error(`Rule not found for Node ${currentNode.Name}`);
+        //     return null;
+        // }
+
+        // const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
+        // var condition = rule.Condition;
+        // if (!condition) {
+        //     condition = await this._conditionService.getById(rule.ConditionId);
+        // }
+        // var processor = new ConditionProcessor(this._almanac, this._event);
+        // var conditionResult = await processor.processCondition(condition, null);
+        // logger.info(`Yes/No Node ${currentNode.Name} Condition Result: ${conditionResult}`);
+        // var result: NodeActionResult = {
+        //     Success : false,
+        //     Result  : null,
+        // };
+        // const actionToExecute = conditionResult ? yesActionInstance : noActionInstance;
+
+        // if (actionToExecute.ActionType === ActionType.Continue) {
+        //     var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
+        //     if (!res || !res.currentNode || !res.currentNodeInstance) {
+        //         logger.error(`Error while setting next node instance!`);
+        //         return currentNodeInstance;
+        //     }
+        //     return res.currentNodeInstance;
+        // }
+        // else {
+        //     result = await this.executeAction(actionToExecute, actionExecutioner);
+        //     logger.info(`Yes/No Node Action Result: ${JSON.stringify(result)}`);
+        // }
+        // return currentNodeInstance;
     };
 
     public executeSendMessageAction  = async (
@@ -349,8 +442,23 @@ export class ActionExecutioner {
             };
         }
 
-        // Execute the action
-        await this._almanac.addFact(key, value);
+        const secondParam = input.Params.length > 1 ? input.Params[1] : null;
+        if (secondParam && secondParam.Key === 'ParentSchemaInstance') {
+            const currentSchemaInstance = this._schemaInstance;
+            const parentSchemaInstanceId = currentSchemaInstance.ParentSchemaInstanceId;
+            if (!parentSchemaInstanceId) {
+                logger.error('Parent Schema Instance Id not found');
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
+            const parentAlmanac = new Almanac(parentSchemaInstanceId);
+            await parentAlmanac.addFact(key, value);
+        }
+        else {
+            await this._almanac.addFact(key, value);
+        }
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         await this.recordActionActivity(action, { Key: key, Value: value });

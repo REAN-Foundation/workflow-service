@@ -415,6 +415,7 @@ export class ActionExecutioner {
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
         const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
 
         // Get the input parameters
         var p = input.Params && input.Params.length > 0 ? input.Params[0] : null;
@@ -435,6 +436,14 @@ export class ActionExecutioner {
         }
         var value = p.Value;
         if (!value) {
+            if (p.Source && p.Source === InputSourceType.Almanac) {
+                value = await this._almanac.getFact(p.Key);
+                if (value) {
+                    p.Value = value;
+                }
+            }
+        }
+        if (!value) {
             logger.error('Value not found in input parameters');
             return {
                 Success : false,
@@ -442,8 +451,8 @@ export class ActionExecutioner {
             };
         }
 
-        const secondParam = input.Params.length > 1 ? input.Params[1] : null;
-        if (secondParam && secondParam.Key === 'ParentSchemaInstance') {
+        const op = output.Params && output.Params.length > 0 ? output.Params[0] : null;
+        if (op && op.Key === 'ParentSchemaInstance') {
             const currentSchemaInstance = this._schemaInstance;
             const parentSchemaInstanceId = currentSchemaInstance.ParentSchemaInstanceId;
             if (!parentSchemaInstanceId) {

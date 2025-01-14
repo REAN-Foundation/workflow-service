@@ -28,6 +28,7 @@ body:json {
         "Type": "SendMessage",
         "Name": "Send message - To CFR",
         "Description": "Sending message - Thanks for the support!",
+        "Sequence": 1,
         "Input": {
           "Params": [
             {
@@ -43,6 +44,31 @@ body:json {
             }
           ]
         }
+      },
+      {
+        "Type": "StoreToAlmanac",
+        "Name": "Store input data to almanac",
+        "Description": "Store the CFR phone number in parent schema instance almanac",
+        "Sequence": 2,
+        "Input": {
+          "Params": [
+            {
+              "Type": "Phonenumber",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:CFR:Phonenumber"
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Type": "Text",
+              "Value": null,
+              "Key": "ParentSchemaInstance"
+            }
+          ]
+        }
       }
     ]
   }
@@ -54,7 +80,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("CFR_EN2_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -63,18 +89,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

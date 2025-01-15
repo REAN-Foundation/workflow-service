@@ -249,12 +249,12 @@ export class ActionExecutioner {
             placeholders.push({ Key: placeholderKey, Value: placeholderValue });
         });
 
-        const payload = this._event.Payload;
+        const payload = this._event?.Payload;
 
         const message: WorkflowMessage = {
             MessageType     : UserMessageType.Text,
             EventTimestamp  : new Date(),
-            MessageChannel  : this._event.UserMessage.MessageChannel,
+            MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
             Phone           : phonenumber,
             TextMessage     : textMessage ?? null,
             Location        : location ?? null,
@@ -263,8 +263,8 @@ export class ActionExecutioner {
             Placeholders    : placeholders,
             Payload         : {
                 MessageType               : UserMessageType.Text,
-                ProcessingEventId         : this._event.id,
-                ChannelType               : this._event.UserMessage.MessageChannel as MessageChannelType,
+                ProcessingEventId         : this._event?.id,
+                ChannelType               : this._event?.UserMessage?.MessageChannel as MessageChannelType ?? MessageChannelType.Other,
                 ChannelMessageId          : null,
                 PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
                 MessageTemplateId         : messageTemplateId,
@@ -358,12 +358,12 @@ export class ActionExecutioner {
             placeholders.push({ Key: placeholderKey, Value: placeholderValue });
         });
 
-        const payload = this._event.Payload;
+        const payload = this._event?.Payload;
 
         const message: WorkflowMessage = {
             MessageType     : UserMessageType.Text,
             EventTimestamp  : new Date(),
-            MessageChannel  : this._event.UserMessage.MessageChannel,
+            MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
             TextMessage     : textMessage ?? null,
             Location        : location ?? null,
             Question        : questionNode ? questionNode.Question.QuestionText : null,
@@ -371,8 +371,8 @@ export class ActionExecutioner {
             Placeholders    : placeholders,
             Payload         : {
                 MessageType               : UserMessageType.Text,
-                ProcessingEventId         : this._event.id,
-                ChannelType               : payload ? payload.MessageChannel as MessageChannelType : null,
+                ProcessingEventId         : this._event?.id,
+                ChannelType               : payload ? payload.MessageChannel as MessageChannelType : MessageChannelType.Other,
                 ChannelMessageId          : null,
                 PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
                 MessageTemplateId         : messageTemplateId,
@@ -1086,7 +1086,7 @@ export class ActionExecutioner {
 
         var messageService = new ChatbotMessageService();
 
-        var eventPayload = this._event.Payload;
+        var eventPayload = this._event?.Payload;
 
         const phonenumber = message.Phone;
         const textMessage = message.TextMessage;
@@ -1100,13 +1100,13 @@ export class ActionExecutioner {
 
         const ev: WorkflowEvent = {
             EventType        : EventType.WorkflowSystemMessage,
-            TenantId         : this._event.TenantId,
+            TenantId         : this._event?.TenantId,
             SchemaId         : this._schema.id,
             SchemaInstanceId : this._schemaInstance.id,
             UserMessage      : {
                 MessageType     : messageType,
                 EventTimestamp  : new Date(),
-                MessageChannel  : this._event.UserMessage.MessageChannel,
+                MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
                 Phone           : phonenumber,
                 TextMessage     : textMessage,
                 Location        : location,
@@ -1117,7 +1117,7 @@ export class ActionExecutioner {
                 QuestionOptions : questionOptions,
                 Payload         : {
                     MessageType              : UserMessageType.Text,
-                    ProcessingEventId        : this._event.id,
+                    ProcessingEventId        : this._event?.id,
                     ChannelMessageId         : null,
                     BotMessageId             : null,
                     ChannelType              : eventPayload ? eventPayload.MessageChannel as MessageChannelType : null,

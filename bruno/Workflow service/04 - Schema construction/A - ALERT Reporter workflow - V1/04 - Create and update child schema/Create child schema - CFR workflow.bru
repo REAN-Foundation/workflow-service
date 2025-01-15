@@ -23,6 +23,7 @@ body:json {
     "Description": "This schema represents a ALERT emergency workflow for CFR (Community First Responders).",
     "Type": "ChatBot",
     "ParentSchemaId": "{{BASE_SCHEMA_ID}}",
+    "ExecuteImmediately": true,
     "ContextParams": {
       "Name": "Schema instance context",
       "Params": [
@@ -103,7 +104,7 @@ script:post-response {
     bru.setEnvVar("CFR_SCHEMA_ID", res.body.Data.id);
     bru.setEnvVar("CHILD_SCHEMA_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -116,13 +117,13 @@ tests {
   catch (error) {
       console.log(error.message);
   }
-  
+
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(201);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Schema is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
@@ -131,11 +132,11 @@ tests {
       expect(jsonRes.Data).to.have.property('Description');
       expect(jsonRes.Data).to.have.property('RootNode');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

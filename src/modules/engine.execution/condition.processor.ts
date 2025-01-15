@@ -161,7 +161,7 @@ export class ConditionProcessor {
         }
         else if (operand.Source === InputSourceType.UserEvent) {
 
-            var message = this._event.UserMessage;
+            var message = this._event?.UserMessage;
             const isQuestionResponse = message &&
                 message.QuestionResponse &&
                 message.MessageType === UserMessageType.Question;

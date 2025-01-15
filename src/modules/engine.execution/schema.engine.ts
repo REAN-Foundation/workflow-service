@@ -22,6 +22,8 @@ import { EngineUtils } from './engine.utils';
 import { EventType } from '../../domain.types/enums/event.type';
 import { StringUtils } from '../../common/utilities/string.utils';
 
+// import { Question } from '../../database/models/engine/question.model';
+
 ///////////////////////////////////////////////////////////////////////////////
 
 export class SchemaEngine {
@@ -82,9 +84,10 @@ export class SchemaEngine {
 
         const summary = {
             Type      : "MessageEvent",
-            EventType : EventType.UserMessage,
-            Message   : this._event.UserMessage.TextMessage ?? null,
-            Location  : this._event.UserMessage.Location ?? null,
+            EventType : this._event?.EventType ?? EventType.UserMessage,
+            Message   : this._event?.UserMessage?.TextMessage ?? null,
+            Location  : this._event?.UserMessage?.Location ?? null,
+            Question  : this._event?.UserMessage?.Question ?? null,
             Timestamp : new Date(),
         };
 
@@ -149,9 +152,11 @@ export class SchemaEngine {
             var inputValue = null;
             if (expectedSource === InputSourceType.UserEvent) {
                 if (expectedType === ParamType.Location) {
-                    if (this._event.UserMessage.Location) {
-                        inputValue = this._event.UserMessage.Location;
-                        inputsFulfilled = true;
+                    if (this._event) {
+                        if (this._event.UserMessage.Location) {
+                            inputValue = this._event.UserMessage.Location;
+                            inputsFulfilled = true;
+                        }
                     }
                 }
             }
@@ -200,8 +205,8 @@ export class SchemaEngine {
                         await this._almanac.addFact(p.Key, p.Value);
                     }
                 }
-                else if (this._event.UserMessage.Phone) {
-                    p.Value = fact ?? this._event.UserMessage.Phone;
+                else if (this._event?.UserMessage?.Phone) {
+                    p.Value = fact ?? this._event?.UserMessage?.Phone;
                     if (!fact) {
                         await this._almanac.addFact(p.Key, p.Value);
                     }
@@ -215,8 +220,8 @@ export class SchemaEngine {
                         await this._almanac.addFact(p.Key, p.Value);
                     }
                 }
-                else if (this._event.UserMessage.Location) {
-                    p.Value = fact ?? this._event.UserMessage.Location;
+                else if (this._event?.UserMessage?.Location) {
+                    p.Value = fact ?? this._event?.UserMessage?.Location;
                     if (!fact) {
                         await this._almanac.addFact(p.Key, p.Value);
                     }
@@ -294,7 +299,7 @@ export class SchemaEngine {
 
         var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
 
-        const userMessage = this._event.UserMessage;
+        const userMessage = this._event?.UserMessage;
         if (!userMessage) {
             logger.error(`User message not found!`);
             return currentNodeInstance;

@@ -55,21 +55,21 @@ export default class ChildSchemaTriggerHandler {
 
             var schemaId = schemaInstance.Schema?.id;
             if (!schemaId) {
-                logger.error(`Schema not found: ${schemaInstance.Schema.id}`);
+                logger.error(`Schema not found: ${schemaId}`);
                 return;
             }
             const schemaService: SchemaService = new SchemaService();
-            var schema = await schemaService.getById(schema.id);
+            var schema = await schemaService.getById(schemaId);
             if (!schema) {
-                logger.error(`Schema not found: ${schema.id}`);
+                logger.error(`Schema not found: ${schemaId}`);
                 return;
             }
             const executeImmediately = schema.ExecuteImmediately;
             if (!executeImmediately) {
-                logger.info(`Schema not set to execute immediately: ${schema.id}`);
+                logger.info(`Schema not set to execute immediately: ${schemaId}`);
                 return;
             }
-            logger.info(`Executing schema: ${schema.id}`);
+            logger.info(`Executing schema: ${schemaId}`);
 
             const eventCreateModel: EventCreateModel = {
                 EventType        : EventType.TriggerChildWorkflow,

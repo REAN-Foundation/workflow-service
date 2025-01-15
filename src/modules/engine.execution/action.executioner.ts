@@ -22,6 +22,8 @@ import { NodeResponseDto } from '../../domain.types/engine/node.types';
 import ChildSchemaTriggerHandler from './child.schema.trigger.handler';
 import { EventType } from '../../domain.types/enums/event.type';
 import TimerNodeTriggerHandler from './timer.node.trigger.handler';
+import { Agent as HttpAgent } from 'http'; // For HTTP
+import { Agent as HttpsAgent } from 'https'; // For HTTPS
 
 ////////////////////////////////////////////////////////////////
 
@@ -451,7 +453,7 @@ export class ActionExecutioner {
             };
         }
 
-        const op = output.Params && output.Params.length > 0 ? output.Params[0] : null;
+        const op = output && output.Params && output.Params.length > 0 ? output.Params[0] : null;
         if (op && op.Key === 'ParentSchemaInstance') {
             const currentSchemaInstance = this._schemaInstance;
             const parentSchemaInstanceId = currentSchemaInstance.ParentSchemaInstanceId;
@@ -621,15 +623,19 @@ export class ActionExecutioner {
         const headers = restApiParams.Headers;
         const queryParams = restApiParams.QueryParams;
         const responseField = restApiParams.ResponseField;
-        // const responseType = restApiParams.ResponseType;
+
+        var agent = new HttpAgent({ keepAlive: true });
+        if (url.startsWith('https')) {
+            agent = new HttpsAgent({ keepAlive: true });
+        }
+        const options = {
+            httpAgent : agent,
+            headers   : headers
+        };
 
         var responseBody = null;
         // Execute the action
         try {
-            const options = {
-                headers : headers,
-                json    : true
-            };
             var updatedUrl = url;
             if (queryParams && queryParams.length > 0) {
                 updatedUrl = url + '?';
@@ -762,13 +768,18 @@ export class ActionExecutioner {
         else {
             items = inputArrayParam.Value;
         }
-        if (items === null || items.length === 0) {
+        if (!items) {
             return {
                 Success : false,
                 Result  : null
             };
         }
-
+        if (items?.length === 0) {
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
         var pChildSchemaId = input.Params.find(x => x.Type === ParamType.SchemaId);
         if (!pChildSchemaId) {
             logger.error('SchemaId not found in input parameters');

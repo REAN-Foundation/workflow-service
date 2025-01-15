@@ -1,0 +1,86 @@
+meta {
+  name: Send reporter message - 3 - Location
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/engine/events/user-message
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "+91-9123456789",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "Location",
+      "MessageChannel": "WhatsApp",
+      "Location": {
+        "Latitude": 18.5186,
+        "Longitude": 73.856
+      }
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("USER_MESSAGE_EVENT_3_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  try {
+      var jsonRes = res.getBody();
+      bru.setEnvVar("RULE_ID", jsonRes.Data.id);
+      bru.setEnvVar("ROOT_CONDITION_ID", jsonRes.Data.Condition.id);
+      bru.setEnvVar("RULE_ACTION_ID", jsonRes.Data.Action.id);
+  }
+  catch (error) {
+      console.log(error.message);
+  }
+  
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Schema is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Client');
+      expect(jsonRes.Data.Client).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+      expect(jsonRes.Data).to.have.property('ValidFrom');
+      expect(jsonRes.Data).to.have.property('RootNodeId');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

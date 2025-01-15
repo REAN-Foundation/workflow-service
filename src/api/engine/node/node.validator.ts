@@ -165,11 +165,13 @@ export class NodeValidator extends BaseValidator {
                 RawData       : joi.object().allow(null).optional(),
                 Input         : joi.object({
                     Params : joi.array().items(joi.object({
-                        Type     : joi.string().valid(...Object.values(ParamType)).required(),
-                        Value    : joi.any().allow(null).required(),
-                        Source   : joi.string().valid(...Object.values(InputSourceType)).optional(),
-                        Key      : joi.string().max(256).optional(),
-                        Required : joi.boolean().optional(),
+                        Name        : joi.string().max(128).optional(),
+                        Description : joi.string().max(512).optional(),
+                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
+                        Value       : joi.any().allow(null).required(),
+                        Source      : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                        Key         : joi.string().max(256).optional(),
+                        Required    : joi.boolean().optional(),
                     })).required(),
                 }).optional(),
             });

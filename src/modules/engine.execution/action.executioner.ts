@@ -214,9 +214,28 @@ export class ActionExecutioner {
                 Result  : null
             };
         }
+        var messageType = UserMessageType.Text;
         var textMessage = await this.getActionParamValue(input, ParamType.Text, 'Message');
+        if (textMessage && textMessage.length > 0) {
+            messageType = UserMessageType.Text;
+        }
         var location = await this.getActionParamValue(input, ParamType.Location, 'Location');
+        if (location) {
+            if (!location.Latitude || !location.Longitude) {
+                const p = input.Params.find(x => x.Type === ParamType.Location);
+                if (p) {
+                    var source = p.Source || InputSourceType.Almanac;
+                    if (source === InputSourceType.Almanac) {
+                        location = await this._almanac.getFact(p.Key);
+                    }
+                }
+            }
+            if (location.Latitude && location.Longitude) {
+                messageType = UserMessageType.Location;
+            }
+        }
         var questionId = await this.getActionParamValue(input, ParamType.QuestionId, 'QuestionId');
+
         if (!textMessage && !location && !questionId) {
             logger.error('Text message, question or location not found in bot message input parameters');
             return {
@@ -227,6 +246,7 @@ export class ActionExecutioner {
 
         var questionNode: NodeResponseDto | null = null;
         if (questionId) {
+            messageType = UserMessageType.Question;
             questionNode = await this._commonUtilsService.getQuestionNode(questionId);
             if (!questionNode) {
                 logger.error(`Question node not found for Id: ${questionId}`);
@@ -239,20 +259,39 @@ export class ActionExecutioner {
         const messageTemplateId = await this.getActionParamValue(input, ParamType.Text, 'MessageTemplateId');
 
         const placeholders: { Key: string, Value: string }[] = [];
+
         var messagePlaceholders = input.Params.filter(x => x.Type === ParamType.Placeholder);
-        messagePlaceholders.forEach(async (placeholder) => {
+        for await (var placeholder of messagePlaceholders) {
             var placeholderKey = placeholder.Key;
             var placeholderValue = placeholder.Value;
-            if (placeholderKey === 'Timestamp' || placeholderKey === 'ContextParams:Timestamp') {
-                placeholderValue = new Date().toISOString();
+            var source = placeholder.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                placeholderValue = await this._almanac.getFact(placeholderKey);
+                if (placeholderKey === 'Timestamp' || placeholderKey === 'ContextParams:Timestamp') {
+                    placeholderValue = new Date(placeholderValue).toLocaleTimeString();
+                }
             }
-            placeholders.push({ Key: placeholderKey, Value: placeholderValue });
-        });
+            else if (!placeholderValue &&
+                     (placeholderKey === 'Timestamp' || placeholderKey === 'ContextParams:Timestamp')) {
+                placeholderValue = new Date().toLocaleTimeString();
+            }
+            if (placeholderValue) {
+                placeholders.push({ Key: placeholderKey, Value: placeholderValue });
+            }
+        }
+
+        for (var ph of placeholders) {
+            var pKey = ph["Key"];
+            var pValue = ph["Value"];
+            if (textMessage && textMessage.includes(`{{${pKey}}}`)) {
+                textMessage = textMessage.replace(`{{${pKey}}}`, pValue);
+            }
+        }
 
         const payload = this._event?.Payload;
 
         const message: WorkflowMessage = {
-            MessageType     : UserMessageType.Text,
+            MessageType     : messageType,
             EventTimestamp  : new Date(),
             MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
             Phone           : phonenumber,
@@ -262,7 +301,7 @@ export class ActionExecutioner {
             QuestionOptions : questionNode ? questionNode.Question.Options : null,
             Placeholders    : placeholders,
             Payload         : {
-                MessageType               : UserMessageType.Text,
+                MessageType               : messageType,
                 ProcessingEventId         : this._event?.id,
                 ChannelType               : this._event?.UserMessage?.MessageChannel as MessageChannelType ?? MessageChannelType.Other,
                 ChannelMessageId          : null,

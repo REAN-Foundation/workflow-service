@@ -60,7 +60,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("LOCATION_YES_NO_NODE_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -69,18 +69,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Question node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

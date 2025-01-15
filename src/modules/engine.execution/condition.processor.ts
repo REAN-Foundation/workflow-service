@@ -91,7 +91,7 @@ export class ConditionProcessor {
         if (!first.Value) {
             first.Value = await this.fetchOperandValue(first, first.Value);
         }
-        if (!second.Value) {
+        if (second && !second.Value) {
             second.Value = await this.fetchOperandValue(second, second.Value);
         }
         if (third && !third.Value) {
@@ -111,6 +111,10 @@ export class ConditionProcessor {
             }
             case LogicalOperatorType.In: {
                 resolved = this.in(first, second);
+                break;
+            }
+            case LogicalOperatorType.IsEmpty: {
+                resolved = this.isEmpty(first);
                 break;
             }
             case LogicalOperatorType.IsFalse: {
@@ -245,6 +249,16 @@ export class ConditionProcessor {
     private in(first: ConditionOperand, second: ConditionOperand): boolean {
         const secondArray: any[] = second.Value as any[];
         return secondArray.includes(first);
+    }
+
+    private isEmpty(first: ConditionOperand): boolean {
+        if (first.DataType === OperandDataType.Array) {
+            if (first.Value === null || first.Value === undefined) {
+                return true;
+            }
+            return (first.Value as any[]).length === 0;
+        }
+        return first.Value === null || first.Value === undefined || first.Value === '';
     }
 
     private isFalse(first: ConditionOperand): boolean {

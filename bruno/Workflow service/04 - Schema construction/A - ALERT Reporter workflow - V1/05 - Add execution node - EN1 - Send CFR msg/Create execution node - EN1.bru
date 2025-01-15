@@ -25,9 +25,30 @@ body:json {
     "SchemaId": "{{SCHEMA_ID}}",
     "Actions": [
       {
+        "Type": "SendMessage",
+        "Name": "Send message - Thanks for location",
+        "Sequence": 0,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phonenumber",
+              "Type": "Phonenumber",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phonenumber"
+            },
+            {
+              "Name": "Thanks for the location",
+              "Type": "Text",
+              "Value": "Thanks for sharing location!"
+            }
+          ]
+        }
+      },
+      {
         "Type": "RestApiCall",
         "Name": "Make REST API call to get nearest CFRs",
-        "Sequence": 0,
+        "Sequence": 1,
         "Input": {
           "Params": [
             {
@@ -76,7 +97,7 @@ body:json {
       {
         "Type": "TriggerMultipleChildrenWorkflow",
         "Name": "Trigger multiple workflows one for each CFR in the vicinity.",
-        "Sequence": 1,
+        "Sequence": 2,
         "Input": {
           "Params": [
             {
@@ -117,7 +138,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("EXECUTION_NODE_1_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -126,18 +147,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

@@ -1,7 +1,7 @@
 meta {
-  name: 02 - Add message action to root node
+  name: 02 - Add message action - send location
   type: http
-  seq: 2
+  seq: 3
 }
 
 post {
@@ -19,29 +19,27 @@ headers {
 body:json {
   {
     "Type": "SendMessage",
-    "Name": "Send message - Prompt for location",
-    "Sequence": 1,
+    "Name": "Send location message - To CFR",
+    "Description": "Sending location to the CFR",
+    "Sequence": 2,
     "ParentNodeId": "{{CHILD_SCHEMA_ROOT_NODE_ID}}",
-    "IsPathAction": false,
     "Input": {
       "Params": [
         {
-          "Name": "CFR Phonenumber",
           "Type": "Phonenumber",
           "Value": null,
           "Source": "Almanac",
           "Key": "ContextParams:CFR:Phonenumber"
         },
         {
-          "Name": "Incident report Message",
-          "Type": "Text",
-          "Value": "An emergency incident has been reported in your locality at {{Timestamp}}."
-        },
-        {
-          "Name": "Incident Timestamp",
-          "Type": "Placeholder",
-          "Key": "ContextParams:Timestamp",
-          "Source": "Almanac"
+          "Type": "Location",
+          "Name": "Incident Location",
+          "Source": "Almanac",
+          "Key": "ContextParams:Location",
+          "Value": {
+            "Latitude": null,
+            "Longitude": null
+          }
         }
       ]
     }

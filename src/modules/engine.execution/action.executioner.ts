@@ -701,7 +701,7 @@ export class ActionExecutioner {
             }
         }
         catch (error) {
-            logger.error(`Error occurred while retrieving award event types!': ${error.message}`);
+            logger.error(`Error occurred while calling REST api!': ${error.message}`);
             return {
                 Success : false,
                 Result  : null

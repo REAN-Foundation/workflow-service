@@ -24,6 +24,7 @@ import { Question } from '../../../database/models/engine/question.model';
 import { StringUtils } from '../../../common/utilities/string.utils';
 import { NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
 import { NodeActionMapper } from '../../../database/mappers/engine/node.action.mapper';
+import { QuestionOption } from '../../../database/models/engine/question.option.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -36,6 +37,8 @@ export class NodeService extends BaseService {
     _schemaRepository: Repository<Schema> = Source.getRepository(Schema);
 
     _questionRepository: Repository<Question> = Source.getRepository(Question);
+
+    _questionOptionRepository: Repository<QuestionOption> = Source.getRepository(QuestionOption);
 
     _ruleRepository: Repository<Rule> = Source.getRepository(Rule);
 
@@ -81,7 +84,7 @@ export class NodeService extends BaseService {
             }
         }
 
-        return NodeMapper.toResponseDto(record, nodeActions, null, null, null);
+        return NodeMapper.toResponseDto(record, nodeActions, null, null, null, null);
     };
 
     public createQuestionNode = async (createModel: QuestionNodeCreateModel) : Promise<NodeResponseDto> => {
@@ -114,10 +117,29 @@ export class NodeService extends BaseService {
             id           : record.id, // nodeId,
             QuestionText : createModel.QuestionText,
             ResponseType : createModel.ResponseType,
-            Options      : createModel.Options,
         };
         var question = await this._questionRepository.create(questionModel);
-        await this._questionRepository.save(question);
+        question = await this._questionRepository.save(question);
+        if (createModel.Options && createModel.Options?.length > 0) {
+            for await (const option of createModel.Options) {
+                var optionModel = {
+                    Question : question,
+                    Text     : option.Text,
+                    ImageUrl : option.ImageUrl,
+                    Sequence : option.Sequence,
+                    Metadata : option.Metadata,
+                };
+                var opt = await this._questionOptionRepository.create(optionModel);
+                opt = await this._questionOptionRepository.save(opt);
+            }
+        }
+        var questionOptions = await this._questionOptionRepository.find({
+            where : {
+                Question : {
+                    id : record.id
+                }
+            }
+        });
 
         var nodeActions: NodeActionResponseDto[] = [];
         if (createModel.Actions && createModel.Actions?.length > 0) {
@@ -128,7 +150,7 @@ export class NodeService extends BaseService {
             }
         }
 
-        return NodeMapper.toResponseDto(record, nodeActions, question, null, null);
+        return NodeMapper.toResponseDto(record, nodeActions, question, questionOptions, null, null);
     };
 
     public createYesNoNode = async (createModel: YesNoNodeCreateModel)
@@ -188,7 +210,7 @@ export class NodeService extends BaseService {
             await this._actionRepository.save(noAction);
         }
 
-        return NodeMapper.toResponseDto(record, nodeActions, null, yesActionDto, noActionDto);
+        return NodeMapper.toResponseDto(record, nodeActions, null, null, yesActionDto, noActionDto);
 
     };
 
@@ -229,7 +251,7 @@ export class NodeService extends BaseService {
             }
         }
 
-        return NodeMapper.toResponseDto(record, nodeActions, null, null, null);
+        return NodeMapper.toResponseDto(record, nodeActions, null, null, null, null);
     };
 
     public getById = async (id: uuid): Promise<NodeResponseDto> => {
@@ -271,11 +293,14 @@ export class NodeService extends BaseService {
                 question = await this._questionRepository.findOne({
                     where : {
                         id : id
+                    },
+                    relations : {
+                        Options : true
                     }
                 });
             }
             var nodeActions = await this._commonUtilsService.getNodeActions(id);
-            return NodeMapper.toResponseDto(node, nodeActions, question, yesActionDto, noActionDto);
+            return NodeMapper.toResponseDto(node, nodeActions, question, question?.Options ?? null, yesActionDto, noActionDto);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

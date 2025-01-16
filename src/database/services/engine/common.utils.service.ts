@@ -338,6 +338,9 @@ export class CommonUtilsService {
             var question = await this._questionRepository.findOne({
                 where : {
                     id : questionId
+                },
+                relations : {
+                    Options : true,
                 }
             });
             if (!question) {

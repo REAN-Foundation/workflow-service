@@ -22,8 +22,6 @@ import { EngineUtils } from './engine.utils';
 import { EventType } from '../../domain.types/enums/event.type';
 import { StringUtils } from '../../common/utilities/string.utils';
 
-// import { Question } from '../../database/models/engine/question.model';
-
 ///////////////////////////////////////////////////////////////////////////////
 
 export class SchemaEngine {

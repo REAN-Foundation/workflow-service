@@ -4,6 +4,7 @@ import {
 } from '../../../domain.types/engine/node.types';
 import { Question } from '../../../database/models/engine/question.model';
 import { NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
+import { QuestionOption } from '../../../database/models/engine/question.option.model';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -13,6 +14,7 @@ export class NodeMapper {
         node: Node,
         actions?: NodeActionResponseDto[],
         question?: Question,
+        questionOptions?: QuestionOption[],
         yesActionDto?: NodeActionResponseDto,
         noActionDto?: NodeActionResponseDto): NodeResponseDto => {
         if (node == null) {
@@ -43,7 +45,7 @@ export class NodeMapper {
             Question : question ? {
                 ResponseType : question.ResponseType,
                 QuestionText : question.QuestionText ?? null,
-                Options      : question.Options ? question.Options.map(x => {
+                Options      : questionOptions ? questionOptions.map(x => {
                     return {
                         id       : x.id,
                         Text     : x.Text,

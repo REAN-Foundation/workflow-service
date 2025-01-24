@@ -6,7 +6,7 @@ import { NodeInstanceResponseDto } from '../../domain.types/engine/node.instance
 import { logger } from '../../logger/logger';
 import { NodeInstanceService } from '../../database/services/engine/node.instance.service';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
-import { CommonUtilsService } from '../../database/services/engine/common.utils.service';
+import { DatabaseUtilsService } from '../../database/services/engine/database.utils.service';
 import { RuleService } from '../../database/services/engine/rule.service';
 import { NodeActionService } from '../../database/services/engine/node.action.service';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
@@ -27,7 +27,7 @@ export class EngineUtils {
 
     _actionService: NodeActionService = new NodeActionService();
 
-    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     public createNodeInstance = async (nodeId: uuid, schemaInstanceId: uuid)
         : Promise<[NodeInstanceResponseDto, NodeResponseDto]> => {

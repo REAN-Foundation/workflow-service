@@ -8,7 +8,7 @@ import { Source } from '../../database.connector';
 import { FindManyOptions, Like, Repository } from 'typeorm';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { CommonUtilsService } from './common.utils.service';
+import { DatabaseUtilsService } from './database.utils.service';
 import { NodePath } from '../../../database/models/engine/node.path.model';
 import { NodePathCreateModel, NodePathResponseDto, NodePathSearchFilters, NodePathSearchResults, NodePathUpdateModel } from '../../../domain.types/engine/node.path.types';
 import { NodePathMapper } from '../../../database/mappers/engine/node.path.mapper';
@@ -29,7 +29,7 @@ export class NodePathService extends BaseService {
 
     _actionRepository: Repository<NodeAction> = Source.getRepository(NodeAction);
 
-    _commonUtils: CommonUtilsService = new CommonUtilsService();
+    _commonUtils: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
 

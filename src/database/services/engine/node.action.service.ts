@@ -14,7 +14,7 @@ import {
     NodeActionSearchFilters,
     NodeActionSearchResults,
     NodeActionUpdateModel } from '../../../domain.types/engine/node.action.types';
-import { CommonUtilsService } from './common.utils.service';
+import { DatabaseUtilsService } from './database.utils.service';
 import { NodeActionMapper } from '../../../database/mappers/engine/node.action.mapper';
 
 ///////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ export class NodeActionService extends BaseService {
 
     _ruleRepository: Repository<Rule> = Source.getRepository(Rule);
 
-    _commonUtils: CommonUtilsService = new CommonUtilsService();
+    _commonUtils: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
 

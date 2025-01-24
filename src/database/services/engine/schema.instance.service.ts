@@ -15,7 +15,7 @@ import {
     SchemaInstanceUpdateModel } from '../../../domain.types/engine/schema.instance.types';
 import { NodeInstance } from '../../models/engine/node.instance.model';
 import { Node } from '../../models/engine/node.model';
-import { CommonUtilsService } from './common.utils.service';
+import { DatabaseUtilsService } from './database.utils.service';
 import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
 import { Params } from '../../../domain.types/engine/params.types';
 import { ExecutionStatus, WorkflowActivityType } from '../../../domain.types/engine/engine.enums';
@@ -39,7 +39,7 @@ export class SchemaInstanceService extends BaseService {
 
     _schemaInstanceActivityRepository: Repository<SchemaInstanceActivity> = Source.getRepository(SchemaInstanceActivity);
 
-    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
 

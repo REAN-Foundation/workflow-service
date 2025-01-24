@@ -16,7 +16,7 @@ import {
 import { Rule } from '../../models/engine/rule.model';
 import { Node } from '../../models/engine/node.model';
 import { Condition } from '../../models/engine/condition.model';
-import { CommonUtilsService } from './common.utils.service';
+import { DatabaseUtilsService } from './database.utils.service';
 import { NodeAction } from '../../models/engine/node.action.model';
 import { StringUtils } from '../../../common/utilities/string.utils';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
@@ -39,7 +39,7 @@ export class SchemaService extends BaseService {
 
     _conditionRepository: Repository<Condition> = Source.getRepository(Condition);
 
-    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
 

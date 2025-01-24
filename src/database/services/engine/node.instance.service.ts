@@ -16,7 +16,7 @@ import {
 import { SchemaInstance } from '../../models/engine/schema.instance.model';
 import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
 import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
-import { CommonUtilsService } from './common.utils.service';
+import { DatabaseUtilsService } from './database.utils.service';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -32,7 +32,7 @@ export class NodeInstanceService extends BaseService {
 
     _schemaInstanceRepository: Repository<SchemaInstance> = Source.getRepository(SchemaInstance);
 
-    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
 

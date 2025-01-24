@@ -18,7 +18,7 @@ import {
     NodeUpdateModel,
     QuestionNodeCreateModel,
     TimerNodeCreateModel } from '../../../domain.types/engine/node.types';
-import { CommonUtilsService } from './common.utils.service';
+import { DatabaseUtilsService } from './database.utils.service';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 import { Question } from '../../../database/models/engine/question.model';
 import { StringUtils } from '../../../common/utilities/string.utils';
@@ -44,7 +44,7 @@ export class NodeService extends BaseService {
 
     _actionRepository: Repository<NodeAction> = Source.getRepository(NodeAction);
 
-    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
 

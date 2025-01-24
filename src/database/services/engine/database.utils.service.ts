@@ -1,34 +1,35 @@
 import { Node } from '../../models/engine/node.model';
 import { Schema } from '../../models/engine/schema.model';
 import { Rule } from '../../models/engine/rule.model';
-import { Client } from '../../../database/models/client/client.model';
+import { Client } from '../../models/client/client.model';
 import { NodeAction } from '../../models/engine/node.action.model';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { Source } from '../../database.connector';
 import { Repository, Not } from 'typeorm';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { NodeActionCreateModel, NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
-import { SchemaInstance } from '../../../database/models/engine/schema.instance.model';
-import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
-import { NodeInstance } from '../../../database/models/engine/node.instance.model';
-import { NodeInstanceMapper } from '../../../database/mappers/engine/node.instance.mapper';
+import { SchemaInstance } from '../../models/engine/schema.instance.model';
+import { NodeActionInstance } from '../../models/engine/node.action.instance.model';
+import { NodeInstance } from '../../models/engine/node.instance.model';
+import { NodeInstanceMapper } from '../../mappers/engine/node.instance.mapper';
 import { logger } from '../../../logger/logger';
 import { NodeActionInstanceResponseDto } from '../../../domain.types/engine/node.instance.types';
-import { NodeActionMapper } from '../../../database/mappers/engine/node.action.mapper';
+import { NodeActionMapper } from '../../mappers/engine/node.action.mapper';
 import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
-import { Question } from '../../../database/models/engine/question.model';
+import { Question } from '../../models/engine/question.model';
 import { QuestionNodeResponseDto } from '../../../domain.types/engine/node.types';
-import { NodeMapper } from '../../../database/mappers/engine/node.mapper';
-import { QuestionOption } from '../../../database/models/engine/question.option.model';
+import { NodeMapper } from '../../mappers/engine/node.mapper';
+import { QuestionOption } from '../../models/engine/question.option.model';
 import { QuestionAnswerOption } from '../../../domain.types/engine/user.event.types';
 import { NodePathResponseDto } from '../../../domain.types/engine/node.path.types';
-import { NodePath } from '../../../database/models/engine/node.path.model';
-import { NodePathMapper } from '../../../database/mappers/engine/node.path.mapper';
+import { NodePath } from '../../models/engine/node.path.model';
+import { NodePathMapper } from '../../mappers/engine/node.path.mapper';
+import { QuestionInstance } from '../../../database/models/engine/question.instance.model';
 
 ///////////////////////////////////////////////////////////////////////
 
-export class CommonUtilsService {
+export class DatabaseUtilsService {
 
     //#region Repositories
 
@@ -53,6 +54,8 @@ export class CommonUtilsService {
     _questionOptionRepository: Repository<QuestionOption> = Source.getRepository(QuestionOption);
 
     _nodePathRepository: Repository<NodePath> = Source.getRepository(NodePath);
+
+    _questionInstanceRepository: Repository<QuestionInstance> = Source.getRepository(QuestionInstance);
 
     //#endregion
 
@@ -371,6 +374,118 @@ export class CommonUtilsService {
                 ErrorHandler.throwNotFoundError('Node path not found');
             }
             return nodePaths.map(x => NodePathMapper.toResponseDto(x));
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getOrCreateQuestionInstance = async (nodeInstanceId: uuid, questionId: uuid): Promise<QuestionInstance> => {
+        try {
+            var questionInstance = await this._questionInstanceRepository.findOne({
+                where : {
+                    NodeInstanceId : nodeInstanceId,
+                    QuestionId     : questionId
+                }
+            });
+            if (questionInstance) {
+                return questionInstance;
+            }
+            var instance = await this._questionInstanceRepository.create({
+                NodeInstanceId         : nodeInstanceId,
+                QuestionId             : questionId,
+                QuestionPosed          : false,
+                ResponseReceived       : false,
+                SelectedOptionId       : null,
+                SelectedOptionSequence : null,
+                ResponseText           : null,
+            });
+            return await this._questionInstanceRepository.save(instance);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getQuestionInstance = async (nodeInstanceId: uuid, questionId: uuid): Promise<QuestionInstance> => {
+        try {
+            var questionInstance = await this._questionInstanceRepository.findOne({
+                where : {
+                    NodeInstanceId : nodeInstanceId,
+                    QuestionId     : questionId
+                }
+            });
+            if (!questionInstance) {
+                ErrorHandler.throwNotFoundError('QuestionInstance not found');
+            }
+            return questionInstance;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public markQuestionInstanceAsPosed = async (nodeInstanceId: uuid, questionId: uuid): Promise<QuestionInstance> => {
+        try {
+            var questionInstance = await this._questionInstanceRepository.findOne({
+                where : {
+                    NodeInstanceId : nodeInstanceId,
+                    QuestionId     : questionId
+                }
+            });
+            if (!questionInstance) {
+                ErrorHandler.throwNotFoundError('QuestionInstance not found');
+            }
+            questionInstance.QuestionPosed = true;
+            var updatedQuestionInstance = await this._questionInstanceRepository.save(questionInstance);
+            return updatedQuestionInstance;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public markQuestionInstanceAsAnswered = async (nodeInstanceId: uuid, questionId: uuid): Promise<QuestionInstance> => {
+        try {
+            var questionInstance = await this._questionInstanceRepository.findOne({
+                where : {
+                    NodeInstanceId : nodeInstanceId,
+                    QuestionId     : questionId
+                }
+            });
+            if (!questionInstance) {
+                ErrorHandler.throwNotFoundError('QuestionInstance not found');
+            }
+            questionInstance.QuestionPosed = true;
+            questionInstance.ResponseReceived = true;
+            var updatedQuestionInstance = await this._questionInstanceRepository.save(questionInstance);
+            return updatedQuestionInstance;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public updateQuestionInstanceResponse_SingleChoice = async (
+        nodeInstanceId: uuid,
+        questionId: uuid,
+        response: QuestionAnswerOption): Promise<QuestionInstance> => {
+        try {
+            var questionInstance = await this._questionInstanceRepository.findOne({
+                where : {
+                    NodeInstanceId : nodeInstanceId,
+                    QuestionId     : questionId
+                }
+            });
+            if (!questionInstance) {
+                ErrorHandler.throwNotFoundError('QuestionInstance not found');
+            }
+            questionInstance.ResponseReceived = true;
+            questionInstance.SelectedOptionId = response.id;
+            questionInstance.SelectedOptionSequence = response.Sequence;
+            questionInstance.ResponseText = response.Text;
+            var updatedQuestionInstance = await this._questionInstanceRepository.save(questionInstance);
+            return updatedQuestionInstance;
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

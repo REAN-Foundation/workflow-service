@@ -4,12 +4,12 @@ import { ActionInputParams, ActionOutputParams, ContextParams, Params } from "..
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
 import { ChatbotMessageService } from "../communication/chatbot.message.service";
-import { NodeActionInstanceResponseDto } from "../../domain.types/engine/node.instance.types";
+import { NodeActionInstanceResponseDto, NodeInstanceResponseDto } from "../../domain.types/engine/node.instance.types";
 import { NodeService } from "../../database/services/engine/node.service";
 import { SchemaService } from "../../database/services/engine/schema.service";
 import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
 import { NodeInstanceService } from '../../database/services/engine/node.instance.service';
-import { CommonUtilsService } from '../../database/services/engine/common.utils.service';
+import { DatabaseUtilsService } from '../../database/services/engine/database.utils.service';
 import { SchemaResponseDto } from "../../domain.types/engine/schema.domain.types";
 import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.instance.types";
 import { EventResponseDto, WorkflowEvent } from "../../domain.types/engine/event.types";
@@ -24,6 +24,8 @@ import { EventType } from '../../domain.types/enums/event.type';
 import TimerNodeTriggerHandler from './timer.node.trigger.handler';
 import { Agent as HttpAgent } from 'http'; // For HTTP
 import { Agent as HttpsAgent } from 'https'; // For HTTPS
+import { Question } from '../../database/models/engine/question.model';
+import { QuestionInstance } from '../../database/models/engine/question.instance.model';
 
 ////////////////////////////////////////////////////////////////
 
@@ -47,7 +49,7 @@ export class ActionExecutioner {
 
     _schemaInstanceService: SchemaInstanceService = new SchemaInstanceService();
 
-    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     _engineUtils: EngineUtils = new EngineUtils();
 
@@ -742,46 +744,6 @@ export class ActionExecutioner {
         };
     };
 
-    // public executeTriggerChildWorkflowAction = async (
-    //     action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
-
-    //     const input = action.Input as ActionInputParams;
-
-    //     // Get the input parameters
-    //     var childSchemaId = await this.getActionParamValue(input, ParamType.SchemaId);
-    //     if (!childSchemaId) {
-    //         logger.error('SchemaId not found in input parameters');
-    //         return {
-    //             Success : false,
-    //             Result  : null
-    //         };
-    //     }
-
-    //     var params = input.Params.filter(x => x.Type !== ParamType.SchemaId);
-    //     var childSchemaInstance = await this.createChildSchemaInstance(childSchemaId, this._schemaInstance, params);
-    //     if (!childSchemaInstance) {
-    //         logger.error('Error while creating child schema instance');
-    //         return {
-    //             Success : false,
-    //             Result  : null
-    //         };
-    //     }
-
-    //     await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
-    //     await this.recordActionActivity(action, childSchemaInstance);
-
-    //     const childSchema = await this._schemaService.getById(childSchemaInstance.Schema?.id);
-
-    //     if (childSchema.ExecuteImmediately) {
-    //         await this._engineUtils.executeSchema(childSchemaInstance);
-    //     }
-
-    //     return {
-    //         Success : true,
-    //         Result  : childSchemaInstance
-    //     };
-    // };
-
     public executeTriggerMultipleChildrenWorkflowAction = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
@@ -990,6 +952,67 @@ export class ActionExecutioner {
         };
     };
 
+    public poseBotQuestion = async (
+        currentNodeInstance: NodeInstanceResponseDto,
+        currentNode: NodeResponseDto,
+        question: Question): Promise<boolean> => {
+
+        const input = currentNode.Input as ActionInputParams;
+
+        // Get the input parameters
+        var phonenumber = await this.getActionParamValue(input, ParamType.Phonenumber, 'Phonenumber');
+        if (!phonenumber) {
+            logger.error(`Phonenumber not found in almanac`);
+            return false;
+        }
+
+        const messageTemplateId = await this.getActionParamValue(input, ParamType.Text, 'MessageTemplateId');
+        const payload = this._event?.Payload;
+        const channelType = this._event?.UserMessage?.MessageChannel as MessageChannelType ??
+            MessageChannelType.Other;
+
+        const message: WorkflowMessage = {
+            MessageType     : UserMessageType.Question,
+            EventTimestamp  : new Date(),
+            MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
+            Phone           : phonenumber,
+            TextMessage     : null,
+            Location        : null,
+            Question        : question ? question.QuestionText : null,
+            QuestionOptions : question ? question.Options : null,
+            Placeholders    : null,
+            Payload         : {
+                MessageType               : UserMessageType.Question,
+                ProcessingEventId         : this._event?.id,
+                ChannelType               : channelType,
+                ChannelMessageId          : null,
+                PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
+                MessageTemplateId         : messageTemplateId,
+                PreviousMessageTemplateId : payload ? payload.MessageTemplateId : null,
+                BotMessageId              : null,
+                PreviousBotMessageId      : payload ? payload.BotMessageId : null,
+                SchemaId                  : this._schema.id,
+                SchemaInstanceId          : this._schemaInstance.id,
+                SchemaInstanceCode        : this._schemaInstance.Code,
+                SchemaName                : this._schema.Name,
+                NodeInstanceId            : currentNodeInstance.id,
+                NodeId                    : currentNode.id,
+                ActionId                  : null,
+                Metadata                  : payload ? payload.Metadata : null,
+            }
+        };
+
+        var result = await this.sendBotQuestion(message);
+        if (result === true) {
+            const updatedQuestionInstance = await this._commonUtilsService.markQuestionInstanceAsPosed(
+                currentNodeInstance.id, question.id);
+            if (!updatedQuestionInstance) {
+                logger.error(`Error while updating question instance!`);
+            }
+        }
+        return result;
+    };
+
     //#endregion
 
     //#region Privates
@@ -1169,6 +1192,61 @@ export class ActionExecutioner {
                     NodeInstanceId           : action.NodeInstanceId,
                     NodeId                   : action.NodeId,
                     ActionId                 : action.id,
+                }
+            }
+        };
+        var result = await messageService.send(phonenumber, ev);
+        return result;
+    };
+
+    private sendBotQuestion = async (message: WorkflowMessage): Promise<boolean> => {
+
+        var messageService = new ChatbotMessageService();
+
+        var eventPayload = this._event?.Payload;
+
+        const phonenumber = message.Phone;
+        const textMessage = message.TextMessage;
+        const imageUrl = message.ImageUrl || null;
+        const audioUrl = message.AudioUrl || null;
+        const videoUrl = message.VideoUrl || null;
+        const location = message.Location || null;
+        const question = message.Question || null;
+        const questionOptions = message.QuestionOptions || null;
+        const messageType = message.MessageType;
+
+        const ev: WorkflowEvent = {
+            EventType        : EventType.WorkflowSystemMessage,
+            TenantId         : this._event?.TenantId,
+            SchemaId         : this._schema.id,
+            SchemaInstanceId : this._schemaInstance.id,
+            UserMessage      : {
+                MessageType     : messageType,
+                EventTimestamp  : new Date(),
+                MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
+                Phone           : phonenumber,
+                TextMessage     : textMessage,
+                Location        : location,
+                ImageUrl        : imageUrl,
+                AudioUrl        : audioUrl,
+                VideoUrl        : videoUrl,
+                Question        : question,
+                QuestionOptions : questionOptions,
+                Payload         : {
+                    MessageType              : UserMessageType.Text,
+                    ProcessingEventId        : this._event?.id,
+                    ChannelMessageId         : null,
+                    BotMessageId             : null,
+                    ChannelType              : eventPayload ? eventPayload.MessageChannel as MessageChannelType : null,
+                    PreviousChannelMessageId : eventPayload ? eventPayload.ChannelMessageId : null,
+                    PreviousBotMessageId     : eventPayload ? eventPayload.BotMessageId : null,
+                    SchemaId                 : this._schema.id,
+                    SchemaInstanceId         : this._schemaInstance.id,
+                    SchemaInstanceCode       : this._schemaInstance.Code,
+                    SchemaName               : this._schema.Name,
+                    NodeInstanceId           : message.Payload.NodeInstanceId,
+                    NodeId                   : message.Payload.NodeId,
+                    ActionId                 : message.Payload.ActionId,
                 }
             }
         };

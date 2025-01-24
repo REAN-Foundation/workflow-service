@@ -27,6 +27,17 @@ body:json {
     "DelaySeconds": 180,
     "QuestionText": "Will you be available to attend to the incident?",
     "ResponseType": "Single Choice Selection",
+    "Input": {
+      "Params": [
+        {
+          "Name": "CFR Phonenumber",
+          "Type": "Phonenumber",
+          "Value": null,
+          "Source": "Almanac",
+          "Key": "ContextParams:CFR:Phonenumber"
+        }
+      ]
+    },
     "Options": [
       {
         "Text": "Available",

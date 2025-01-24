@@ -10,7 +10,7 @@ import { logger } from '../../logger/logger';
 import { NodeInstanceService } from '../../database/services/engine/node.instance.service';
 import { ConditionService } from '../../database/services/engine/condition.service';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
-import { CommonUtilsService } from '../../database/services/engine/common.utils.service';
+import { DatabaseUtilsService } from '../../database/services/engine/database.utils.service';
 import { ActionExecutioner } from './action.executioner';
 import { Almanac } from './almanac';
 import { NodeActionResult } from "../../domain.types/engine/node.action.types";
@@ -21,6 +21,8 @@ import { TimeUtils } from '../../common/utilities/time.utils';
 import { EngineUtils } from './engine.utils';
 import { EventType } from '../../domain.types/enums/event.type';
 import { StringUtils } from '../../common/utilities/string.utils';
+import { QuestionInstance } from '../../database/models/engine/question.instance.model';
+import { Question } from '../../database/models/engine/question.model';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +50,7 @@ export class SchemaEngine {
 
     _conditionService: ConditionService = new ConditionService();
 
-    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     _engineUtils: EngineUtils = new EngineUtils();
 
@@ -125,7 +127,9 @@ export class SchemaEngine {
         if (newNodeInstance.id !== currentNodeInstance.id) {
             currentNodeInstance = newNodeInstance;
             if (currentNodeInstance.Node.Type === NodeType.ExecutionNode ||
-                currentNodeInstance.Node.Type === NodeType.YesNoNode) {
+                currentNodeInstance.Node.Type === NodeType.YesNoNode ||
+                currentNodeInstance.Node.Type === NodeType.QuestionNode
+            ) {
                 return await this.processCurrentNode(currentNodeInstance);
             }
         }
@@ -296,6 +300,31 @@ export class SchemaEngine {
         // TODO: Implement the question node traversal logic
 
         var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+        const questionId = currentNode.id; // Question node id is same as question id
+        const question: Question = await this._commonUtilsService.getQuestion(questionId);
+        if (!question) {
+            logger.error(`Question not found!`);
+            return currentNodeInstance;
+        }
+
+        var questionInstance: QuestionInstance = await this._commonUtilsService.getOrCreateQuestionInstance(currentNodeInstance.id, questionId);
+        if (!questionInstance) {
+            logger.error(`Error creating question instance!`);
+            return currentNodeInstance;
+        }
+
+        if (questionInstance.QuestionPosed === false) {
+            // Pose the question
+            questionInstance.QuestionPosed = true;
+            const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
+            var result = await actionExecutioner.poseBotQuestion(currentNodeInstance, currentNode, question);
+            if (!result) {
+                logger.error(`Error while posing the question!`);
+                return currentNodeInstance;
+            }
+            await this._commonUtilsService.markQuestionInstanceAsPosed(currentNodeInstance.id, questionId);
+            return currentNodeInstance;
+        }
 
         const userMessage = this._event?.UserMessage;
         if (!userMessage) {
@@ -308,13 +337,6 @@ export class SchemaEngine {
         }
         if (!userMessage.QuestionResponse) {
             logger.error(`Question response not found!`);
-            return currentNodeInstance;
-        }
-
-        const questionId = currentNode.id; // Question node id is same as question id
-        const question = await this._commonUtilsService.getQuestion(questionId);
-        if (!question) {
-            logger.error(`Question not found!`);
             return currentNodeInstance;
         }
 

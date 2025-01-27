@@ -31,7 +31,7 @@ export class ChatbotMessageService {
                 }
             };
 
-            const url = `${botApiUrl}/${tenantCode}message/send`;
+            const url = `${botApiUrl}/${tenantCode}/message/send`;
             logger.info(url);
 
             const response = await needle('post', url, message, options);

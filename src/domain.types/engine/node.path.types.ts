@@ -8,17 +8,6 @@ import {
 
 //////////////////////////////////////////////////////////////
 
-// export interface XNodePath {
-//     id            : uuid;
-//     Name          : string;
-//     Code          : string;
-//     ParentNodeId  : NodeType;
-//     ParentNodeCode: string;
-//     NextNodeId    : uuid;
-//     NextNodeCode  : string;
-//     Condition     : XPathCondition;
-// }
-
 export interface NodePathCreateModel {
     Name         : string;
     Description? : string;

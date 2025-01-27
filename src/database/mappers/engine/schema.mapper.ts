@@ -17,6 +17,7 @@ export class SchemaMapper {
             id                 : schema.id,
             Type               : schema.Type,
             TenantId           : schema.TenantId,
+            TenantCode         : schema.TenantCode,
             Name               : schema.Name,
             Description        : schema.Description,
             ParentSchemaId     : schema.ParentSchemaId,

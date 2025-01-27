@@ -14,6 +14,7 @@ import { NodeCreateModel } from "./node.types";
 
 export interface SchemaCreateModel {
     TenantId           : uuid;
+    TenantCode         : string;
     Type               : SchemaType;
     Name               : string;
     Description?       : string;
@@ -36,6 +37,7 @@ export interface SchemaResponseDto {
     id                 : uuid;
     Type               : SchemaType;
     TenantId           : uuid;
+    TenantCode         : string;
     Name               : string;
     Description        : string;
     ParentSchemaId    ?: uuid;

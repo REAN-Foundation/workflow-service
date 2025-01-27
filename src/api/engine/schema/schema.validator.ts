@@ -13,6 +13,7 @@ export class SchemaValidator extends BaseValidator {
         try {
             const schema = joi.object({
                 TenantId           : joi.string().uuid().required(),
+                TenantCode         : joi.string().required(),
                 Name               : joi.string().max(64).required(),
                 Type               : joi.string().valid(...Object.values(SchemaType)).required(),
                 Description        : joi.string().max(512).optional(),
@@ -62,6 +63,7 @@ export class SchemaValidator extends BaseValidator {
 
             return {
                 TenantId           : request.body.TenantId,
+                TenantCode         : request.body.TenantCode,
                 ParentSchemaId     : request.body.ParentSchemaId ?? null,
                 Name               : request.body.Name,
                 Description        : request.body.Description ?? null,

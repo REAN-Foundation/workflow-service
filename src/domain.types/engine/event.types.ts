@@ -11,6 +11,7 @@ import { WorkflowMessage } from "./user.event.types";
 export interface WorkflowEvent {
     EventType        : EventType;
     TenantId         : uuid;
+    TenantCode      ?: string;
     SchemaId        ?: uuid;
     SchemaInstanceId?: uuid;
     UserMessage     ?: WorkflowMessage;

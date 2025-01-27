@@ -8,7 +8,7 @@ import { WorkflowEvent } from '../../domain.types/engine/event.types';
 
 export class ChatbotMessageService {
 
-    send = async (toPhone: string, message: WorkflowEvent): Promise<boolean> => {
+    send = async (tenantCode: string, toPhone: string, message: WorkflowEvent): Promise<boolean> => {
         try {
             const str = JSON.stringify(message);
 
@@ -31,7 +31,7 @@ export class ChatbotMessageService {
                 }
             };
 
-            const url = `${botApiUrl}/message/send`;
+            const url = `${botApiUrl}/${tenantCode}message/send`;
             logger.info(url);
 
             const response = await needle('post', url, message, options);

@@ -23,12 +23,17 @@ import { EventType } from '../../domain.types/enums/event.type';
 import { StringUtils } from '../../common/utilities/string.utils';
 import { QuestionInstance } from '../../database/models/engine/question.instance.model';
 import { Question } from '../../database/models/engine/question.model';
+import { uuid } from '../../domain.types/miscellaneous/system.types';
 
 ///////////////////////////////////////////////////////////////////////////////
 
 export class SchemaEngine {
 
     _almanac: Almanac;
+
+    _tenantId: uuid;
+
+    _tenantCode: string;
 
     _schema: SchemaResponseDto | null = null;
 
@@ -58,6 +63,8 @@ export class SchemaEngine {
         this._schema = schema;
         this._schemaInstance = schemaInstance;
         this._event = event;
+        this._tenantId = schema.TenantId;
+        this._tenantCode = schema.TenantCode;
         if (schemaInstance) {
             this._almanac = new Almanac(schemaInstance.id);
         }

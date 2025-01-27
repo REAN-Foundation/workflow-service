@@ -80,6 +80,7 @@ export class SchemaService extends BaseService {
 
         const schema = await this._schemaRepository.create({
             TenantId           : createModel.TenantId,
+            TenantCode         : createModel.TenantCode,
             ParentSchemaId     : createModel.ParentSchemaId,
             Name               : createModel.Name,
             Description        : createModel.Description,
@@ -209,6 +210,29 @@ export class SchemaService extends BaseService {
             var schemas = await this._schemaRepository.find({
                 where : {
                     TenantId : tenantId
+                },
+                relations : {
+                    Nodes : true,
+                }
+            });
+            var dtos: SchemaResponseDto[] = [];
+            for (var schema of schemas) {
+                const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
+                var dto = SchemaMapper.toResponseDto(schema, rootNode);
+                dtos.push(dto);
+            }
+            return dtos;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getByTenantCode = async (tenantCode: string): Promise<SchemaResponseDto[]> => {
+        try {
+            var schemas = await this._schemaRepository.find({
+                where : {
+                    TenantCode : tenantCode
                 },
                 relations : {
                     Nodes : true,

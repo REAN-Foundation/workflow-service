@@ -25,13 +25,16 @@ import TimerNodeTriggerHandler from './timer.node.trigger.handler';
 import { Agent as HttpAgent } from 'http'; // For HTTP
 import { Agent as HttpsAgent } from 'https'; // For HTTPS
 import { Question } from '../../database/models/engine/question.model';
-import { QuestionInstance } from '../../database/models/engine/question.instance.model';
 
 ////////////////////////////////////////////////////////////////
 
 export class ActionExecutioner {
 
     //#region Construction
+
+    _tenantId: uuid;
+
+    _tenantCode: string;
 
     _almanac: Almanac;
 
@@ -59,6 +62,8 @@ export class ActionExecutioner {
         almanac: Almanac) {
         this._schema = schema;
         this._schemaInstance = schemaInstance;
+        this._tenantId = schema.TenantId;
+        this._tenantCode = schema.TenantCode;
         this._event = event;
         this._almanac = almanac;
     }
@@ -1195,7 +1200,7 @@ export class ActionExecutioner {
                 }
             }
         };
-        var result = await messageService.send(phonenumber, ev);
+        var result = await messageService.send(this._tenantCode, phonenumber, ev);
         return result;
     };
 
@@ -1250,7 +1255,7 @@ export class ActionExecutioner {
                 }
             }
         };
-        var result = await messageService.send(phonenumber, ev);
+        var result = await messageService.send(this._tenantCode, phonenumber, ev);
         return result;
     };
 

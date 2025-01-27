@@ -225,6 +225,18 @@ export class NodeValidator extends BaseValidator {
                         Value : joi.any().required(),
                     })).optional(),
                 })).optional(),
+                Input : joi.object({
+                    Params : joi.array().items(joi.object({
+                        Name        : joi.string().max(128).required(),
+                        Description : joi.string().max(512).optional(),
+                        ActionType  : joi.string().valid(...Object.values(ActionType)).optional(),
+                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
+                        Value       : joi.any().allow(null).required(),
+                        Source      : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                        Key         : joi.string().max(256).optional(),
+                        Required    : joi.boolean().optional(),
+                    })).required(),
+                }).optional(),
                 RuleId       : joi.string().uuid().optional(),
                 DelaySeconds : joi.number().integer().optional(),
                 RawData      : joi.object().allow(null).optional(),
@@ -243,6 +255,7 @@ export class NodeValidator extends BaseValidator {
                 DelaySeconds : request.body.ExecutionDelaySeconds ?? null,
                 RuleId       : request.body.ExecutionRuleId ?? null,
                 RawData      : request.body.RawData ?? null,
+                Input        : request.body.Input ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

@@ -13,12 +13,12 @@ import { NodeActionInstance } from '../../models/engine/node.action.instance.mod
 import { NodeInstance } from '../../models/engine/node.instance.model';
 import { NodeInstanceMapper } from '../../mappers/engine/node.instance.mapper';
 import { logger } from '../../../logger/logger';
-import { NodeActionInstanceResponseDto } from '../../../domain.types/engine/node.instance.types';
+import { NodeActionInstanceResponseDto, NodeInstanceResponseDto } from '../../../domain.types/engine/node.instance.types';
 import { NodeActionMapper } from '../../mappers/engine/node.action.mapper';
 import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 import { Question } from '../../models/engine/question.model';
-import { QuestionNodeResponseDto } from '../../../domain.types/engine/node.types';
+import { NodeResponseDto, QuestionNodeResponseDto } from '../../../domain.types/engine/node.types';
 import { NodeMapper } from '../../mappers/engine/node.mapper';
 import { QuestionOption } from '../../models/engine/question.option.model';
 import { QuestionAnswerOption } from '../../../domain.types/engine/user.event.types';
@@ -146,7 +146,8 @@ export class DatabaseUtilsService {
         }
     };
 
-    public getOrCreateNodeActionInstances = async (nodeInstanceId: uuid, isPathAction = false): Promise<NodeActionInstanceResponseDto[]> => {
+    public getOrCreateNodeActionInstances = async (nodeInstanceId: uuid, isPathAction = false)
+        : Promise<NodeActionInstanceResponseDto[]> => {
         try {
             var nodeInstance = await this._nodeInstanceRepository.findOne({
                 where : {
@@ -391,9 +392,15 @@ export class DatabaseUtilsService {
             if (questionInstance) {
                 return questionInstance;
             }
+            const question = await this.getQuestion(questionId);
+            if (!question) {
+                ErrorHandler.throwNotFoundError('Question not found');
+            }
             var instance = await this._questionInstanceRepository.create({
                 NodeInstanceId         : nodeInstanceId,
                 QuestionId             : questionId,
+                QuestionText           : question.QuestionText,
+                ResponseType           : question.ResponseType,
                 QuestionPosed          : false,
                 ResponseReceived       : false,
                 SelectedOptionId       : null,

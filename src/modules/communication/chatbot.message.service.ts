@@ -37,11 +37,9 @@ export class ChatbotMessageService {
             const response = await needle('post', url, message, options);
             if (response.statusCode !== 200) {
                 logger.error(`Failed to send message to \nPhone: '${toPhone}',\nMessage Payload: '${str}'`);
-                return true;
+                return false;
             }
-            // logger.info(`Bot message response: ${JSON.stringify(response.body)}`);
-
-            return Promise.resolve(true);
+            return true;
         } catch (error) {
             logger.error(error.message);
             return false;

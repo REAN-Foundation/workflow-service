@@ -92,6 +92,13 @@ body:json {
           "Type": "SchemaInstanceId",
           "Value": "{{SCHEMA_ID}}",
           "Key": "ParentSchemaInstanceId"
+        },
+        {
+          "Name": "Message Channel",
+          "Description": "Default messaging channel for the workflow",
+          "Type": "MessageChannel",
+          "Value": "Telegram",
+          "Key": "ContextParams:MessageChannel"
         }
       ]
     }

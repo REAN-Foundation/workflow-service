@@ -14,9 +14,10 @@ import {
     NodeInstanceSearchResults,
     NodeInstanceUpdateModel } from '../../../domain.types/engine/node.instance.types';
 import { SchemaInstance } from '../../models/engine/schema.instance.model';
-import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
+import { ExecutionStatus, NodeType } from '../../../domain.types/engine/engine.enums';
 import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
 import { DatabaseUtilsService } from './database.utils.service';
+import { NodeAction } from '../../../database/models/engine/node.action.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -32,6 +33,8 @@ export class NodeInstanceService extends BaseService {
 
     _schemaInstanceRepository: Repository<SchemaInstance> = Source.getRepository(SchemaInstance);
 
+    _nodeActionRepository: Repository<NodeAction> = Source.getRepository(NodeAction);
+
     _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
@@ -41,18 +44,63 @@ export class NodeInstanceService extends BaseService {
 
         const node = await this.getNode(createModel.NodeId);
         const schemaInstance = await this.getSchemaInstance(createModel.SchemaInstanceId);
+        if (!node || !schemaInstance) {
+            ErrorHandler.throwNotFoundError('Node or SchemaInstance not found');
+        }
 
-        const nodeInstance = this._nodeInstanceRepository.create({
-            Node                        : node,
-            SchemaInstance              : schemaInstance,
-            ExecutionStatus             : createModel.ExecutionStatus,
-            Type                        : node.Type,
-            Input                       : createModel.Input,
-            TimerNumberOfTriesCompleted : 0,
-        });
-        var record = await this._nodeInstanceRepository.save(nodeInstance);
-        var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(record.id);
-        return NodeInstanceMapper.toResponseDto(record, actionInstances);
+        var nodeInstanceDto = await this.getByNodeIdAndSchemaInstance(node.id, schemaInstance.id);
+        if (!nodeInstanceDto) {
+            var nodeInstance = await this._nodeInstanceRepository.create({
+                Node                        : node,
+                SchemaInstance              : schemaInstance,
+                ExecutionStatus             : createModel.ExecutionStatus,
+                Type                        : node.Type,
+                Input                       : createModel.Input,
+                TimerNumberOfTriesCompleted : 0,
+            });
+            var record = await this._nodeInstanceRepository.save(nodeInstance);
+            var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(record.id);
+            nodeInstanceDto = NodeInstanceMapper.toResponseDto(record, actionInstances);
+        }
+
+        await this.updateYesNoActionInstances(node, nodeInstance);
+
+        return nodeInstanceDto;
+    };
+
+    public getOrCreate = async (nodeId: uuid, schemaInstanceId: uuid)
+        : Promise<NodeInstanceResponseDto> => {
+        if (!nodeId) {
+            logger.error('Node Id is required');
+            return null;
+        }
+        if (!schemaInstanceId) {
+            logger.error('Schema Instance Id is required');
+            return null;
+        }
+        const node = await this.getNode(nodeId);
+        const schemaInstance = await this.getSchemaInstance(schemaInstanceId);
+        if (!node || !schemaInstance) {
+            ErrorHandler.throwNotFoundError('Node or SchemaInstance not found');
+        }
+
+        var nodeInstanceDto = await this.getByNodeIdAndSchemaInstance(node.id, schemaInstance.id);
+        if (!nodeInstanceDto) {
+            var nodeInstance = await this._nodeInstanceRepository.create({
+                Node                        : node,
+                SchemaInstance              : schemaInstance,
+                ExecutionStatus             : ExecutionStatus.Pending,
+                Type                        : node.Type,
+                Input                       : node.Input,
+                TimerNumberOfTriesCompleted : 0,
+            });
+            var record = await this._nodeInstanceRepository.save(nodeInstance);
+            return await this.getById(record.id);
+        }
+
+        await this.updateYesNoActionInstances(node, nodeInstance);
+
+        return nodeInstanceDto;
     };
 
     public getById = async (id: uuid): Promise<NodeInstanceResponseDto> => {
@@ -81,39 +129,6 @@ export class NodeInstanceService extends BaseService {
                 return null;
             }
             var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(id);
-            return NodeInstanceMapper.toResponseDto(nodeInstance, actionInstances);
-        } catch (error) {
-            logger.error(error.message);
-            ErrorHandler.throwInternalServerError(error.message, 500);
-        }
-    };
-
-    public getByNodeIdAndSchemaInstance = async (nodeId: uuid, schemaInstanceId: uuid)
-        : Promise<NodeInstanceResponseDto> => {
-        try {
-            var nodeInstance = await this._nodeInstanceRepository.findOne({
-                where : {
-                    Node : {
-                        id : nodeId
-                    },
-                    SchemaInstance : {
-                        id : schemaInstanceId
-                    }
-                },
-                relations : {
-                    SchemaInstance : {
-                        Schema : true,
-                    },
-                    ChildrenNodeInstances : {
-                        Node : true
-                    },
-                    Node : true,
-                },
-            });
-            if (!nodeInstance) {
-                return null;
-            }
-            var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(nodeInstance.id);
             return NodeInstanceMapper.toResponseDto(nodeInstance, actionInstances);
         } catch (error) {
             logger.error(error.message);
@@ -320,5 +335,58 @@ export class NodeInstanceService extends BaseService {
         }
         return schemaInstance;
     }
+
+    private async updateYesNoActionInstances(node: Node, nodeInstance: NodeInstance) {
+        if (node.Type === NodeType.YesNoNode) {
+            const yesAction = await this._nodeActionRepository.findOne({
+                where : {
+                    id : node.YesActionId
+                }
+            });
+            const noAction = await this._nodeActionRepository.findOne({
+                where : {
+                    id : node.NoActionId
+                }
+            });
+            if (!yesAction || !noAction) {
+                logger.error(`Yes/No actions not found for Yes-No Node - ${node.Name}`);
+            }
+            await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, nodeInstance.id);
+            await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, nodeInstance.id);
+        }
+    }
+
+    private getByNodeIdAndSchemaInstance = async (nodeId: uuid, schemaInstanceId: uuid)
+        : Promise<NodeInstanceResponseDto> => {
+        try {
+            var nodeInstance = await this._nodeInstanceRepository.findOne({
+                where : {
+                    Node : {
+                        id : nodeId
+                    },
+                    SchemaInstance : {
+                        id : schemaInstanceId
+                    }
+                },
+                relations : {
+                    SchemaInstance : {
+                        Schema : true,
+                    },
+                    ChildrenNodeInstances : {
+                        Node : true
+                    },
+                    Node : true,
+                },
+            });
+            if (!nodeInstance) {
+                return null;
+            }
+            var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(nodeInstance.id);
+            return NodeInstanceMapper.toResponseDto(nodeInstance, actionInstances);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
 
 }

@@ -18,7 +18,6 @@ import { RuleService } from '../../database/services/engine/rule.service';
 import { ConditionProcessor } from './condition.processor';
 import { NodeActionService } from '../../database/services/engine/node.action.service';
 import { TimeUtils } from '../../common/utilities/time.utils';
-import { EngineUtils } from './engine.utils';
 import { EventType } from '../../domain.types/enums/event.type';
 import { StringUtils } from '../../common/utilities/string.utils';
 import { QuestionInstance } from '../../database/models/engine/question.instance.model';
@@ -57,8 +56,6 @@ export class SchemaEngine {
 
     _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
-    _engineUtils: EngineUtils = new EngineUtils();
-
     constructor(schema: SchemaResponseDto, schemaInstance: SchemaInstanceResponseDto, event: EventResponseDto) {
         this._schema = schema;
         this._schemaInstance = schemaInstance;
@@ -94,7 +91,8 @@ export class SchemaEngine {
             EventType : this._event?.EventType ?? EventType.UserMessage,
             Message   : this._event?.UserMessage?.TextMessage ?? null,
             Location  : this._event?.UserMessage?.Location ?? null,
-            Question  : this._event?.UserMessage?.Question ?? null,
+            Question  : this._event?.UserMessage?.QuestionText ?? null,
+            Channel   : this._event?.UserMessage?.MessageChannel ?? null,
             Timestamp : new Date(),
         };
 
@@ -321,10 +319,14 @@ export class SchemaEngine {
         }
 
         if (questionInstance.QuestionPosed === false) {
+
+            //Wait for a 2 seconds before posing the question
+            await new Promise(r => setTimeout(r, 2000));
+
             // Pose the question
             questionInstance.QuestionPosed = true;
             const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
-            var result = await actionExecutioner.poseBotQuestion(currentNodeInstance, currentNode, question);
+            var result = await actionExecutioner.sendBotQuestion(currentNodeInstance, currentNode, question);
             if (!result) {
                 logger.error(`Error while posing the question!`);
                 return currentNodeInstance;
@@ -338,7 +340,7 @@ export class SchemaEngine {
             logger.error(`User message not found!`);
             return currentNodeInstance;
         }
-        if (userMessage.MessageType !== UserMessageType.Question) {
+        if (userMessage.MessageType !== UserMessageType.QuestionResponse) {
             logger.error(`User message is not a question response!`);
             return currentNodeInstance;
         }
@@ -348,13 +350,13 @@ export class SchemaEngine {
         }
 
         const response = userMessage.QuestionResponse;
-        const incomingResponseType = response.ResponseType;
+        const incomingResponseType = response.QuestionResponseType;
         if (incomingResponseType !== question.ResponseType) {
             logger.error(`Incoming response type does not match the question response type!`);
             return currentNodeInstance;
         }
 
-        if (response.ResponseType === QuestionResponseType.SingleChoiceSelection) {
+        if (response.QuestionResponseType === QuestionResponseType.SingleChoiceSelection) {
 
             var chosenOption = response.SingleChoiceChosenOption;
             var chosenOptionSequence = response.SingleChoiceChosenOptionSequence;
@@ -376,7 +378,10 @@ export class SchemaEngine {
                 return currentNodeInstance;
             }
             if (!chosenOptionSequence) {
-                chosenOptionSequence = response.QuestionOptions.findIndex(o => o.Text === chosenOption);
+                var opt = response.QuestionOptions.find(o => o.Text === chosenOption);
+                if (opt) {
+                    chosenOptionSequence = opt.Sequence;
+                }
             }
             if (chosenOptionSequence < minSequenceValue || chosenOptionSequence > maxSequenceValue) {
                 logger.error(`Chosen option sequence out of range!`);
@@ -407,6 +412,13 @@ export class SchemaEngine {
                 if (!condition) {
                     condition = await this._conditionService.getById(rule.ConditionId);
                 }
+                if (!condition) {
+                    logger.error(`Condition not found for path ${path.Name}`);
+                    continue;
+                }
+                if (condition.SecondOperand) {
+                    condition.SecondOperand.Value = chosenOptionSequence;
+                }
                 var processor = new ConditionProcessor(this._almanac, this._event);
                 var passed = await processor.processCondition(condition, null);
                 if (passed) {
@@ -416,7 +428,7 @@ export class SchemaEngine {
                         logger.error(`Next node not found for path ${path.Name}`);
                         continue;
                     }
-                    var nextNodeInstance = await this._nodeInstanceService.getByNodeIdAndSchemaInstance(nextNodeId, this._schemaInstance.id);
+                    var nextNodeInstance = await this._nodeInstanceService.getOrCreate(nextNodeId, this._schemaInstance.id);
                     if (!nextNodeInstance) {
                         logger.error(`Error while creating next node instance!`);
                         return currentNodeInstance;
@@ -427,7 +439,7 @@ export class SchemaEngine {
             }
             return currentNodeInstance;
         }
-        else if (response.ResponseType === QuestionResponseType.Integer) {
+        else if (response.QuestionResponseType === QuestionResponseType.Integer) {
             const responseContent = response.ResponseContent;
             if (!responseContent) {
                 logger.error(`Response content not found!`);
@@ -596,9 +608,14 @@ export class SchemaEngine {
             logger.error(`Next node not found for Node ${currentNode.Name}`);
             return { currentNode, currentNodeInstance };
         }
+        var nextNode = await this._nodeService.getById(nextNodeId);
+        if (!nextNode) {
+            logger.error(`Next node not found for Node ${currentNode.Name}`);
+            return { currentNode, currentNodeInstance };
+        }
         var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
-        var [nextNodeInstance, nextNode] = await this._engineUtils.createNodeInstance(nextNodeId, schemaInstanceId);
-        if (!nextNodeInstance || !nextNode) {
+        var nextNodeInstance = await this._nodeInstanceService.getOrCreate(nextNodeId, schemaInstanceId);
+        if (!nextNodeInstance) {
             logger.error(`Error while setting next node instance!`);
             return { currentNode, currentNodeInstance };
         }
@@ -634,6 +651,8 @@ export class SchemaEngine {
         const formattedCount = padZero(instanceCount + 1, 3); // Count with leading zeros (e.g., 001)
         var code = 'E-' + pattern + '-' + formattedCount;
 
+        var messageChannel = event.UserMessage?.MessageChannel;
+
         var schemaInstanceContextParams = schema.ContextParams;
         for (var p of schemaInstanceContextParams.Params) {
             if (p.Type === ParamType.Phonenumber) {
@@ -649,6 +668,9 @@ export class SchemaEngine {
                 if (p.Key === 'SchemaInstanceCode') {
                     p.Value = code;
                 }
+            }
+            if (p.Type === ParamType.MessageChannel && !p.Value && messageChannel) {
+                p.Value = messageChannel;
             }
             if (p.Type === ParamType.RandomCode) {
                 p.Value = StringUtils.generateDisplayCode_RandomChars(6);

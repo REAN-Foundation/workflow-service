@@ -14,6 +14,7 @@ export enum ParamType {
     Phonenumber      = "Phonenumber",
     Email            = "Email",
     Location         = "Location",
+    MessageChannel   = "MessageChannel",
     RestApiParams    = "RestApiParams",
     Date             = "Date",
     DateTime         = "DateTime",
@@ -47,6 +48,7 @@ export enum UserMessageType {
     Location = 'Location',
     File     = 'File',
     Question = 'Question',
+    QuestionResponse = 'QuestionResponse',
     Image    = 'Image',
 }
 
@@ -57,6 +59,9 @@ export const MessageTypeList: UserMessageType[] = [
     UserMessageType.Link,
     UserMessageType.Location,
     UserMessageType.File,
+    UserMessageType.Question,
+    UserMessageType.QuestionResponse,
+    UserMessageType.Image,
 ];
 
 export enum MessageChannelType {

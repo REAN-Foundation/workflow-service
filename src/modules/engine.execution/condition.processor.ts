@@ -168,12 +168,12 @@ export class ConditionProcessor {
             var message = this._event?.UserMessage;
             const isQuestionResponse = message &&
                 message.QuestionResponse &&
-                message.MessageType === UserMessageType.Question;
+                message.MessageType === UserMessageType.QuestionResponse;
 
             if (isQuestionResponse) {
-                const isSingleChoice = message.QuestionResponse.ResponseType === QuestionResponseType.SingleChoiceSelection;
+                const isSingleChoice = message.QuestionResponse.QuestionResponseType === QuestionResponseType.SingleChoiceSelection;
                 if (isSingleChoice) {
-                    value = message.QuestionResponse.SingleChoiceChosenOption;
+                    value = message.QuestionResponse.SingleChoiceChosenOptionSequence;
                 }
                 else {
                     value = message.QuestionResponse.ResponseContent;

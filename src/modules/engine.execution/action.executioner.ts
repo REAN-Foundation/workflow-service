@@ -14,7 +14,6 @@ import { SchemaResponseDto } from "../../domain.types/engine/schema.domain.types
 import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.instance.types";
 import { EventResponseDto, WorkflowEvent } from "../../domain.types/engine/event.types";
 import { NodeActionResult } from "../../domain.types/engine/node.action.types";
-import { EngineUtils } from "./engine.utils";
 import { uuid } from "../../domain.types/miscellaneous/system.types";
 import { TimeUtils } from "../../common/utilities/time.utils";
 import { WorkflowMessage } from '../../domain.types/engine/user.event.types';
@@ -53,8 +52,6 @@ export class ActionExecutioner {
     _schemaInstanceService: SchemaInstanceService = new SchemaInstanceService();
 
     _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
-
-    _engineUtils: EngineUtils = new EngineUtils();
 
     constructor(schema: SchemaResponseDto,
         schemaInstance: SchemaInstanceResponseDto,
@@ -97,7 +94,7 @@ export class ActionExecutioner {
             };
         }
 
-        var [nodeInstance, node] = await this._engineUtils.createNodeInstance(nodeId, this._schemaInstance.id);
+        var nodeInstance = await this._nodeInstanceService.getOrCreate(nodeId, this._schemaInstance.id);
         if (!nodeInstance) {
             logger.error(`Unable to create node instance for Node Id: ${nodeId}`);
             return {
@@ -139,7 +136,7 @@ export class ActionExecutioner {
             };
         }
 
-        var [nodeInstance, node] = await this._engineUtils.createNodeInstance(nodeId, this._schemaInstance.id);
+        var nodeInstance = await this._nodeInstanceService.getOrCreate(nodeId, this._schemaInstance.id);
         if (!nodeInstance) {
             logger.error(`Unable to create node instance for Node Id: ${nodeId}`);
             return {
@@ -161,50 +158,6 @@ export class ActionExecutioner {
             Result  : nodeInstance
         };
 
-        // var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
-        // var yesActionId = await currentNode.YesAction?.id;
-        // var noActionId = await currentNode.NoAction?.id;
-
-        // var yesAction = await this._actionService.getById(yesActionId);
-        // var noAction = await this._actionService.getById(noActionId);
-
-        // var yesActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, currentNodeInstance.id);
-        // var noActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, currentNodeInstance.id);
-
-        // var ruleId = currentNode.RuleId;
-        // var rule = await this._ruleService.getById(ruleId);
-        // if (!rule) {
-        //     logger.error(`Rule not found for Node ${currentNode.Name}`);
-        //     return null;
-        // }
-
-        // const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
-        // var condition = rule.Condition;
-        // if (!condition) {
-        //     condition = await this._conditionService.getById(rule.ConditionId);
-        // }
-        // var processor = new ConditionProcessor(this._almanac, this._event);
-        // var conditionResult = await processor.processCondition(condition, null);
-        // logger.info(`Yes/No Node ${currentNode.Name} Condition Result: ${conditionResult}`);
-        // var result: NodeActionResult = {
-        //     Success : false,
-        //     Result  : null,
-        // };
-        // const actionToExecute = conditionResult ? yesActionInstance : noActionInstance;
-
-        // if (actionToExecute.ActionType === ActionType.Continue) {
-        //     var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
-        //     if (!res || !res.currentNode || !res.currentNodeInstance) {
-        //         logger.error(`Error while setting next node instance!`);
-        //         return currentNodeInstance;
-        //     }
-        //     return res.currentNodeInstance;
-        // }
-        // else {
-        //     result = await this.executeAction(actionToExecute, actionExecutioner);
-        //     logger.info(`Yes/No Node Action Result: ${JSON.stringify(result)}`);
-        // }
-        // return currentNodeInstance;
     };
 
     public executeSendMessageAction  = async (
@@ -221,6 +174,7 @@ export class ActionExecutioner {
                 Result  : null
             };
         }
+
         var messageType = UserMessageType.Text;
         var textMessage = await this.getActionParamValue(input, ParamType.Text, 'Message');
         if (textMessage && textMessage.length > 0) {
@@ -297,20 +251,26 @@ export class ActionExecutioner {
 
         const payload = this._event?.Payload;
 
+        var channelType = await this.getMessageChannel(input, payload);
+
         const message: WorkflowMessage = {
-            MessageType     : messageType,
-            EventTimestamp  : new Date(),
-            MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
-            Phone           : phonenumber,
-            TextMessage     : textMessage ?? null,
-            Location        : location ?? null,
-            Question        : questionNode ? questionNode.Question.QuestionText : null,
-            QuestionOptions : questionNode ? questionNode.Question.Options : null,
-            Placeholders    : placeholders,
-            Payload         : {
+            MessageType          : messageType,
+            EventTimestamp       : new Date(),
+            MessageChannel       : channelType,
+            Phone                : phonenumber,
+            TextMessage          : textMessage ?? null,
+            Location             : location ?? null,
+            ImageUrl             : null,
+            AudioUrl             : null,
+            VideoUrl             : null,
+            QuestionText         : questionNode ? questionNode.Question.QuestionText : null,
+            QuestionOptions      : questionNode ? questionNode.Question.Options : null,
+            QuestionResponseType : questionNode ? questionNode.Question.ResponseType : null,
+            Placeholders         : placeholders,
+            Payload              : {
                 MessageType               : messageType,
                 ProcessingEventId         : this._event?.id,
-                ChannelType               : this._event?.UserMessage?.MessageChannel as MessageChannelType ?? MessageChannelType.Other,
+                ChannelType               : channelType,
                 ChannelMessageId          : null,
                 PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
                 MessageTemplateId         : messageTemplateId,
@@ -328,7 +288,7 @@ export class ActionExecutioner {
             }
         };
 
-        var result = await this.sendBotMessage(action, message);
+        var result = await this.sendBotMessage(message);
         if (result === true) {
             await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         }
@@ -406,19 +366,21 @@ export class ActionExecutioner {
 
         const payload = this._event?.Payload;
 
+        const channelType = await this.getMessageChannel(input, payload);
+
         const message: WorkflowMessage = {
             MessageType     : UserMessageType.Text,
             EventTimestamp  : new Date(),
-            MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
+            MessageChannel  : channelType,
             TextMessage     : textMessage ?? null,
             Location        : location ?? null,
-            Question        : questionNode ? questionNode.Question.QuestionText : null,
+            QuestionText    : questionNode ? questionNode.Question.QuestionText : null,
             QuestionOptions : questionNode ? questionNode.Question.Options : null,
             Placeholders    : placeholders,
             Payload         : {
                 MessageType               : UserMessageType.Text,
                 ProcessingEventId         : this._event?.id,
-                ChannelType               : payload ? payload.MessageChannel as MessageChannelType : MessageChannelType.Other,
+                ChannelType               : channelType,
                 ChannelMessageId          : null,
                 PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
                 MessageTemplateId         : messageTemplateId,
@@ -436,23 +398,26 @@ export class ActionExecutioner {
             }
         };
 
+        const failedMessageDeliveries = [];
         // Execute the action
         for (let index = 0; index < phonenumebrs.length; index++) {
             const phonenumber = phonenumebrs[index];
             message.Phone = phonenumber;
-            //If the schemaInstance and schema are different, then
-
-            var result = await this.sendBotMessage(action, message);
+            var result = await this.sendBotMessage(message);
             if (!result) {
-                return {
-                    Success : false,
-                    Result  : null
-                };
+                failedMessageDeliveries.push(phonenumber);
             }
         }
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         await this.recordActionActivity(action, result);
 
+        if (failedMessageDeliveries.length > 0) {
+            logger.error(`Failed to deliver messages to the following phone numbers: ${failedMessageDeliveries.join(',')}`);
+            return {
+                Success : false,
+                Result  : failedMessageDeliveries
+            };
+        }
         return {
             Success : true,
             Result  : result
@@ -957,7 +922,25 @@ export class ActionExecutioner {
         };
     };
 
-    public poseBotQuestion = async (
+    public sendBotMessage = async (
+        message: WorkflowMessage)
+        : Promise<boolean> => {
+
+        var messageService = new ChatbotMessageService();
+        const phonenumber = message.Phone;
+
+        const workflowEvent: WorkflowEvent = {
+            EventType        : EventType.WorkflowSystemMessage,
+            TenantId         : this._event?.TenantId,
+            SchemaId         : this._schema.id,
+            SchemaInstanceId : this._schemaInstance.id,
+            UserMessage      : message
+        };
+        var result = await messageService.send(this._tenantCode, phonenumber, workflowEvent);
+        return result;
+    };
+
+    public sendBotQuestion = async (
         currentNodeInstance: NodeInstanceResponseDto,
         currentNode: NodeResponseDto,
         question: Question): Promise<boolean> => {
@@ -972,30 +955,34 @@ export class ActionExecutioner {
         }
 
         const messageTemplateId = await this.getActionParamValue(input, ParamType.Text, 'MessageTemplateId');
-        const payload = this._event?.Payload;
-        const channelType = this._event?.UserMessage?.MessageChannel as MessageChannelType ??
-            MessageChannelType.Other;
+        var eventPayload = this._event?.Payload;
+
+        var channelType = await this.getMessageChannel(input, eventPayload);
 
         const message: WorkflowMessage = {
-            MessageType     : UserMessageType.Question,
-            EventTimestamp  : new Date(),
-            MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
-            Phone           : phonenumber,
-            TextMessage     : null,
-            Location        : null,
-            Question        : question ? question.QuestionText : null,
-            QuestionOptions : question ? question.Options : null,
-            Placeholders    : null,
-            Payload         : {
+            MessageType          : UserMessageType.Question,
+            EventTimestamp       : new Date(),
+            MessageChannel       : channelType,
+            Phone                : phonenumber,
+            TextMessage          : null,
+            Location             : null,
+            ImageUrl             : null,
+            AudioUrl             : null,
+            VideoUrl             : null,
+            QuestionText         : question ? question.QuestionText : null,
+            QuestionOptions      : question ? question.Options : null,
+            QuestionResponseType : question ? question.ResponseType : null,
+            Placeholders         : null,
+            Payload              : {
                 MessageType               : UserMessageType.Question,
                 ProcessingEventId         : this._event?.id,
                 ChannelType               : channelType,
                 ChannelMessageId          : null,
-                PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
-                MessageTemplateId         : messageTemplateId,
-                PreviousMessageTemplateId : payload ? payload.MessageTemplateId : null,
                 BotMessageId              : null,
-                PreviousBotMessageId      : payload ? payload.BotMessageId : null,
+                PreviousChannelMessageId  : eventPayload ? eventPayload.ChannelMessageId : null,
+                MessageTemplateId         : messageTemplateId,
+                PreviousMessageTemplateId : eventPayload ? eventPayload.MessageTemplateId : null,
+                PreviousBotMessageId      : eventPayload ? eventPayload.BotMessageId : null,
                 SchemaId                  : this._schema.id,
                 SchemaInstanceId          : this._schemaInstance.id,
                 SchemaInstanceCode        : this._schemaInstance.Code,
@@ -1003,11 +990,19 @@ export class ActionExecutioner {
                 NodeInstanceId            : currentNodeInstance.id,
                 NodeId                    : currentNode.id,
                 ActionId                  : null,
-                Metadata                  : payload ? payload.Metadata : null,
+                Metadata                  : eventPayload ? eventPayload.Metadata : null,
             }
         };
+        var messageService = new ChatbotMessageService();
 
-        var result = await this.sendBotQuestion(message);
+        const workflowEvent: WorkflowEvent = {
+            EventType        : EventType.WorkflowSystemMessage,
+            TenantId         : this._event?.TenantId,
+            SchemaId         : this._schema.id,
+            SchemaInstanceId : this._schemaInstance.id,
+            UserMessage      : message
+        };
+        var result = await messageService.send(this._tenantCode, phonenumber, workflowEvent);
         if (result === true) {
             const updatedQuestionInstance = await this._commonUtilsService.markQuestionInstanceAsPosed(
                 currentNodeInstance.id, question.id);
@@ -1146,117 +1141,29 @@ export class ActionExecutioner {
             action.SchemaInstanceId, WorkflowActivityType.NodeAction, activityPayload, summary);
     };
 
-    private sendBotMessage = async (
-        action: NodeActionInstanceResponseDto,
-        message: WorkflowMessage)
-        : Promise<boolean> => {
+    private getMessageChannel = async (input: ActionInputParams, payload: any): Promise<MessageChannelType> => {
+        var p = this._schemaInstance.ContextParams.Params.find(x => x.Key === 'ContextParams:MessageChannel');
+        if (!p) {
+            p = this._schemaInstance.ContextParams.Params.find(x => x.Key === 'MessageChannel' || x.Type === ParamType.MessageChannel);
+        }
+        if (p && p.Value) {
+            return p.Value as MessageChannelType;
+        }
 
-        var messageService = new ChatbotMessageService();
-
-        var eventPayload = this._event?.Payload;
-
-        const phonenumber = message.Phone;
-        const textMessage = message.TextMessage;
-        const imageUrl = message.ImageUrl || null;
-        const audioUrl = message.AudioUrl || null;
-        const videoUrl = message.VideoUrl || null;
-        const location = message.Location || null;
-        const question = message.Question || null;
-        const questionOptions = message.QuestionOptions || null;
-        const messageType = message.MessageType;
-
-        const ev: WorkflowEvent = {
-            EventType        : EventType.WorkflowSystemMessage,
-            TenantId         : this._event?.TenantId,
-            SchemaId         : this._schema.id,
-            SchemaInstanceId : this._schemaInstance.id,
-            UserMessage      : {
-                MessageType     : messageType,
-                EventTimestamp  : new Date(),
-                MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
-                Phone           : phonenumber,
-                TextMessage     : textMessage,
-                Location        : location,
-                ImageUrl        : imageUrl,
-                AudioUrl        : audioUrl,
-                VideoUrl        : videoUrl,
-                Question        : question,
-                QuestionOptions : questionOptions,
-                Payload         : {
-                    MessageType              : UserMessageType.Text,
-                    ProcessingEventId        : this._event?.id,
-                    ChannelMessageId         : null,
-                    BotMessageId             : null,
-                    ChannelType              : eventPayload ? eventPayload.MessageChannel as MessageChannelType : null,
-                    PreviousChannelMessageId : eventPayload ? eventPayload.ChannelMessageId : null,
-                    PreviousBotMessageId     : eventPayload ? eventPayload.BotMessageId : null,
-                    SchemaId                 : this._schema.id,
-                    SchemaInstanceId         : this._schemaInstance.id,
-                    SchemaInstanceCode       : this._schemaInstance.Code,
-                    SchemaName               : this._schema.Name,
-                    NodeInstanceId           : action.NodeInstanceId,
-                    NodeId                   : action.NodeId,
-                    ActionId                 : action.id,
-                }
-            }
-        };
-        var result = await messageService.send(this._tenantCode, phonenumber, ev);
-        return result;
-    };
-
-    private sendBotQuestion = async (message: WorkflowMessage): Promise<boolean> => {
-
-        var messageService = new ChatbotMessageService();
-
-        var eventPayload = this._event?.Payload;
-
-        const phonenumber = message.Phone;
-        const textMessage = message.TextMessage;
-        const imageUrl = message.ImageUrl || null;
-        const audioUrl = message.AudioUrl || null;
-        const videoUrl = message.VideoUrl || null;
-        const location = message.Location || null;
-        const question = message.Question || null;
-        const questionOptions = message.QuestionOptions || null;
-        const messageType = message.MessageType;
-
-        const ev: WorkflowEvent = {
-            EventType        : EventType.WorkflowSystemMessage,
-            TenantId         : this._event?.TenantId,
-            SchemaId         : this._schema.id,
-            SchemaInstanceId : this._schemaInstance.id,
-            UserMessage      : {
-                MessageType     : messageType,
-                EventTimestamp  : new Date(),
-                MessageChannel  : this._event?.UserMessage?.MessageChannel ?? MessageChannelType.Other,
-                Phone           : phonenumber,
-                TextMessage     : textMessage,
-                Location        : location,
-                ImageUrl        : imageUrl,
-                AudioUrl        : audioUrl,
-                VideoUrl        : videoUrl,
-                Question        : question,
-                QuestionOptions : questionOptions,
-                Payload         : {
-                    MessageType              : UserMessageType.Text,
-                    ProcessingEventId        : this._event?.id,
-                    ChannelMessageId         : null,
-                    BotMessageId             : null,
-                    ChannelType              : eventPayload ? eventPayload.MessageChannel as MessageChannelType : null,
-                    PreviousChannelMessageId : eventPayload ? eventPayload.ChannelMessageId : null,
-                    PreviousBotMessageId     : eventPayload ? eventPayload.BotMessageId : null,
-                    SchemaId                 : this._schema.id,
-                    SchemaInstanceId         : this._schemaInstance.id,
-                    SchemaInstanceCode       : this._schemaInstance.Code,
-                    SchemaName               : this._schema.Name,
-                    NodeInstanceId           : message.Payload.NodeInstanceId,
-                    NodeId                   : message.Payload.NodeId,
-                    ActionId                 : message.Payload.ActionId,
-                }
-            }
-        };
-        var result = await messageService.send(this._tenantCode, phonenumber, ev);
-        return result;
+        var messageChannel = await this.getActionParamValue(input, ParamType.MessageChannel, 'ContextParams:MessageChannel');
+        if (!messageChannel) {
+            messageChannel = await this.getActionParamValue(input, ParamType.MessageChannel, 'MessageChannel');
+        }
+        if (!messageChannel) {
+            messageChannel = this._event?.UserMessage?.MessageChannel as MessageChannelType ?? null;
+        }
+        if (!messageChannel) {
+            messageChannel = payload?.ChannelType as MessageChannelType ?? null;
+        }
+        if (!messageChannel) {
+            messageChannel = MessageChannelType.WhatsApp;
+        }
+        return messageChannel;
     };
 
     //#endregion

@@ -26,7 +26,7 @@ body:json {
       "Phone": "+91-9123456789",
       "EventTimestamp": "{{TIMESTAMP}}",
       "MessageType": "Location",
-      "MessageChannel": "WhatsApp",
+      "MessageChannel": "Telegram",
       "Location": {
         "Latitude": 18.5186,
         "Longitude": 73.856
@@ -46,7 +46,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("USER_MESSAGE_EVENT_3_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -59,13 +59,13 @@ tests {
   catch (error) {
       console.log(error.message);
   }
-  
+
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(201);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Schema is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
@@ -76,11 +76,11 @@ tests {
       expect(jsonRes.Data).to.have.property('ValidFrom');
       expect(jsonRes.Data).to.have.property('RootNodeId');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

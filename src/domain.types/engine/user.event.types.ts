@@ -17,7 +17,7 @@ export interface QuestionResponseMessage {
     QuestionId                      ?: uuid;
     QuestionText                    ?: string;
     QuestionOptions                 ?: QuestionAnswerOption[];
-    ResponseType                    ?: QuestionResponseType;
+    QuestionResponseType            ?: QuestionResponseType;
     ResponseContent                 ?: string | number | boolean | any[];
     SingleChoiceChosenOption        ?: string;
     SingleChoiceChosenOptionSequence?: number;
@@ -47,20 +47,21 @@ export interface MessagePayload {
 
 // Back and forth
 export interface WorkflowMessage {
-    Phone?           : string;
-    EventTimestamp   : Date;
-    MessageType      : UserMessageType;
-    MessageChannel   : MessageChannelType;
-    TextMessage     ?: string;
-    ImageUrl        ?: string;
-    AudioUrl        ?: string;
-    VideoUrl        ?: string;
-    Location        ?: Location;
-    FileUrl         ?: string;
-    Question        ?: string;
-    QuestionOptions ?: QuestionAnswerOption[];
-    QuestionResponse?: QuestionResponseMessage;
-    Placeholders    ?: { Key: string, Value: string }[];
-    Payload         ?: MessagePayload;
+    Phone?               : string;
+    EventTimestamp       : Date;
+    MessageType          : UserMessageType;
+    MessageChannel       : MessageChannelType;
+    TextMessage         ?: string;
+    ImageUrl            ?: string;
+    AudioUrl            ?: string;
+    VideoUrl            ?: string;
+    Location            ?: Location;
+    FileUrl             ?: string;
+    QuestionText        ?: string;
+    QuestionOptions     ?: QuestionAnswerOption[];
+    QuestionResponseType?: QuestionResponseType;
+    QuestionResponse    ?: QuestionResponseMessage;
+    Placeholders        ?: { Key: string, Value: string }[];
+    Payload             ?: MessagePayload;
 }
 ////////////////////////////////////////////////////////////////

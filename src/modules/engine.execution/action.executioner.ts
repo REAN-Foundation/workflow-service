@@ -271,7 +271,7 @@ export class ActionExecutioner {
                 MessageType               : messageType,
                 ProcessingEventId         : this._event?.id,
                 ChannelType               : channelType,
-                ChannelMessageId          : null,
+                ChannelMessageId          : payload ? payload.ChannelMessageId : null,
                 PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
                 MessageTemplateId         : messageTemplateId,
                 PreviousMessageTemplateId : payload ? payload.MessageTemplateId : null,

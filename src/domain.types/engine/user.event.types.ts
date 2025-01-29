@@ -29,7 +29,7 @@ export interface MessagePayload {
     MessageType               : UserMessageType;
     ProcessingEventId         : uuid;
     ChannelType               : MessageChannelType;
-    ChannelMessageId          : string;
+    ChannelMessageId         ?: string;
     PreviousChannelMessageId ?: string;
     MessageTemplateId        ?: string;
     PreviousMessageTemplateId?: string;

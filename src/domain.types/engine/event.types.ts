@@ -90,6 +90,7 @@ export interface MessageEventResponseDto extends EventResponseDto {
             Latitude : number;
             Longitude: number;
         };
+        ChannelMessageId ?: string;
         Images            : string[];
         Videos            : string[];
         Audios            : string[];

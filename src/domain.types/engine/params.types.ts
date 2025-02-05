@@ -7,6 +7,11 @@ export interface Params {
     Name                : string;
     Type                : ParamType;
     SubElementType     ?: ParamType;
+    ArrayObjectTypes   ?: {
+        Name : string;
+        Type : ParamType;
+        Value: any;
+    }[];
     Description        ?: string;
     Value               : any | null | undefined;
     Source             ?: InputSourceType;

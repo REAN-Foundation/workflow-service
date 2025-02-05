@@ -23,6 +23,7 @@ import { StringUtils } from '../../common/utilities/string.utils';
 import { QuestionInstance } from '../../database/models/engine/question.instance.model';
 import { Question } from '../../database/models/engine/question.model';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
+import TimerNodeTriggerHandler from './timer.node.trigger.handler';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -297,6 +298,9 @@ export class SchemaEngine {
         else if (currentNodeType === NodeType.ExecutionNode) {
             return await this.traverseExecutionNode(currentNodeInstance);
         }
+        else if (currentNodeType === NodeType.TimerNode) {
+            return await this.traverseTimerNode(currentNodeInstance);
+        }
         return currentNodeInstance;
     }
 
@@ -522,6 +526,36 @@ export class SchemaEngine {
         return currentNodeInstance;
     }
 
+    private async traverseTimerNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
+
+        if (currentNodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
+
+            var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+            if (!currentNode?.NextNodeId) {
+                logger.error(`Next node not found for Node ${currentNode.Name}`);
+                return currentNodeInstance;
+            }
+
+            await TimerNodeTriggerHandler.handle({
+                Node         : currentNode,
+                NodeInstance : currentNodeInstance,
+                Event        : this._event,
+            });
+
+            // var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
+            // if (!res || !res.currentNode || !res.currentNodeInstance) {
+            //     logger.error(`Error while setting next node instance!`);
+            //     return currentNodeInstance;
+            // }
+            // return res.currentNodeInstance;
+        }
+        // Return the same node instance.
+        // The timer node will be triggered by the TimerNodeTriggerHandler.
+        // It will set the next node instance.
+        return currentNodeInstance;
+    }
+
     public async executeNodeActions(currentNodeInstance: NodeInstanceResponseDto):
         Promise<boolean> {
 
@@ -569,8 +603,11 @@ export class SchemaEngine {
         else if (actionInstance.ActionType === ActionType.SendMessage) {
             result = await actionExecutioner.executeSendMessageAction(actionInstance);
         }
-        else if (actionInstance.ActionType === ActionType.SendMultipleMessages) {
-            result = await actionExecutioner.executeSendMultipleMessagesAction(actionInstance);
+        else if (actionInstance.ActionType === ActionType.SendOneMessageToMultipleUsers) {
+            result = await actionExecutioner.executeSendOneMessageToMultipleUsersAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.SendMultipleMessagesToOneUser) {
+            result = await actionExecutioner.executeSendMultipleMessagesToOneUserAction(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.GetFromAlmanac) {
             result = await actionExecutioner.executeGetFromAlmanacAction(actionInstance);

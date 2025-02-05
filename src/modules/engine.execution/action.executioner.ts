@@ -148,6 +148,7 @@ export class ActionExecutioner {
         await TimerNodeTriggerHandler.handle({
             Node         : node,
             NodeInstance : nodeInstance,
+            Event        : this._event,
         });
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
@@ -300,7 +301,7 @@ export class ActionExecutioner {
         };
     };
 
-    public executeSendMultipleMessagesAction = async (
+    public executeSendOneMessageToMultipleUsersAction = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
         const input = action.Input as ActionInputParams;
@@ -422,6 +423,59 @@ export class ActionExecutioner {
             Success : true,
             Result  : result
         };
+    };
+
+    public executeSendMultipleMessagesToOneUserAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+
+        // Get the input parameters
+        const p = input.Params.find(x => x.Type === ParamType.Array);
+        if (!p) {
+            logger.error('Input parameters not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+        var values = null;
+        if (!p.Value) {
+            const source = p.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                values = await this._almanac.getFact(p.Key);
+            }
+        }
+        else {
+            values = p.Value;
+        }
+
+        var phonenumber = await this.getActionParamValue(input, ParamType.Phonenumber, 'Phonenumber');
+        if (!phonenumber) {
+            logger.error('Phonenumber not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        const messageTemplateId = await this.getActionParamValue(input, ParamType.Text, 'MessageTemplateId');
+
+        const placeholders: { Key: string, Value: string }[] = [];
+        var messagePlaceholders = input.Params.filter(x => x.Type === ParamType.Placeholder);
+        messagePlaceholders.forEach(async (placeholder) => {
+            var placeholderKey = placeholder.Key;
+            var placeholderValue = placeholder.Value;
+            if (placeholderKey === 'Timestamp') {
+                placeholderValue = new Date().toISOString();
+            }
+
+            placeholders.push({ Key: placeholderKey, Value: placeholderValue });
+        });
+
+        const payload = this._event?.Payload;
+
+
     };
 
     public executeStoreToAlmanacAction = async (

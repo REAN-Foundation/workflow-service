@@ -12,6 +12,7 @@ import { SchemaService } from "../../database/services/engine/schema.service";
 import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
 import { Almanac } from "./almanac";
 import { SchemaEngine } from "./schema.engine";
+import { EventResponseDto } from "../../domain.types/engine/event.types";
 
 ////////////////////////////////////////////////////////////////
 
@@ -22,6 +23,7 @@ const ASYNC_TASK_COUNT = 4;
 export interface TimerNodeTriggerModel {
     NodeInstance: NodeInstanceResponseDto;
     Node: NodeResponseDto;
+    Event: EventResponseDto;
 }
 
 export default class TimerNodeTriggerHandler {
@@ -160,6 +162,7 @@ export default class TimerNodeTriggerHandler {
                 await nodeInstanceService.updateTimerTries(nodeInstance.id, tries);
 
                 const timeIntervalMiliSeconds = Math.abs(node.TimerSeconds) * 1000;
+                
                 setTimeout(async () => {
                     await this.executeTimerNode(nodeInstance.id);
                 }, timeIntervalMiliSeconds);

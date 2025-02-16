@@ -116,6 +116,7 @@ export enum ActionType {
     GetFromAlmanac                  = 'GetFromAlmanac',
     GetFromAlmanacOtherInstance     = 'GetFromAlmanacOtherInstance',
     UpdateContextParams             = 'UpdateContextParams',
+    GenerateRandomCode              = 'GenerateRandomCode',
     Exit                            = 'Exit',
     Continue                        = 'Continue',
 }
@@ -136,9 +137,13 @@ export const ActionTypeList: ActionType[] = [
     ActionType.StoreToSqlDb,
     ActionType.GetFromSqlDb,
     ActionType.StoreToAlmanac,
+    ActionType.StoreToAlmanacOtherInstance,
     ActionType.ExistsInAlmanac,
+    ActionType.ExistsInAlmanacOtherInstance,
     ActionType.GetFromAlmanac,
+    ActionType.GetFromAlmanacOtherInstance,
     ActionType.UpdateContextParams,
+    ActionType.GenerateRandomCode,
     ActionType.Exit,
     ActionType.Continue,
 ];

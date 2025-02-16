@@ -24,6 +24,7 @@ import TimerNodeTriggerHandler from './timer.node.trigger.handler';
 import { Agent as HttpAgent } from 'http'; // For HTTP
 import { Agent as HttpsAgent } from 'https'; // For HTTPS
 import { Question } from '../../database/models/engine/question.model';
+import { StringUtils } from '../../common/utilities/string.utils';
 
 ////////////////////////////////////////////////////////////////
 
@@ -429,6 +430,14 @@ export class ActionExecutioner {
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
         const input = action.Input as ActionInputParams;
+        var phonenumber = await this.getActionParamValue(input, ParamType.Phonenumber, 'Phonenumber');
+        if (!phonenumber) {
+            logger.error('Phonenumber not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
 
         // Get the input parameters
         const p = input.Params.find(x => x.Type === ParamType.Array);
@@ -439,42 +448,118 @@ export class ActionExecutioner {
                 Result  : null
             };
         }
-        var values = null;
+        var arrayValues = null;
         if (!p.Value) {
             const source = p.Source || InputSourceType.Almanac;
             if (source === InputSourceType.Almanac) {
-                values = await this._almanac.getFact(p.Key);
+                arrayValues = await this._almanac.getFact(p.Key);
             }
         }
         else {
-            values = p.Value;
+            arrayValues = p.Value;
         }
 
-        var phonenumber = await this.getActionParamValue(input, ParamType.Phonenumber, 'Phonenumber');
-        if (!phonenumber) {
-            logger.error('Phonenumber not found in input parameters');
+        if (!arrayValues || arrayValues.length === 0) {
+            logger.error('Array values not found in input parameters');
             return {
                 Success : false,
                 Result  : null
             };
         }
 
-        const messageTemplateId = await this.getActionParamValue(input, ParamType.Text, 'MessageTemplateId');
+        var failedMessageDeliveries = [];
 
-        const placeholders: { Key: string, Value: string }[] = [];
-        var messagePlaceholders = input.Params.filter(x => x.Type === ParamType.Placeholder);
-        messagePlaceholders.forEach(async (placeholder) => {
-            var placeholderKey = placeholder.Key;
-            var placeholderValue = placeholder.Value;
-            if (placeholderKey === 'Timestamp') {
-                placeholderValue = new Date().toISOString();
+        for await (var arrayItem of arrayValues) {
+
+            var messageType: UserMessageType = arrayItem['MessageType'] as UserMessageType || UserMessageType.Text;
+            var textMessage = messageType === UserMessageType.Text ? arrayItem['Message'] : null;
+            var location = messageType === UserMessageType.Location ? arrayItem['Location'] : null;
+            if (location) {
+                if (!location.Latitude || !location.Longitude) {
+                    continue;
+                }
+            }
+            var questionId = messageType === UserMessageType.Question ? arrayItem['QuestionId'] : null;
+            if (!textMessage && !location && !questionId) {
+                continue;
             }
 
-            placeholders.push({ Key: placeholderKey, Value: placeholderValue });
-        });
+            var questionNode: NodeResponseDto | null = null;
+            if (questionId) {
+                questionNode = await this._commonUtilsService.getQuestionNode(questionId);
+                if (!questionNode) {
+                    continue;
+                }
+            }
+            const messageTemplateId = arrayItem['MessageTemplateId'];
 
-        const payload = this._event?.Payload;
+            const placeholders: { Key: string, Value: string }[] = [];
+            var messagePlaceholders = input.Params.filter(x => x.Type === ParamType.Placeholder);
+            messagePlaceholders.forEach(async (placeholder) => {
+                var placeholderKey = placeholder.Key;
+                var placeholderValue = placeholder.Value;
+                if (placeholderKey === 'Timestamp') {
+                    placeholderValue = new Date().toISOString();
+                }
 
+                placeholders.push({ Key: placeholderKey, Value: placeholderValue });
+            });
+
+            const payload = this._event?.Payload;
+            const channelType = await this.getMessageChannel(input, payload);
+
+            const message: WorkflowMessage = {
+                MessageType     : UserMessageType.Text,
+                EventTimestamp  : new Date(),
+                MessageChannel  : channelType,
+                TextMessage     : textMessage ?? null,
+                Location        : location ?? null,
+                QuestionText    : questionNode ? questionNode.Question.QuestionText : null,
+                QuestionOptions : questionNode ? questionNode.Question.Options : null,
+                Placeholders    : placeholders,
+                Payload         : {
+                    MessageType               : UserMessageType.Text,
+                    ProcessingEventId         : this._event?.id,
+                    ChannelType               : channelType,
+                    ChannelMessageId          : null,
+                    PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
+                    MessageTemplateId         : messageTemplateId,
+                    PreviousMessageTemplateId : payload ? payload.MessageTemplateId : null,
+                    BotMessageId              : null,
+                    PreviousBotMessageId      : payload ? payload.BotMessageId : null,
+                    SchemaId                  : this._schema.id,
+                    SchemaInstanceId          : this._schemaInstance.id,
+                    SchemaInstanceCode        : this._schemaInstance.Code,
+                    SchemaName                : this._schema.Name,
+                    NodeInstanceId            : action.NodeInstanceId,
+                    NodeId                    : action.NodeId,
+                    ActionId                  : action.id,
+                    Metadata                  : payload ? payload.Metadata : null,
+                }
+            };
+
+            message.Phone = phonenumber;
+            var result = await this.sendBotMessage(message);
+            if (!result) {
+                failedMessageDeliveries.push(phonenumber);
+            }
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, failedMessageDeliveries);
+
+        if (failedMessageDeliveries.length > 0) {
+            logger.error(`Failed to deliver messages to the following phone numbers: ${failedMessageDeliveries.join(',')}`);
+            return {
+                Success : false,
+                Result  : failedMessageDeliveries
+            };
+        }
+
+        return {
+            Success : true,
+            Result  : true
+        };
 
     };
 
@@ -765,6 +850,44 @@ export class ActionExecutioner {
         return {
             Success : true,
             Result  : data
+        };
+    };
+
+    public executeGenerateRandomCodeAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        // Get the input parameters
+        var prefix: string = null;
+        var pPrefix = input.Params && input.Params.length > 0 ?
+            input.Params.find(x => x.Type === ParamType.Text && x.Key === 'Prefix') : null;
+        if (pPrefix) {
+            prefix = pPrefix.Value;
+        }
+        var length = 12;
+        var pLength = input.Params && input.Params.length > 0 ?
+            input.Params.find(x => x.Type === ParamType.Integer && x.Key === 'Length') : null;
+        if (pLength && pLength.Value) {
+            length = parseInt(pLength.Value);
+        }
+
+        var codeName = 'Code';
+        var pCodeName = input.Params && input.Params.length > 0 ?
+            input.Params.find(x => x.Type === ParamType.Text && x.Key === 'CodeName') : null;
+        if (pCodeName) {
+            codeName = pCodeName.Value;
+        }
+
+        const randomCode = StringUtils.generateDisplayCode_RandomChars(length, prefix);
+
+        await this._almanac.addFact(codeName, randomCode);
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, randomCode);
+
+        return {
+            Success : true,
+            Result  : randomCode
         };
     };
 

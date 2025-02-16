@@ -636,6 +636,9 @@ export class SchemaEngine {
         // else if (actionInstance.ActionType === ActionType.TriggerChildWorkflow) {
         //     result = await actionExecutioner.executeTriggerChildWorkflowAction(actionInstance);
         // }
+        else if (actionInstance.ActionType === ActionType.GenerateRandomCode) {
+            result = await actionExecutioner.executeGenerateRandomCodeAction(actionInstance);
+        }
         return result;
     }
 

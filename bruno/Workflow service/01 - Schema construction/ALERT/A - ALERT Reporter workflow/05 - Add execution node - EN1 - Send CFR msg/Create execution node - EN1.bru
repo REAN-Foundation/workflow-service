@@ -25,9 +25,36 @@ body:json {
     "SchemaId": "{{SCHEMA_ID}}",
     "Actions": [
       {
+        "Type": "GenerateRandomCode",
+        "Name": "Generate Incident code",
+        "Sequence": 0,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Code name",
+              "Type": "Text",
+              "Value": "Incident Code",
+              "Key": "CodeName"
+            },
+            {
+              "Name": "Prefix",
+              "Type": "Text",
+              "Value": "EMRGNC-",
+              "Key": "Prefix"
+            },
+            {
+              "Name": "Code Length",
+              "Type": "Integer",
+              "Value": "12",
+              "Key": "Length"
+            }
+          ]
+        }
+      },
+      {
         "Type": "SendMessage",
         "Name": "Send message - Thanks for location",
-        "Sequence": 0,
+        "Sequence": 1,
         "Input": {
           "Params": [
             {
@@ -48,7 +75,7 @@ body:json {
       {
         "Type": "RestApiCall",
         "Name": "Make REST API call to get nearest CFRs",
-        "Sequence": 1,
+        "Sequence": 2,
         "Input": {
           "Params": [
             {
@@ -97,7 +124,7 @@ body:json {
       {
         "Type": "TriggerMultipleChildrenWorkflow",
         "Name": "Trigger multiple workflows one for each CFR in the vicinity.",
-        "Sequence": 2,
+        "Sequence": 3,
         "Input": {
           "Params": [
             {

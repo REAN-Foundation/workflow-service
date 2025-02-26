@@ -26,7 +26,7 @@ body:json {
     "Actions": [
       {
         "Type": "SendMessage",
-        "Name": "Send message to reporter - Responders are not available",
+        "Name": "Send message to reporter - One or more responders have positively responded.",
         "Input": {
           "Params": [
             {
@@ -37,78 +37,60 @@ body:json {
               "Key": "ContextParams:Reporter:Phonenumber"
             },
             {
-              "Name": "Send message - No responders available.",
+              "Name": "Send message - - One or more responders have positively responded.",
               "Type": "Text",
-              "Value": "It seems no responder nearby is available to attend the incident! We are sending you nearby ambulance details."
+              "Value": "Some responders have positively responded. The details will be shared shortly."
             }
           ]
         }
       },
       {
-        "Type": "RestApiCall",
-        "Name": "Make REST API call to get nearest CFRs",
-        "Sequence": 1,
+        "Type": "SendMultipleMessagesToOneUser",
+        "Name": "Send reporter ambulance numbers and locations",
+        "IsPathAction": true,
         "Input": {
           "Params": [
             {
-              "Type": "RestApiParams",
-              "Value": {
-                "Url": "http://localhost:3000/api/ambulance-contacts",
-                "Method": "GET",
-                "QueryParams": [
-                  {
-                    "QueryParamKey": "longitude",
-                    "QueryParamValue": null,
-                    "Source": "Almanac",
-                    "SourceKey": "ContextParams:Location",
-                    "SourceValueKey": "Longitude"
-                  },
-                  {
-                    "QueryParamKey": "latitude",
-                    "QueryParamValue": null,
-                    "Source": "Almanac",
-                    "SourceKey": "ContextParams:Location",
-                    "SourceValueKey": "Latitude"
-                  }
-                ],
-                "Headers": {
-                  "ContentType": "application/json"
-                },
-                "ResponseField": "Data",
-                "ResponseType": "Array"
-              }
-            }
-          ]
-        },
-        "Output": {
-          "Params": [
+              "Name": "Reporter Phonenumber",
+              "Type": "Phonenumber",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phonenumber"
+            },
             {
-              "Name": "Details for nearby ambulances",
+              "Name": "Responded CFR Details",
               "Type": "Array",
-              "Value": null,
-              "Destination": "Almanac",
-              "Key": "ContextParams:Ambulances",
-              "SubElementType": "Object"
-            }
-          ]
-        }
-      },
-      {
-        "Type": "SendMessage",
-        "Name": "Send ambulance details to reporter",
-        "Input": {
-          "Params": [
-            {
-              "Name": "Reporter Phonenumber",
-              "Type": "Phonenumber",
-              "Value": null,
               "Source": "Almanac",
-              "Key": "ContextParams:Reporter:Phonenumber"
-            },
-            {
-              "Name": "Send message - No responders available.",
-              "Type": "Text",
-              "Value": "It seems no responder nearby is available to attend the incident! We are sending you nearby ambulance details."
+              "SubElementType": "Object",
+              "Key": "CFR:Responders",
+              "Value": null,
+              "ArrayObjectTypes": [
+                {
+                  "Name": "Name",
+                  "Type": "String",
+                  "Value": null
+                },
+                {
+                  "Name": "Phonenumber",
+                  "Type": "Phonenumber",
+                  "Value": null
+                },
+                {
+                  "Name": "Location",
+                  "Type": "Location",
+                  "Value": null
+                },
+                {
+                  "Name": "Address",
+                  "Type": "String",
+                  "Value": null
+                },
+                {
+                  "Name": "IsPrimaryContact",
+                  "Type": "Boolean",
+                  "Value": null
+                }
+              ]
             }
           ]
         }

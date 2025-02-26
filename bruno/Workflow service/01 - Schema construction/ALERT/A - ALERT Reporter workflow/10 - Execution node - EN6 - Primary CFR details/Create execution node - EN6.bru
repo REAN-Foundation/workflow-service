@@ -1,5 +1,5 @@
 meta {
-  name: Create execution node - EN4
+  name: Create execution node - EN6
   type: http
   seq: 1
 }
@@ -18,10 +18,10 @@ headers {
 
 body:json {
   {
-    "Name": "EN4-Send message to reporter assuring help",
-    "Description": "This execution node holds actions to send message to reporter reassuring that help is on the way and reponsers have been notified.",
+    "Name": "EN4-Primary CFR details",
+    "Description": "This execution node holds actions to find and share the primary CFR details.",
     "Type": "ExecutionNode",
-    "ParentNodeId": "{{MAIN_TN1_ID}}",
+    "ParentNodeId": "{{MAIN_EN4_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
@@ -52,9 +52,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_EN4_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_EN6_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -63,18 +63,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

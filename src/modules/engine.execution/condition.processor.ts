@@ -117,6 +117,10 @@ export class ConditionProcessor {
                 resolved = this.isEmpty(first);
                 break;
             }
+            case LogicalOperatorType.IsNotEmpty: {
+                resolved = !this.isEmpty(first);
+                break;
+            }
             case LogicalOperatorType.IsFalse: {
                 resolved = this.isFalse(first);
                 break;

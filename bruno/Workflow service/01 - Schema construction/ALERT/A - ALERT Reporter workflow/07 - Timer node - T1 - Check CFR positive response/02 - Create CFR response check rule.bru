@@ -1,11 +1,11 @@
 meta {
-  name: Create execution node - Termination node
+  name: 02 - Create CFR response check rule
   type: http
   seq: 2
 }
 
 post {
-  url: {{BASE_URL}}/engine/nodes
+  url: {{BASE_URL}}/engine/rules
   body: json
   auth: none
 }
@@ -18,18 +18,10 @@ headers {
 
 body:json {
   {
-    "Name": "Termination node-Send Messages to Incident Reporter",
-    "Description": "This execution node holds actions to send assuring message to the incident reporter.",
-    "Type": "ExecutionNode",
-    "ParentNodeId": "{{QUESTION_NODE_1_ID}}",
-    "SchemaId": "{{MAIN_SCHEMA_ID}}",
-    "Actions": [
-      {
-        "Type": "Exit",
-        "Name": "Exit the workflow",
-        "Description": "Exit the workflow after reporter chooses option to "
-      }
-    ]
+    "Name": "CFR response check rule",
+    "Description": "This is the rule to check if any CFR has responded positively.",
+    "ParentNodeId": "{{MAIN_TN1_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}"
   }
 }
 
@@ -37,7 +29,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("TERMINATION_NODE_ID", res.body.Data.id);
+    bru.setEnvVar("T1_RULE_ID", res.body.Data.id);
   }
 
 }
@@ -49,7 +41,7 @@ tests {
       expect(jsonRes.Status).to.eql('success');
   });
 
-  test("Termination node is created", function () {
+  test("Decision node rule is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');

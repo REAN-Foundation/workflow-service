@@ -188,6 +188,11 @@ export class SchemaEngine {
                         }
                     }
                     var result: NodeActionResult = await this.executeAction(actionInstance, actionExecutioner);
+                    if (result && result.Success === true) {
+                        if (actionInstance.ActionType === ActionType.SetNextNode) {
+                            this.
+                        }
+                    }
                     results.set(actionInstance.id, result);
                 }
             }
@@ -621,24 +626,27 @@ export class SchemaEngine {
         else if (actionInstance.ActionType === ActionType.UpdateContextParams) {
             result = await actionExecutioner.executeUpdateContextParamsAction(actionInstance);
         }
-        else if (actionInstance.ActionType === ActionType.Continue) {
-            return {
-                Success : true,
-                Result  : true,
-            };
-        }
         else if (actionInstance.ActionType === ActionType.RestApiCall) {
             result = await actionExecutioner.executeRestApiCallAction(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.TriggerMultipleChildrenWorkflow) {
             result = await actionExecutioner.executeTriggerMultipleChildrenWorkflowAction(actionInstance);
         }
-        // else if (actionInstance.ActionType === ActionType.TriggerChildWorkflow) {
-        //     result = await actionExecutioner.executeTriggerChildWorkflowAction(actionInstance);
-        // }
+        else if (actionInstance.ActionType === ActionType.SetNextNode) {
+            result = await actionExecutioner.executeSetNextNodeAction(actionInstance);
+        }
         else if (actionInstance.ActionType === ActionType.GenerateRandomCode) {
             result = await actionExecutioner.executeGenerateRandomCodeAction(actionInstance);
         }
+        else if (actionInstance.ActionType === ActionType.Continue) {
+            return {
+                Success : true,
+                Result  : true,
+            };
+        }
+        // else if (actionInstance.ActionType === ActionType.TriggerChildWorkflow) {
+        //     result = await actionExecutioner.executeTriggerChildWorkflowAction(actionInstance);
+        // }
         return result;
     }
 

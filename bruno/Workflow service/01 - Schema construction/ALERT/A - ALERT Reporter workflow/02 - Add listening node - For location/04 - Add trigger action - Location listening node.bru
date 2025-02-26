@@ -1,7 +1,7 @@
 meta {
-  name: 02 - Add message action - send first message
+  name: 04 - Add trigger action - Location listening node
   type: http
-  seq: 2
+  seq: 4
 }
 
 post {
@@ -18,29 +18,21 @@ headers {
 
 body:json {
   {
-    "Type": "SendMessage",
-    "Name": "Send message - Notify CFR of the incident.",
+    "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+    "Type": "TriggerListeningNode",
+    "Name": "Trigger location listener node",
     "Sequence": 1,
-    "ParentNodeId": "{{CHILD_MAIN_ROOT_NODE_ID}}",
+    "Description": "This action triggers a location listener node, which starts listening to location-user message events",
     "Input": {
       "Params": [
         {
-          "Name": "CFR Phonenumber",
-          "Type": "Phonenumber",
-          "Value": null,
-          "Source": "Almanac",
-          "Key": "ContextParams:CFR:Phonenumber"
-        },
-        {
-          "Name": "Incident report Message",
-          "Type": "Text",
-          "Value": "An emergency incident has been reported in your locality at {{ContextParams:Timestamp}}."
-        },
-        {
-          "Name": "Incident Timestamp",
-          "Type": "Placeholder",
-          "Key": "ContextParams:Timestamp",
-          "Source": "Almanac"
+          "Name": "Listening Node to trigger",
+          "Description": "Node Id of the listening node which should be triggered",
+          "ActionType": "TriggerListeningNode",
+          "Type": "NodeId",
+          "Value": "{{MAIN_LN1_ID}}",
+          "Key": "LocationListeningNode",
+          "Required": true
         }
       ]
     }
@@ -54,10 +46,11 @@ tests {
       expect(jsonRes.Status).to.eql('success');
   });
 
-  test("Action is added", function () {
+  test("Node is retrieved", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
   });
 
 }

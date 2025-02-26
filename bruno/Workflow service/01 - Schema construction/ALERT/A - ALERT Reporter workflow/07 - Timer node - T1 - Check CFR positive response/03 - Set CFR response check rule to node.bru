@@ -1,11 +1,11 @@
 meta {
-  name: Set next node of yes-no node
+  name: 03 - Set CFR response check rule to node
   type: http
-  seq: 2
+  seq: 3
 }
 
 put {
-  url: {{BASE_URL}}/engine/nodes/{{MAIN_YNN1_ID}}/next-node/{{MAIN_EN1_ID}}
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_TN1_ID}}/base-rule/{{T1_RULE_ID}}
   body: json
   auth: none
 }

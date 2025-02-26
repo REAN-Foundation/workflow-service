@@ -1,12 +1,12 @@
 meta {
-  name: 03 - Set CFR response check rule to node
+  name: Set next node of T1 node - success
   type: http
-  seq: 3
+  seq: 2
 }
 
 put {
-  url: {{BASE_URL}}/engine/nodes/{{CFR_RESPONSE_TIMER_NODE_ID}}/base-rule/{{CFR_RESPONSE_TIMER_NODE_RULE_ID}}
-  body: json
+  url: {{BASE_URL}}/engine/nodes/timer-node/{{MAIN_TN1_ID}}/success-next-node/{{MAIN_EN4_ID}}
+  body: none
   auth: none
 }
 

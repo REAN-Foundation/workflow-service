@@ -20,7 +20,7 @@ body:json {
   {
     "Name": "Base condition for CFR response check",
     "Description": "This is the base condition for the CFR response check",
-    "ParentRuleId": "{{CFR_RESPONSE_TIMER_NODE_RULE_ID}}",
+    "ParentRuleId": "{{T1_RULE_ID}}",
     "ParentConditionId": null,
     "OperatorType": "Logical",
     "LogicalOperatorType": "IsEmpty",
@@ -38,7 +38,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("CFR_RESPONSE_TIMER_NODE_RULE_BASE_CONDITION_ID", res.body.Data.id);
+    bru.setEnvVar("T1_RULE_BASE_CONDITION_ID", res.body.Data.id);
   }
   
 }

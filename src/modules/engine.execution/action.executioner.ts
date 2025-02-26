@@ -857,12 +857,13 @@ export class ActionExecutioner {
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
         const input = action.Input as ActionInputParams;
+
         // Get the input parameters
         var prefix: string = null;
         var pPrefix = input.Params && input.Params.length > 0 ?
             input.Params.find(x => x.Type === ParamType.Text && x.Key === 'Prefix') : null;
         if (pPrefix) {
-            prefix = pPrefix.Value;
+            prefix = pPrefix.Value ?? '';
         }
         var length = 12;
         var pLength = input.Params && input.Params.length > 0 ?
@@ -871,7 +872,7 @@ export class ActionExecutioner {
             length = parseInt(pLength.Value);
         }
 
-        var codeName = 'Code';
+        var codeName = 'InstanceCode';
         var pCodeName = input.Params && input.Params.length > 0 ?
             input.Params.find(x => x.Type === ParamType.Text && x.Key === 'CodeName') : null;
         if (pCodeName) {
@@ -888,6 +889,54 @@ export class ActionExecutioner {
         return {
             Success : true,
             Result  : randomCode
+        };
+    };
+
+    public executeSetNextNodeAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+
+        // Get the input parameters
+        var nextNodeId = await this.getActionParamValue(input, ParamType.NodeId);
+        if (!nextNodeId) {
+            logger.error('NodeId not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        // Execute the action
+        var nextNode = await this._nodeService.getById(nextNodeId);
+        if (!nextNode) {
+            logger.error(`Next Node not found for id: ${nextNodeId}`);
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var nextNodeInstance = await this._nodeInstanceService.getOrCreate(nextNodeId, this._schemaInstance.id);
+        if (!nextNodeInstance) {
+            logger.error(`Unable to create node instance for Node Id: ${nextNodeId}`);
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, nextNodeInstance.id);
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, nextNodeInstance);
+
+        return {
+            Success : true,
+            Result  : {
+                currentNode         : nextNode,
+                currentNodeInstance : nextNodeInstance
+            }
         };
     };
 

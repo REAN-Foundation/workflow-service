@@ -1,11 +1,11 @@
 meta {
-  name: Set timer node as next node of EN2 node
+  name: 02 - Get root node for the reporter schema
   type: http
-  seq: 6
+  seq: 2
 }
 
-put {
-  url: {{BASE_URL}}/engine/nodes/{{EXECUTION_NODE_2_ID}}/next-node/{{CFR_RESPONSE_TIMER_NODE_ID}}
+get {
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_ROOT_NODE_ID}}
   body: none
   auth: none
 }
@@ -22,11 +22,11 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

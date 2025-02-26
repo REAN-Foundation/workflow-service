@@ -79,18 +79,18 @@ body:json {
           "Description": "This is the code of the reported emergency incident. This value is generated on schema instance generation",
           "Type": "Text",
           "Value": null,
-          "Key": "IncidenceCode"
+          "Key": "ContextParams:IncidenceCode"
         },
         {
           "Name": "Parent Schema Id",
           "Type": "SchemaId",
-          "Value": "{{SCHEMA_ID}}",
+          "Value": "{{MAIN_SCHEMA_ID}}",
           "Key": "ParentSchemaId"
         },
         {
           "Name": "Parent Schema instance Id",
           "Type": "SchemaInstanceId",
-          "Value": "{{SCHEMA_ID}}",
+          "Value": null,
           "Key": "ParentSchemaInstanceId"
         },
         {
@@ -111,10 +111,10 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("CFR_SCHEMA_ID", res.body.Data.id);
     bru.setEnvVar("CHILD_SCHEMA_ID", res.body.Data.id);
-    bru.setEnvVar("CHILD_SCHEMA_ROOT_NODE_ID", res.body.Data.RootNode.id);
+    bru.setEnvVar("CHILD_MAIN_ROOT_NODE_ID", res.body.Data.RootNode.id);
     bru.setEnvVar("CHILD_NODE_01_ID", res.body.Data.RootNode.id);
   }
-  
+
 }
 
 tests {
@@ -123,7 +123,7 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Schema is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
@@ -132,11 +132,11 @@ tests {
       expect(jsonRes.Data).to.have.property('Description');
       expect(jsonRes.Data).to.have.property('RootNode');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

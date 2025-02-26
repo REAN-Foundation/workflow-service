@@ -1,7 +1,7 @@
 meta {
-  name: Create execution node
+  name: Create execution node - EN4
   type: http
-  seq: 5
+  seq: 1
 }
 
 post {
@@ -18,22 +18,42 @@ headers {
 
 body:json {
   {
-    "Name": "EN1-Send Messages to CFRs",
-    "Description": "This execution node holds actions to find nearby CFRs and send notify them of the incident happened.",
+    "Name": "EN4-Get nearby ambulances",
+    "Description": "This execution node holds actions to send message to reporter telling no responder responded. Also get nearby ambulance information.",
     "Type": "ExecutionNode",
-    "ParentNodeId": "{{MAIN_YNN1_ID}}",
+    "ParentNodeId": "{{MAIN_TN1_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
+        "Type": "SendMessage",
+        "Name": "Send message to reporter - Responders are not available",
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phonenumber",
+              "Type": "Phonenumber",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phonenumber"
+            },
+            {
+              "Name": "Send message - No responders available.",
+              "Type": "Text",
+              "Value": "It seems no responder nearby is available to attend the incident! We are sending you nearby ambulance details."
+            }
+          ]
+        }
+      },
+      {
         "Type": "RestApiCall",
         "Name": "Make REST API call to get nearest CFRs",
-        "Sequence": 0,
+        "Sequence": 1,
         "Input": {
           "Params": [
             {
               "Type": "RestApiParams",
               "Value": {
-                "Url": "http://localhost:3000/api/cfr-contacts",
+                "Url": "http://localhost:3000/api/ambulance-contacts",
                 "Method": "GET",
                 "QueryParams": [
                   {
@@ -63,46 +83,32 @@ body:json {
         "Output": {
           "Params": [
             {
-              "Name": "CFR Phonenumbers",
+              "Name": "Details for nearby ambulances",
               "Type": "Array",
               "Value": null,
               "Destination": "Almanac",
-              "Key": "ContextParams:CFR:Phonenumbers",
-              "SubElementType": "Phonenumber"
+              "Key": "ContextParams:Ambulances",
+              "SubElementType": "Object"
             }
           ]
         }
       },
       {
-        "Type": "TriggerMultipleChildrenWorkflow",
-        "Name": "Trigger multiple workflows one for each CFR in the vicinity.",
-        "Sequence": 1,
+        "Type": "SendMessage",
+        "Name": "Send ambulance details to reporter",
         "Input": {
           "Params": [
             {
-              "Name": "List of CFR phonenumbers",
-              "Type": "Array",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:CFR:Phonenumbers",
-              "SubElementType": "Phonenumber"
-            },
-            {
-              "Name": "Schema Id",
-              "Type": "SchemaId",
-              "Value": "{{CHILD_SCHEMA_ID}}",
-              "Key": "SchemaId"
-            }
-          ]
-        },
-        "Output": {
-          "Params": [
-            {
-              "Name": "CFR Phonenumber",
+              "Name": "Reporter Phonenumber",
               "Type": "Phonenumber",
               "Value": null,
-              "Destination": "Almanac",
-              "Key": "ContextParams:CFR:Phonenumber"
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phonenumber"
+            },
+            {
+              "Name": "Send message - No responders available.",
+              "Type": "Text",
+              "Value": "It seems no responder nearby is available to attend the incident! We are sending you nearby ambulance details."
             }
           ]
         }
@@ -115,9 +121,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_EN1_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_EN4_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -126,18 +132,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

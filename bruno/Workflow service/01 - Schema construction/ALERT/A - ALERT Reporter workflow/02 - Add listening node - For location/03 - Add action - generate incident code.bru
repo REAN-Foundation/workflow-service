@@ -1,5 +1,5 @@
 meta {
-  name: 02 - Add message action - send location
+  name: 03 - Add action - generate incident code
   type: http
   seq: 3
 }
@@ -18,28 +18,40 @@ headers {
 
 body:json {
   {
-    "Type": "SendMessage",
-    "Name": "Send location message - To CFR",
-    "Description": "Sending location to the CFR",
-    "Sequence": 2,
-    "ParentNodeId": "{{CHILD_SCHEMA_ROOT_NODE_ID}}",
+    "Type": "GenerateRandomCode",
+    "Name": "Generate Incident code",
+    "Sequence": 0,
+    "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
     "Input": {
       "Params": [
         {
-          "Type": "Phonenumber",
-          "Value": null,
-          "Source": "Almanac",
-          "Key": "ContextParams:CFR:Phonenumber"
+          "Name": "Code name",
+          "Type": "Text",
+          "Value": "ContextParams:IncidenceCode",
+          "Key": "CodeName"
         },
         {
-          "Type": "Location",
-          "Name": "Incident Location",
-          "Source": "Almanac",
-          "Key": "ContextParams:Location",
-          "Value": {
-            "Latitude": null,
-            "Longitude": null
-          }
+          "Name": "Prefix",
+          "Type": "Text",
+          "Value": "EMRGNC-",
+          "Key": "Prefix"
+        },
+        {
+          "Name": "Code Length",
+          "Type": "Integer",
+          "Value": "12",
+          "Key": "Length"
+        }
+      ]
+    },
+    "Output": {
+      "Params": [
+        {
+          "Name": "Incidence Code",
+          "Type": "RandomCode",
+          "Value": null,
+          "Destination": "Almanac",
+          "Key": "ContextParams:IncidenceCode"
         }
       ]
     }
@@ -50,9 +62,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("EXECUTION_NODE_1_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_EN1_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -61,18 +73,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

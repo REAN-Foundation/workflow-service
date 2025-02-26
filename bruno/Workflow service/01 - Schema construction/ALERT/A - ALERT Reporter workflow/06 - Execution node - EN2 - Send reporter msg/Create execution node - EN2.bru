@@ -21,8 +21,8 @@ body:json {
     "Name": "EN2-Send message to reporter assuring help",
     "Description": "This execution node holds actions to send message to reporter reassuring that help is on the way and reponsers have been notified.",
     "Type": "ExecutionNode",
-    "ParentNodeId": "{{EXECUTION_NODE_1_ID}}",
-    "SchemaId": "{{SCHEMA_ID}}",
+    "ParentNodeId": "{{MAIN_EN1_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
         "Type": "SendMessage",
@@ -52,9 +52,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("EXECUTION_NODE_2_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_EN2_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -63,18 +63,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

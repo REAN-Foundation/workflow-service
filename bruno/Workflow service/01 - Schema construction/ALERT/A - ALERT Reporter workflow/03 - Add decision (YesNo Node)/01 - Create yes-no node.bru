@@ -21,8 +21,8 @@ body:json {
     "Name": "Decision (Yes/No) node for location check",
     "Description": "This decision (Yes/No) node basically checks whether location of the emergency has been stored in the Almanac or not. If it is stored, it triggers 'Yes' action which is to proceed ahead to the next node (Continue-action), else send user message prompting for location. Please note that, current node status in schema instance is not changed if the 'No' is fired.",
     "Type": "YesNoNode",
-    "ParentNodeId": "{{SCHEMA_ROOT_NODE_ID}}",
-    "SchemaId": "{{SCHEMA_ID}}",
+    "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "NoAction": {
       "Type": "SendMessage",
       "Name": "Send message - Prompt for location",
@@ -58,7 +58,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("LOCATION_YES_NO_NODE_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_YNN1_ID", res.body.Data.id);
   }
 
 }

@@ -1,12 +1,12 @@
 meta {
-  name: 05 - Set condition to rule
+  name: Set next node of T1 node - timeout
   type: http
-  seq: 5
+  seq: 2
 }
 
 put {
-  url: {{BASE_URL}}/engine/rules/{{CFR_RESPONSE_TIMER_NODE_RULE_ID}}/base-condition/{{CFR_RESPONSE_TIMER_NODE_RULE_BASE_CONDITION_ID}}
-  body: json
+  url: {{BASE_URL}}/engine/nodes/timer-node/{{MAIN_TN1_ID}}/timeout-next-node/{{MAIN_EN5_ID}}
+  body: none
   auth: none
 }
 

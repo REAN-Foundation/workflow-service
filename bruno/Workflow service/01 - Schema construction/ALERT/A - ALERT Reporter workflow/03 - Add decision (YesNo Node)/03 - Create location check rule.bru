@@ -20,8 +20,8 @@ body:json {
   {
     "Name": "Location check rule",
     "Description": "This is rule to check if the location is provided",
-    "ParentNodeId": "{{LOCATION_YES_NO_NODE_ID}}",
-    "SchemaId": "{{SCHEMA_ID}}"
+    "ParentNodeId": "{{MAIN_YNN1_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}"
   }
 }
 
@@ -31,7 +31,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("LOCATION_YES_NO_NODE_RULE_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -40,18 +40,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Decision node rule is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

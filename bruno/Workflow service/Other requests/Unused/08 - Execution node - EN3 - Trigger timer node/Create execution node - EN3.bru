@@ -21,8 +21,8 @@ body:json {
     "Name": "EN3-Trigger timer node",
     "Description": "This execution node holds actions to trigger timer node.",
     "Type": "ExecutionNode",
-    "ParentNodeId": "{{EXECUTION_NODE_2_ID}}",
-    "SchemaId": "{{SCHEMA_ID}}",
+    "ParentNodeId": "{{MAIN_EN2_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
         "Type": "TriggerTimerNode",
@@ -35,7 +35,7 @@ body:json {
               "Description": "Node Id ofthe timer node which should be triggered",
               "ActionType": "TriggerTimerNode",
               "Type": "NodeId",
-              "Value": "{{CFR_RESPONSE_TIMER_NODE_ID}}",
+              "Value": "{{MAIN_TN1_ID}}",
               "Key": "CFR:Responders:TimerNode",
               "Required": true
             }
@@ -50,9 +50,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("EXECUTION_NODE_3_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_EN3_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -61,18 +61,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

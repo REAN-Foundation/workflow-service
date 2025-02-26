@@ -1,7 +1,7 @@
 meta {
-  name: Add trigger action - Store location to almanac
+  name: 04 - Add message action - send incidence code
   type: http
-  seq: 2
+  seq: 4
 }
 
 post {
@@ -18,21 +18,29 @@ headers {
 
 body:json {
   {
-    "ParentNodeId": "{{SCHEMA_ROOT_NODE_ID}}",
-    "Type": "TriggerListeningNode",
-    "Name": "Trigger location listener node",
-    "Sequence": 1,
-    "Description": "This action triggers a location listener node, which starts listening to location-user message events",
+    "Type": "SendMessage",
+    "Name": "Send incident code to CFR",
+    "Description": "Send emergency incident code to the CFR",
+    "Sequence": 3,
+    "ParentNodeId": "{{CHILD_MAIN_ROOT_NODE_ID}}",
     "Input": {
       "Params": [
         {
-          "Name": "Listening Node to trigger",
-          "Description": "Node Id ofthe listening node which should be triggered",
-          "ActionType": "TriggerListeningNode",
-          "Type": "NodeId",
-          "Value": "{{LOCATION_LISTENING_NODE_ID}}",
-          "Key": "LocationListeningNode",
-          "Required": true
+          "Type": "Phonenumber",
+          "Value": null,
+          "Source": "Almanac",
+          "Key": "ContextParams:CFR:Phonenumber"
+        },
+        {
+          "Name": "Incident report Message",
+          "Type": "Text",
+          "Value": "The emergency incident code is {{ContextParams:IncidenceCode}}."
+        },
+        {
+          "Name": "Incident code",
+          "Type": "Placeholder",
+          "Key": "ContextParams:IncidenceCode",
+          "Source": "Almanac"
         }
       ]
     }
@@ -45,18 +53,17 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
-  test("Node is retrieved", function () {
+
+  test("Action is added", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
-      expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

@@ -22,7 +22,7 @@ body:json {
     "Description": "This decision (Yes/No) node basically checks whether the reporter has sent message contianing words - stop, done, thank you, thanks,... etc. If message contains these words, it triggers 'Yes' action which is to proceed ahead to terminate the workflow, else keep storing the information sent by user in the almanac.",
     "Type": "YesNoNode",
     "ParentNodeId": "{{QUESTION_NODE_1_ID}}",
-    "SchemaId": "{{SCHEMA_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "NoAction": {
       "Type": "StoreToAlmanac",
       "Name": "Store the message content to the almanac",
@@ -62,7 +62,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("TERMINATION_MESSAGE_YES_NO_NODE_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -71,18 +71,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Termination Yes-No node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

@@ -1,5 +1,5 @@
 meta {
-  name: Create schema
+  name: 01 - Create schema
   type: http
   seq: 1
 }
@@ -67,9 +67,9 @@ body:json {
         {
           "Name": "Incidence Code",
           "Description": "This is the code of the reported emergency incident. This value is generated on schema instance generation",
-          "Type": "RandomCode",
+          "Type": "Text",
           "Value": null,
-          "Key": "IncidenceCode"
+          "Key": "ContextParams:IncidenceCode"
         },
         {
           "Name": "Message Channel",
@@ -87,10 +87,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("SCHEMA_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_SCHEMA_ID", res.body.Data.id);
     bru.setEnvVar("BASE_SCHEMA_ID", res.body.Data.id);
-    bru.setEnvVar("SCHEMA_ROOT_NODE_ID", res.body.Data.RootNode.id);
-    bru.setEnvVar("NODE_01_ID", res.body.Data.RootNode.id);
+    bru.setEnvVar("MAIN_ROOT_NODE_ID", res.body.Data.RootNode.id);
   }
   
 }

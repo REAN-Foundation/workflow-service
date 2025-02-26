@@ -1,5 +1,5 @@
 meta {
-  name: Create location listening node
+  name: 01 - Create location listening node
   type: http
   seq: 1
 }
@@ -22,7 +22,7 @@ body:json {
     "Description": "This node when triggered listens to user message events containing location information. Once the information is received, it stores in almanac and stops listening.",
     "Type": "ListeningNode",
     "ParentNodeId": null,
-    "SchemaId": "{{SCHEMA_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Input": {
       "Params": [
         {
@@ -78,7 +78,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("LOCATION_LISTENING_NODE_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_LN1_ID", res.body.Data.id);
   }
 
 }

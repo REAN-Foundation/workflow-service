@@ -19,7 +19,7 @@ headers {
 body:json {
   {
     "TenantId": "{{TENANT_ID}}",
-    "SchemaId": "{{SCHEMA_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "EventType": "UserMessage",
     "EventTimestamp": "{{TIMESTAMP}}",
     "UserMessage": {
@@ -30,7 +30,7 @@ body:json {
       "TextMessage": "Help..."
     },
     "Payload": {
-      "SchemaId": "{{SCHEMA_ID}}"
+      "SchemaId": "{{MAIN_SCHEMA_ID}}"
     }
   }
 }

@@ -21,8 +21,8 @@ body:json {
     "Name": "Q1-Medical Emergency",
     "Description": "Question 1.",
     "Type": "QuestionNode",
-    "ParentNodeId": "{{SCHEMA_ROOT_NODE_ID}}",
-    "SchemaId": "{{SCHEMA_ID}}",
+    "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "QuestionText": "Are you facing medical emergency now?",
     "ResponseType": "Single Choice Selection",
     "Options": [
@@ -70,7 +70,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("Q1_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -79,18 +79,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Question node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

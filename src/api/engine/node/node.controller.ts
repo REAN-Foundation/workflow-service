@@ -3,7 +3,7 @@ import { ResponseHandler } from '../../../common/handlers/response.handler';
 import { NodeValidator } from './node.validator';
 import { NodeService } from '../../../database/services/engine/node.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { YesNoNodeCreateModel, NodeCreateModel, NodeSearchFilters, NodeUpdateModel, QuestionNodeCreateModel, TimerNodeCreateModel } from '../../../domain.types/engine/node.types';
+import { YesNoNodeCreateModel, NodeCreateModel, NodeSearchFilters, NodeUpdateModel, QuestionNodeCreateModel, TimerNodeCreateModel, DelayedActionNodeCreateModel } from '../../../domain.types/engine/node.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 
@@ -88,6 +88,23 @@ export class NodeController {
             model.Type = NodeType.TimerNode;
 
             const record = await this._service.createTimerNode(model);
+            if (record === null) {
+                ErrorHandler.throwInternalServerError('Unable to add node!');
+            }
+            const message = 'Node added successfully!';
+            return ResponseHandler.success(request, response, message, 201, record);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    createDelayedActionNode = async (request: express.Request, response: express.Response) => {
+        try {
+            var model: NodeCreateModel = await this._validator.validateCreateRequest(request);
+            model.Type = NodeType.DelayedActionNode;
+            
+            //Please note that the delayed action node is just an execution node with some time delay
+            const record = await this._service.create(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');
             }

@@ -43,6 +43,10 @@ export interface TimerNodeCreateModel extends NodeCreateModel {
     NextNodeIdOnTimeout: uuid | null;
 }
 
+export interface DelayedActionNodeCreateModel extends NodeCreateModel {
+    TimerSeconds: number;
+}
+
 export interface NodeUpdateModel {
     Type        ?: NodeType;
     Name        ?: string;

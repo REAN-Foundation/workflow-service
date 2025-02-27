@@ -17,7 +17,8 @@ import {
     NodeSearchResults,
     NodeUpdateModel,
     QuestionNodeCreateModel,
-    TimerNodeCreateModel } from '../../../domain.types/engine/node.types';
+    TimerNodeCreateModel, 
+    DelayedActionNodeCreateModel} from '../../../domain.types/engine/node.types';
 import { DatabaseUtilsService } from './database.utils.service';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 import { Question } from '../../../database/models/engine/question.model';

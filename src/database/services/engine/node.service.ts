@@ -412,6 +412,60 @@ export class NodeService extends BaseService {
         }
     };
 
+    public setNextNodeOnTimerSuccess = async (id: uuid, nextNodeId: uuid): Promise<boolean> => {
+        try {
+            var node = await this._nodeRepository.findOne({
+                where : {
+                    id : id
+                }
+            });
+            if (!node) {
+                ErrorHandler.throwNotFoundError('Node not found!');
+            }
+            var nextNode = await this._nodeRepository.findOne({
+                where : {
+                    id : nextNodeId
+                }
+            });
+            if (!nextNode) {
+                ErrorHandler.throwNotFoundError('Next Node not found!');
+            }
+            node.NextNodeIdOnSuccess = nextNodeId;
+            var result = await this._nodeRepository.save(node);
+            return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public setNextNodeOnTimerTimeout = async (id: uuid, nextNodeId: uuid): Promise<boolean> => {
+        try {
+            var node = await this._nodeRepository.findOne({
+                where : {
+                    id : id
+                }
+            });
+            if (!node) {
+                ErrorHandler.throwNotFoundError('Node not found!');
+            }
+            var nextNode = await this._nodeRepository.findOne({
+                where : {
+                    id : nextNodeId
+                }
+            });
+            if (!nextNode) {
+                ErrorHandler.throwNotFoundError('Next Node not found!');
+            }
+            node.NextNodeIdOnTimeout = nextNodeId;
+            var result = await this._nodeRepository.save(node);
+            return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     setBaseRuleToNode = async (nodeId: uuid, ruleId: uuid): Promise<boolean> => {
         try {
             var node = await this._nodeRepository.findOne({

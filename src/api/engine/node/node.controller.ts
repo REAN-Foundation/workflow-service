@@ -155,6 +155,32 @@ export class NodeController {
         }
     };
 
+    setNextNodeOnTimerSuccess = async (request: express.Request, response: express.Response) => {
+        try {
+            const id = await this._validator.requestParamAsUUID(request, 'id');
+            const nextNodeId = await this._validator.requestParamAsUUID(request, 'nextNodeId');
+            const updatedRecord = await this._service.setNextNodeOnTimerSuccess(id, nextNodeId);
+            const message = 'Next node set successfully!';
+            ResponseHandler.success(request, response, message, 200, updatedRecord);
+        }
+        catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    setNextNodeOnTimerTimeout = async (request: express.Request, response: express.Response) => {
+        try {
+            const id = await this._validator.requestParamAsUUID(request, 'id');
+            const nextNodeId = await this._validator.requestParamAsUUID(request, 'nextNodeId');
+            const updatedRecord = await this._service.setNextNodeOnTimerTimeout(id, nextNodeId);
+            const message = 'Next node set successfully!';
+            ResponseHandler.success(request, response, message, 200, updatedRecord);
+        }
+        catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
     setBaseRuleToNode = async (request: express.Request, response: express.Response) => {
         try {
             const id = await this._validator.requestParamAsUUID(request, 'id');

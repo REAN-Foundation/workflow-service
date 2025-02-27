@@ -39,6 +39,8 @@ export interface QuestionNodeCreateModel extends NodeCreateModel {
 export interface TimerNodeCreateModel extends NodeCreateModel {
     NumberOfTries: number;
     TimerSeconds: number;
+    NextNodeIdOnSuccess: uuid | null;
+    NextNodeIdOnTimeout: uuid | null;
 }
 
 export interface NodeUpdateModel {
@@ -88,6 +90,8 @@ export interface NodeResponseDto {
     RuleId?      : uuid;
     RawData?     : any;
     Input?       : ActionInputParams;
+    NextNodeIdOnSuccess: uuid | null;
+    NextNodeIdOnTimeout: uuid | null;
     CreatedAt    : Date;
     UpdatedAt    : Date;
 }

@@ -20,6 +20,8 @@ export const register = (app: express.Application): void => {
     router.post('/', Auth.handle(`${contextBase}.Create`, true, true, true), controller.create);
     router.put('/:id/next-node/:nextNodeId', Auth.handle(`${contextBase}.SetNextNode`, true, true, true), controller.setNextNode);
     router.put('/:id/base-rule/:ruleId', Auth.handle(`${contextBase}.SetBaseRuleToNode`, true, true, true), controller.setBaseRuleToNode);
+    router.put('/:id/next-node-on-timer-success/:nextNodeId', Auth.handle(`${contextBase}.SetNextNodeOnTimerSuccess`, true, true, true), controller.setNextNodeOnTimerSuccess);
+    router.put('/:id/next-node-on-timer-timeout/:nextNodeId', Auth.handle(`${contextBase}.SetNextNodeOnTimerTimeout`, true, true, true), controller.setNextNodeOnTimerTimeout);
 
     router.get('/search', Auth.handle(`${contextBase}.Search`, true, true, true), controller.search);
     router.get('/:id', Auth.handle(`${contextBase}.GetById`, true, true, true), controller.getById);

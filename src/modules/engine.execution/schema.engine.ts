@@ -188,11 +188,6 @@ export class SchemaEngine {
                         }
                     }
                     var result: NodeActionResult = await this.executeAction(actionInstance, actionExecutioner);
-                    if (result && result.Success === true) {
-                        if (actionInstance.ActionType === ActionType.SetNextNode) {
-                            this.
-                        }
-                    }
                     results.set(actionInstance.id, result);
                 }
             }

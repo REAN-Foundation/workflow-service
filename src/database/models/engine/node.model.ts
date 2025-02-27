@@ -83,6 +83,12 @@ export class Node {
     @Column({ type: 'int', nullable: true })
     TimerSeconds: number;
 
+    @Column({ type: 'uuid', nullable: true })
+    NextNodeIdOnSuccess: string;
+
+    @Column({ type: 'uuid', nullable: true })
+    NextNodeIdOnTimeout: string;
+
     @CreateDateColumn()
     CreatedAt : Date;
 

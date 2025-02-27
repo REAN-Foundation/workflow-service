@@ -13,6 +13,8 @@ import { SchemaInstanceService } from "../../database/services/engine/schema.ins
 import { Almanac } from "./almanac";
 import { SchemaEngine } from "./schema.engine";
 import { EventResponseDto } from "../../domain.types/engine/event.types";
+import { SchemaResponseDto } from "../../domain.types/engine/schema.domain.types";
+import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.instance.types";
 
 ////////////////////////////////////////////////////////////////
 
@@ -156,26 +158,64 @@ export default class TimerNodeTriggerHandler {
                 const completedTries = nodeInstance.TimerNumberOfTriesCompleted;
                 if (completedTries >= totalTries) {
                     logger.info(`Timer node tries exhausted: ${nodeInstance.id}`);
-                    return;
+                    logger.info(`Setting next node on timer timeout: ${nodeInstance.id}`);
+                    return await this.setNextNode(schema, schemaInstance, node, node.NextNodeIdOnTimeout);
                 }
                 const tries = completedTries + 1;
                 await nodeInstanceService.updateTimerTries(nodeInstance.id, tries);
-
                 const timeIntervalMiliSeconds = Math.abs(node.TimerSeconds) * 1000;
-                
                 setTimeout(async () => {
                     await this.executeTimerNode(nodeInstance.id);
                 }, timeIntervalMiliSeconds);
-
                 return;
             }
+            else {
+                logger.info(`Condition met for Timer node: ${node.id}`);
+                logger.info(`Setting next node on timer success: ${nodeInstance.id}`);
+                return await this.setNextNode(schema, schemaInstance, node, node.NextNodeIdOnSuccess);
+            }
+        }
+        catch (error) {
+            logger.error(`Error: ${error.message}`);
+            logger.error(`Error: ${error.stack}`);
+        }
+    };
 
-            const engine = new SchemaEngine(
-                schema,
-                schemaInstance,
-                null
+    static setNextNode = async (
+        schema: SchemaResponseDto,
+        schemaInstance: SchemaInstanceResponseDto,
+        timerNode: NodeResponseDto,
+        nextNodeId: uuid
+    ) => {
+        try {
+            const schemaInstanceId: uuid = schemaInstance.id;
+            var currentNodeInstanceId = await new SchemaInstanceService().getCurrentNodeInstanceId(schemaInstanceId);
+            if (!currentNodeInstanceId) {
+                logger.error(`Current node instance not found for Timer node: ${timerNode.id}`);
+                return null;
+            }
+            var currentNodeInstance = await new NodeInstanceService().getById(currentNodeInstanceId);
+            if (!currentNodeInstance) {
+                logger.error(`Current node instance not found for Timer node: ${timerNode.id}`);
+                return null;
+            }
+            const currentNode = await new NodeService().getById(currentNodeInstance.Node.id);
+            if (!currentNode) {
+                logger.error(`Current node not found for Timer node: ${timerNode.id}`);
+                return null;
+            }
+
+            const schemaEngine = new SchemaEngine(schema, schemaInstance, null);
+            var result = await schemaEngine.setThisAsNextNodeInstance(
+                currentNode,
+                currentNodeInstance,
+                nextNodeId
             );
-            await engine.executeNodeActions(nodeInstance);
+            currentNodeInstance = result?.currentNodeInstance;
+            if (currentNodeInstance) {
+                currentNodeInstance = await schemaEngine.processCurrentNode(currentNodeInstance);
+            }
+            return currentNodeInstance;
         }
         catch (error) {
             logger.error(`Error: ${error.message}`);

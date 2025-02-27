@@ -190,6 +190,30 @@ export class SchemaInstanceService extends BaseService {
         }
     };
 
+    public getCurrentNodeInstanceId = async (schemaInstanceId: uuid): Promise<uuid> => {
+        try {
+            var schemaInstance = await this._schemaInstanceRepository.findOne({
+                where : {
+                    id : schemaInstanceId
+                },
+                relations : {
+                    CurrentNodeInstance : true
+                }
+            });
+            if (!schemaInstance) {
+                ErrorHandler.throwNotFoundError('SchemaInstance not found!');
+            }
+            var currentNodeInstance = schemaInstance.CurrentNodeInstance;
+            if (!currentNodeInstance) {
+                return null;
+            }
+            return schemaInstance.CurrentNodeInstance.id;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public getCount = async (tenantId: uuid, schemaId: uuid, pattern: string) => {
         try {
             var count = await this._schemaInstanceRepository.count({

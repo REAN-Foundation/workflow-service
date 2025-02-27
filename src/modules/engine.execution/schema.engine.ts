@@ -113,7 +113,7 @@ export class SchemaEngine {
 
     //#region Private methods
 
-    private async processCurrentNode(currentNodeInstance: NodeInstanceResponseDto) {
+    public async processCurrentNode(currentNodeInstance: NodeInstanceResponseDto) {
 
         //If there are any listening nodes, handle them
         await this.handleListeningNodes();
@@ -529,7 +529,7 @@ export class SchemaEngine {
     private async traverseTimerNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
 
-        if (currentNodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
+        if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
 
             var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
             if (!currentNode?.NextNodeId) {
@@ -543,12 +543,6 @@ export class SchemaEngine {
                 Event        : this._event,
             });
 
-            // var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
-            // if (!res || !res.currentNode || !res.currentNodeInstance) {
-            //     logger.error(`Error while setting next node instance!`);
-            //     return currentNodeInstance;
-            // }
-            // return res.currentNodeInstance;
         }
         // Return the same node instance.
         // The timer node will be triggered by the TimerNodeTriggerHandler.
@@ -586,6 +580,57 @@ export class SchemaEngine {
             await this._nodeInstanceService.setExecutionStatus(currentNodeInstance.id, ExecutionStatus.Executed);
         }
         return allExecuted;
+    }
+
+    public setThisAsNextNodeInstance = async (
+        currentNode: NodeResponseDto,
+        currentNodeInstance: NodeInstanceResponseDto,
+        nextNodeId: uuid) => {
+
+        if (!nextNodeId) {
+            logger.error(`Next node not found for Node ${currentNode.Name}`);
+            return { currentNode, currentNodeInstance };
+        }
+        var nextNode = await this._nodeService.getById(nextNodeId);
+        if (!nextNode) {
+            logger.error(`Next node not found for Node ${currentNode.Name}`);
+            return { currentNode, currentNodeInstance };
+        }
+        var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
+        var nextNodeInstance = await this._nodeInstanceService.getOrCreate(nextNodeId, schemaInstanceId);
+        if (!nextNodeInstance) {
+            logger.error(`Error while setting next node instance!`);
+            return { currentNode, currentNodeInstance };
+        }
+    
+        // Record the activity
+        const activityPayload = {
+            PreviousNodeInstance : currentNodeInstance,
+            PreviousNode         : currentNode,
+            NextNodeInstance     : nextNodeInstance,
+            NextNode             : nextNode,
+        };
+        const summary = {
+            Type        : WorkflowActivityType.SwitchCurrentNode,
+            CurrentNode : currentNode.Name,
+            NextNode    : nextNode.Name,
+            Timestamp   : new Date(),
+        };
+    
+        await this._schemaInstanceService.recordActivity(
+            schemaInstanceId, WorkflowActivityType.SwitchCurrentNode, activityPayload, summary);
+    
+        currentNodeInstance = nextNodeInstance;
+        currentNode = nextNode;
+        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
+        return { currentNode, currentNodeInstance };
+    };
+
+    private async setNextNodeInstance(
+        currentNode: NodeResponseDto,
+        currentNodeInstance: NodeInstanceResponseDto) {
+        var nextNodeId = currentNode?.NextNodeId;
+        return this.setThisAsNextNodeInstance(currentNode, currentNodeInstance, nextNodeId);
     }
 
     private async executeAction(actionInstance: NodeActionInstanceResponseDto, actionExecutioner: ActionExecutioner) {
@@ -643,47 +688,6 @@ export class SchemaEngine {
         //     result = await actionExecutioner.executeTriggerChildWorkflowAction(actionInstance);
         // }
         return result;
-    }
-
-    private async setNextNodeInstance(currentNode: NodeResponseDto, currentNodeInstance: NodeInstanceResponseDto) {
-        var nextNodeId = currentNode.NextNodeId;
-        if (!nextNodeId) {
-            logger.error(`Next node not found for Node ${currentNode.Name}`);
-            return { currentNode, currentNodeInstance };
-        }
-        var nextNode = await this._nodeService.getById(nextNodeId);
-        if (!nextNode) {
-            logger.error(`Next node not found for Node ${currentNode.Name}`);
-            return { currentNode, currentNodeInstance };
-        }
-        var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
-        var nextNodeInstance = await this._nodeInstanceService.getOrCreate(nextNodeId, schemaInstanceId);
-        if (!nextNodeInstance) {
-            logger.error(`Error while setting next node instance!`);
-            return { currentNode, currentNodeInstance };
-        }
-
-        // Record the activity
-        const activityPayload = {
-            PreviousNodeInstance : currentNodeInstance,
-            PreviousNode         : currentNode,
-            NextNodeInstance     : nextNodeInstance,
-            NextNode             : nextNode,
-        };
-        const summary = {
-            Type        : WorkflowActivityType.SwitchCurrentNode,
-            CurrentNode : currentNode.Name,
-            NextNode    : nextNode.Name,
-            Timestamp   : new Date(),
-        };
-
-        await this._schemaInstanceService.recordActivity(
-            schemaInstanceId, WorkflowActivityType.SwitchCurrentNode, activityPayload, summary);
-
-        currentNodeInstance = nextNodeInstance;
-        currentNode = nextNode;
-        await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
-        return { currentNode, currentNodeInstance };
     }
 
     private async createSchemaInstance(schema: SchemaResponseDto, event: EventResponseDto) {

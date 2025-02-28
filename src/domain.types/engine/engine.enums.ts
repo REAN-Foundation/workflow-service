@@ -79,12 +79,12 @@ export const MessageChannelList: MessageChannelType[] = [
 ];
 
 export enum NodeType {
-    ExecutionNode     = 'ExecutionNode',
-    QuestionNode      = 'QuestionNode',
-    ListeningNode     = 'ListeningNode',
-    YesNoNode         = 'YesNoNode',
-    TimerNode         = 'TimerNode', //Timer node executes some rule-logic, if not successful it times out
-    DelayedActionNode = 'DelayedActionNode', //Delayed action node executes actions after a delay
+    ExecutionNode        = 'ExecutionNode',
+    QuestionNode         = 'QuestionNode',
+    ListeningNode        = 'ListeningNode',
+    YesNoNode            = 'YesNoNode',
+    ConditionalTimerNode = 'ConditionalTimerNode',   //Timer node executes some rule-logic, if not successful it times out
+    DelayedActionNode    = 'DelayedActionNode',      //Delayed action node executes actions after a delay
 }
 
 export const NodeTypeList: NodeType[] = [
@@ -92,7 +92,7 @@ export const NodeTypeList: NodeType[] = [
     NodeType.QuestionNode,
     NodeType.ListeningNode,
     NodeType.YesNoNode,
-    NodeType.TimerNode,
+    NodeType.ConditionalTimerNode,
     NodeType.DelayedActionNode,
 ];
 

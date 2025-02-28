@@ -17,8 +17,8 @@ import {
     NodeSearchResults,
     NodeUpdateModel,
     QuestionNodeCreateModel,
-    TimerNodeCreateModel, 
-    DelayedActionNodeCreateModel} from '../../../domain.types/engine/node.types';
+    ConditionalTimerNodeCreateModel
+} from '../../../domain.types/engine/node.types';
 import { DatabaseUtilsService } from './database.utils.service';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 import { Question } from '../../../database/models/engine/question.model';
@@ -223,7 +223,7 @@ export class NodeService extends BaseService {
 
         const node = this._nodeRepository.create({
             Code          : StringUtils.generateDisplayCode_RandomChars(12, prefix),
-            Type          : NodeType.TimerNode,
+            Type          : NodeType.ConditionalTimerNode,
             Schema        : schema,
             ParentNode    : parentNode,
             Name          : createModel.Name,

@@ -13,11 +13,11 @@ import { NodeResponseDto } from "./node.types";
 //////////////////////////////////////////////////////////////
 
 export interface NodeInstanceCreateModel {
-    Type            : NodeType;
-    Input           : ActionInputParams;
-    NodeId          : uuid;
-    SchemaInstanceId: uuid;
-    ExecutionStatus : ExecutionStatus;
+    Type              : NodeType;
+    Input             : ActionInputParams;
+    NodeId            : uuid;
+    SchemaInstanceId  : uuid;
+    ExecutionStatus   : ExecutionStatus;
 }
 
 export interface NodeInstanceUpdateModel {
@@ -55,6 +55,7 @@ export interface NodeInstanceResponseDto {
         }[];
     ActionInstances            ?: NodeActionInstanceResponseDto[];
     TimerNumberOfTriesCompleted : number;
+    DelayTimerFinished          : boolean;
     CreatedAt                   : Date;
     UpdatedAt                   : Date;
 }

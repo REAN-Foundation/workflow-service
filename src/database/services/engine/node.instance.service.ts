@@ -57,6 +57,7 @@ export class NodeInstanceService extends BaseService {
                 Type                        : node.Type,
                 Input                       : createModel.Input,
                 TimerNumberOfTriesCompleted : 0,
+                DelayTimerFinished          : false,
             });
             var record = await this._nodeInstanceRepository.save(nodeInstance);
             var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(record.id);
@@ -93,6 +94,7 @@ export class NodeInstanceService extends BaseService {
                 Type                        : node.Type,
                 Input                       : node.Input,
                 TimerNumberOfTriesCompleted : 0,
+                DelayTimerFinished          : false,
             });
             var record = await this._nodeInstanceRepository.save(nodeInstance);
             return await this.getById(record.id);
@@ -239,6 +241,26 @@ export class NodeInstanceService extends BaseService {
             await this._nodeInstanceRepository.save(record);
             return true;
         } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    markDelayTimerFinished = async (nodeInstanceId: uuid): Promise<boolean> => {
+        try {
+            var record = await this._nodeInstanceRepository.findOne({
+                where : {
+                    id : nodeInstanceId
+                }
+            });
+            if (!record) {
+                ErrorHandler.throwNotFoundError(`NodeInstance with ID ${nodeInstanceId} not found.`);
+            }
+            record.DelayTimerFinished = true;
+            await this._nodeInstanceRepository.save(record);
+            return true;
+        }
+        catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
         }

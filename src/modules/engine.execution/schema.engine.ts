@@ -119,6 +119,7 @@ export class SchemaEngine {
         await this.handleListeningNodes();
 
         if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
+            currentNodeInstance = await this.delayedNodeExecution(currentNodeInstance);
             const allExecuted = await this.executeNodeActions(currentNodeInstance);
             if (allExecuted) {
                 currentNodeInstance.ExecutionStatus = ExecutionStatus.Executed;
@@ -295,10 +296,12 @@ export class SchemaEngine {
         else if (currentNodeType === NodeType.YesNoNode) {
             return await this.traverseYesNoNode(currentNodeInstance);
         }
-        else if (currentNodeType === NodeType.ExecutionNode) {
+        else if (currentNodeType === NodeType.ExecutionNode ||
+                 currentNodeType === NodeType.DelayedActionNode
+        ) {
             return await this.traverseExecutionNode(currentNodeInstance);
         }
-        else if (currentNodeType === NodeType.TimerNode) {
+        else if (currentNodeType === NodeType.ConditionalTimerNode) {
             return await this.traverseTimerNode(currentNodeInstance);
         }
         return currentNodeInstance;
@@ -542,7 +545,6 @@ export class SchemaEngine {
                 NodeInstance : currentNodeInstance,
                 Event        : this._event,
             });
-
         }
         // Return the same node instance.
         // The timer node will be triggered by the TimerNodeTriggerHandler.
@@ -602,7 +604,7 @@ export class SchemaEngine {
             logger.error(`Error while setting next node instance!`);
             return { currentNode, currentNodeInstance };
         }
-    
+
         // Record the activity
         const activityPayload = {
             PreviousNodeInstance : currentNodeInstance,
@@ -616,15 +618,36 @@ export class SchemaEngine {
             NextNode    : nextNode.Name,
             Timestamp   : new Date(),
         };
-    
+
         await this._schemaInstanceService.recordActivity(
             schemaInstanceId, WorkflowActivityType.SwitchCurrentNode, activityPayload, summary);
-    
+
         currentNodeInstance = nextNodeInstance;
         currentNode = nextNode;
         await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
         return { currentNode, currentNodeInstance };
     };
+
+    private async delayedNodeExecution(nodeInstance: NodeInstanceResponseDto) {
+        if (nodeInstance.Node.Type !== NodeType.DelayedActionNode) {
+            return nodeInstance;
+        }
+        if (nodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
+            return nodeInstance;
+        }
+        if (!nodeInstance.DelayTimerFinished) {
+            var currentNode = await this._nodeService.getById(nodeInstance.Node.id);
+            var delaySeconds = currentNode.DelaySeconds;
+            if (!delaySeconds) {
+                logger.error(`Delay not found for Node ${currentNode.Name}`);
+                return nodeInstance;
+            }
+            await new Promise(r => setTimeout(r, delaySeconds * 1000));
+            nodeInstance.DelayTimerFinished = true;
+            await this._nodeInstanceService.markDelayTimerFinished(nodeInstance.id);
+        }
+        return nodeInstance;
+    }
 
     private async setNextNodeInstance(
         currentNode: NodeResponseDto,

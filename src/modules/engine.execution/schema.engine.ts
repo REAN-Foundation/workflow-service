@@ -580,6 +580,14 @@ export class SchemaEngine {
             return currentNodeInstance;
         }
 
+        // Get children schema instances and terminate them
+        var childrenSchemaInstances = await this._schemaInstanceService.getByParentSchemaInstanceId(currentSchemaInstanceId);
+        if (childrenSchemaInstances.length > 0) {
+            for await (var childSchemaInstance of childrenSchemaInstances) {
+                await this._schemaInstanceService.terminate(childSchemaInstance.id);
+            }
+        }
+
         // Set the schema instance status as terminated
         var currentSchemaInstanceId = currentSchemaInstance.id;
         await this._schemaInstanceService.terminate(currentSchemaInstanceId);

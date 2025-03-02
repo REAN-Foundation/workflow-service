@@ -1,0 +1,220 @@
+meta {
+  name: Create execution node - EN6
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN4-Primary CFR details",
+    "Description": "This execution node holds actions to find and share the primary CFR details.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{MAIN_EN4_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "ArraySort",
+        "Name": "Sort responders array - Sort responders array to find primary CFR",
+        "Sequence": 0,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Responded CFR Details",
+              "Type": "Array",
+              "Source": "Almanac",
+              "SubElementType": "Object",
+              "Key": "CFR:Responders",
+              "Value": null,
+              "ArrayObjectTypes": [
+                {
+                  "Name": "Name",
+                  "Type": "String",
+                  "Value": null
+                },
+                {
+                  "Name": "Phonenumber",
+                  "Type": "Phonenumber",
+                  "Value": null
+                },
+                {
+                  "Name": "Location",
+                  "Type": "Location",
+                  "Value": null
+                },
+                {
+                  "Name": "Address",
+                  "Type": "String",
+                  "Value": null
+                },
+                {
+                  "Name": "ResponseTimestamp",
+                  "Type": "DateTime",
+                  "Value": null
+                }
+              ]
+            },
+            {
+              "Name": "Sort By",
+              "Type": "Text",
+              "Key": "SortBy",
+              "Value": "ResponseTimestamp"
+            },
+            {
+              "Name": "Sort Order",
+              "Type": "Text",
+              "Key": "SortOrder",
+              "Value": "asc"
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "Output destination",
+              "Type": "Array",
+              "Destination": "Almanac",
+              "Key": "CFR:Responders"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "ArrayGetElement",
+        "Name": "Get primary responder - Get first element of sorted array",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Responded CFR Details - Sorted list",
+              "Type": "Array",
+              "Source": "Almanac",
+              "SubElementType": "Object",
+              "Key": "CFR:Responders",
+              "Value": null,
+              "ArrayObjectTypes": [
+                {
+                  "Name": "Name",
+                  "Type": "String",
+                  "Value": null
+                },
+                {
+                  "Name": "Phonenumber",
+                  "Type": "Phonenumber",
+                  "Value": null
+                },
+                {
+                  "Name": "Location",
+                  "Type": "Location",
+                  "Value": null
+                },
+                {
+                  "Name": "Address",
+                  "Type": "String",
+                  "Value": null
+                },
+                {
+                  "Name": "ResponseTimestamp",
+                  "Type": "DateTime",
+                  "Value": null
+                }
+              ]
+            },
+            {
+              "Name": "Index",
+              "Type": "Integer",
+              "Key": "Index",
+              "Value": "0"
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "Output to Almanac- Primary CFR object",
+              "Type": "Object",
+              "Destination": "Almanac",
+              "Key": "CFR:PrimaryCFR"
+            },
+            {
+              "Name": "Output to Almanac- Primary CFR phone number",
+              "Type": "Object",
+              "SubElementType": "Phonenumber",
+              "Destination": "Almanac",
+              "Key": "CFR:PrimaryCFR:Phonenumber"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - Notify primary CFR details to reporter.",
+        "Sequence": 2,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phonenumber",
+              "Type": "Phonenumber",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:CFR:Phonenumber"
+            },
+            {
+              "Name": "Primary CFR details message",
+              "Type": "Text",
+              "Value": "Primary responder has been identified. The contact details - {{CFR:PrimaryCFR:Phonenumber}}."
+            },
+            {
+              "Name": "Primary CFR phone number",
+              "Type": "Placeholder",
+              "Key": "CFR:PrimaryCFR:Phonenumber",
+              "Source": "Almanac"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_EN6_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

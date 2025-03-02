@@ -1347,6 +1347,60 @@ export class ActionExecutioner {
 
     };
 
+    public executeGetObjectParamAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        // Get the input parameters
+        var pObject = input.Params && input.Params.length > 0 ?
+            input.Params.find(x => x.Type === ParamType.Object) : null;
+        if (!pObject) {
+            logger.error('Object parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var pKey = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'Key');
+        if (!pKey) {
+            logger.error('Key parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var key = pKey.Value;
+        var obj = pObject.Value;
+
+        if (!obj || typeof obj !== 'object') {
+            logger.error('Object not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var value = obj[key];
+
+        var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
+        if (op) {
+            await this._almanac.addFact(op.Key, value);
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, value);
+
+        return {
+            Success : true,
+            Result  : value
+        };
+
+    };
+
     public sendBotMessage = async (
         message: WorkflowMessage)
         : Promise<boolean> => {

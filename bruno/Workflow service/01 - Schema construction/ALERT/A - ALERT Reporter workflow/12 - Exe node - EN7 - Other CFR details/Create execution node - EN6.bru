@@ -1,5 +1,5 @@
 meta {
-  name: Create execution node - EN4
+  name: Create execution node - EN6
   type: http
   seq: 1
 }
@@ -18,15 +18,15 @@ headers {
 
 body:json {
   {
-    "Name": "EN4-Get nearby ambulances",
-    "Description": "This execution node holds actions to send message to reporter telling no responder responded. Also get nearby ambulance information.",
+    "Name": "EN4-Other responders details (Non-primary CFRs)",
+    "Description": "This execution node holds actions to find and share the non-primary responder details.",
     "Type": "ExecutionNode",
-    "ParentNodeId": "{{MAIN_TN1_ID}}",
+    "ParentNodeId": "{{MAIN_EN4_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
         "Type": "SendMessage",
-        "Name": "Send message to reporter - One or more responders have positively responded.",
+        "Name": "Send message - Following are the details of other responders",
         "Input": {
           "Params": [
             {
@@ -37,9 +37,9 @@ body:json {
               "Key": "ContextParams:Reporter:Phonenumber"
             },
             {
-              "Name": "Send message - - One or more responders have positively responded.",
+              "Name": "Details of other responders",
               "Type": "Text",
-              "Value": "Some responders have positively responded. The details will be shared shortly."
+              "Value": "Thanks for your prompt action!"
             }
           ]
         }
@@ -103,7 +103,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_EN4_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_EN6_ID", res.body.Data.id);
   }
   
 }

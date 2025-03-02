@@ -120,6 +120,7 @@ export enum ActionType {
     ArraySort                       = 'ArraySort',
     ArrayFilter                     = 'ArrayFilter',
     ArrayGetElement                 = 'ArrayGetElement',
+    GetObjectParam                  = 'GetObjectParam',
     Exit                            = 'Exit',
     Continue                        = 'Continue',
 }
@@ -148,6 +149,7 @@ export const ActionTypeList: ActionType[] = [
     ActionType.ArraySort,
     ActionType.ArrayFilter,
     ActionType.ArrayGetElement,
+    ActionType.GetObjectParam,
     ActionType.Exit,
     ActionType.Continue,
 ];

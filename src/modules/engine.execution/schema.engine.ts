@@ -711,6 +711,9 @@ export class SchemaEngine {
         else if (actionInstance.ActionType === ActionType.ArrayGetElement) {
             result = await actionExecutioner.executeGetArrayElementAction(actionInstance);
         }
+        else if (actionInstance.ActionType === ActionType.GetObjectParam) {
+            result = await actionExecutioner.executeGetObjectParamAction(actionInstance);
+        }
         else if (actionInstance.ActionType === ActionType.Continue) {
             return {
                 Success : true,

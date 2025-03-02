@@ -442,6 +442,43 @@ export class SchemaInstanceService extends BaseService {
         }
     };
 
+    public terminate = async (schemaInstanceId: uuid): Promise<void> => {
+        try {
+            var schemaInstance = await this._schemaInstanceRepository.findOne({
+                where : {
+                    id : schemaInstanceId
+                }
+            });
+            if (!schemaInstance) {
+                ErrorHandler.throwNotFoundError('SchemaInstance not found!');
+            }
+            schemaInstance.Terminated = true;
+            schemaInstance.TerminatedTimestamp = new Date();
+            await this._schemaInstanceRepository.save(schemaInstance);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public isTerminated = async (schemaInstanceId: uuid): Promise<boolean> => {
+        try {
+            var schemaInstance = await this._schemaInstanceRepository.findOne({
+                where : {
+                    id : schemaInstanceId
+                }
+            });
+            if (!schemaInstance) {
+                ErrorHandler.throwNotFoundError('SchemaInstance not found!');
+            }
+            return schemaInstance.Terminated;
+        }
+        catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     //#region Privates
 
     private getSearchModel = (filters: SchemaInstanceSearchFilters) => {

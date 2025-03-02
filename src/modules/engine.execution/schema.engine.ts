@@ -87,6 +87,12 @@ export class SchemaEngine {
             currentNodeInstance = await this._nodeInstanceService.getById(this._schemaInstance.CurrentNodeInstance.id);
         }
 
+        const isTerminated = await this._schemaInstanceService.isTerminated(this._schemaInstance.id);
+        if (isTerminated) {
+            logger.error(`Schema instance is already terminated!`);
+            return null;
+        }
+
         const summary = {
             Type      : "MessageEvent",
             EventType : this._event?.EventType ?? EventType.UserMessage,
@@ -303,6 +309,9 @@ export class SchemaEngine {
         }
         else if (currentNodeType === NodeType.ConditionalTimerNode) {
             return await this.traverseTimerNode(currentNodeInstance);
+        }
+        else if (currentNodeType === NodeType.TerminatorNode) {
+            return await this.traverseTerminatorNode(currentNodeInstance);
         }
         return currentNodeInstance;
     }
@@ -550,6 +559,34 @@ export class SchemaEngine {
         // Return the same node instance.
         // The timer node will be triggered by the TimerNodeTriggerHandler.
         // It will set the next node instance.
+        return currentNodeInstance;
+    }
+
+    private async traverseTerminatorNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
+
+        // Record the activity
+        const activityPayload = {
+            CurrentNodeInstance : currentNodeInstance,
+        };
+        const summary = {
+            Type      : WorkflowActivityType.TerminateWorkflow,
+            Timestamp : new Date(),
+        };
+
+        var currentSchemaInstance = await this._schemaInstanceService.getById(currentNodeInstance.SchemaInstance.id);
+        if (!currentSchemaInstance) {
+            logger.error(`Schema instance not found!`);
+            return currentNodeInstance;
+        }
+
+        // Set the schema instance status as terminated
+        var currentSchemaInstanceId = currentSchemaInstance.id;
+        await this._schemaInstanceService.terminate(currentSchemaInstanceId);
+
+        await this._schemaInstanceService.recordActivity(
+            this._schemaInstance.id, WorkflowActivityType.TerminateWorkflow, activityPayload, summary);
+
         return currentNodeInstance;
     }
 

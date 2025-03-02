@@ -64,6 +64,8 @@ export interface SchemaInstanceResponseDto {
     AlmanacObjects           : AlmanacObject[];
     ExecutionStarted         : boolean;
     ExecutionStartedTimestamp: Date;
+    Terminated               : boolean;
+    TerminatedTimestamp      : Date;
     CreatedAt                : Date;
     UpdatedAt                : Date;
 }

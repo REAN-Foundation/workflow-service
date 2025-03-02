@@ -54,7 +54,7 @@ export class NodeService extends BaseService {
 
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
-        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+        const prefix = 'E_NODE';
 
         const node = this._nodeRepository.create({
             Code         : StringUtils.generateDisplayCode_RandomChars(12, prefix),
@@ -92,7 +92,7 @@ export class NodeService extends BaseService {
 
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
-        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+        const prefix = 'Q_NODE';
 
         const node = this._nodeRepository.create({
             Code         : StringUtils.generateDisplayCode_RandomChars(12, prefix),
@@ -158,7 +158,7 @@ export class NodeService extends BaseService {
         : Promise<NodeResponseDto> => {
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
-        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+        const prefix = 'YN_NODE';
 
         var yesActionModel = (createModel as YesNoNodeCreateModel).YesAction;
         yesActionModel.IsPathAction = true;
@@ -215,11 +215,11 @@ export class NodeService extends BaseService {
 
     };
 
-    public createTimerNode = async (createModel: ConditionalTimerNodeCreateModel) : Promise<NodeResponseDto> => {
+    public createConditionalTimerNode = async (createModel: ConditionalTimerNodeCreateModel) : Promise<NodeResponseDto> => {
 
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
-        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+        const prefix = 'TIMER_NODE';
 
         const node = this._nodeRepository.create({
             Code          : StringUtils.generateDisplayCode_RandomChars(12, prefix),
@@ -236,6 +236,30 @@ export class NodeService extends BaseService {
             TimerSeconds  : createModel.TimerSeconds,
             YesActionId   : null,
             NoActionId    : null,
+        });
+        var record = await this._nodeRepository.save(node);
+        if (record == null)
+        {
+            return null;
+        }
+
+        return NodeMapper.toResponseDto(record, null, null, null, null, null);
+    };
+
+    public createTerminatorNode = async (createModel: NodeCreateModel | QuestionNodeCreateModel | YesNoNodeCreateModel)
+    : Promise<NodeResponseDto> => {
+
+        const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
+        const parentNode = await this.getNode(createModel.ParentNodeId);
+        const prefix = 'TERM_NODE';
+
+        const node = this._nodeRepository.create({
+            Code        : StringUtils.generateDisplayCode_RandomChars(12, prefix),
+            Type        : createModel.Type,
+            Schema      : schema,
+            ParentNode  : parentNode,
+            Name        : createModel.Name,
+            Description : createModel.Description,
         });
         var record = await this._nodeRepository.save(node);
         if (record == null)

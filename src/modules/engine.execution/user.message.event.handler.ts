@@ -47,9 +47,17 @@ export class UserMessageEventHandler {
         var schemaInstance: SchemaInstanceResponseDto = null;
         if (event.SchemaInstanceId) {
             schemaInstance = await this._schemaInstanceService.getById(event.SchemaInstanceId);
+            if (!schemaInstance || schemaInstance.Terminated) {
+                logger.error(`Schema Instance not found or terminated: ${event.SchemaInstanceId}`);
+                return false;
+            }
         }
         else {
             var schemaInstances = await this._schemaInstanceService.getBySchemaId(schema.id);
+
+            //Filter out those that are terminated
+            schemaInstances = schemaInstances.filter(x => !x.Terminated);
+
             if (schemaInstances.length > 0) {
                 var matchedSchema = schemaInstances.find(x => this.checkSchemaInstanceCodeMatch(x, event));
                 if (matchedSchema) {

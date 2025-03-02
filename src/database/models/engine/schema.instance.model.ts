@@ -57,6 +57,12 @@ export class SchemaInstance {
     @Column({ type: 'datetime', nullable: true })
     ExecutionStartedTimestamp: Date;
 
+    @Column({ type: 'boolean', nullable: false, default: false })
+    Terminated: boolean;
+
+    @Column({ type: 'datetime', nullable: true })
+    TerminatedTimestamp: Date;
+
     @Column({ type: 'simple-json', nullable: true })
     AlmanacObjects: AlmanacObject[];
 

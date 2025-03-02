@@ -89,12 +89,12 @@ export class NodeController {
         }
     };
 
-    createTimerNode = async (request: express.Request, response: express.Response) => {
+    createConditionalTimerNode = async (request: express.Request, response: express.Response) => {
         try {
             var model: ConditionalTimerNodeCreateModel = await this._validator.validateCreateTimerNodeRequest(request);
             model.Type = NodeType.ConditionalTimerNode;
 
-            const record = await this._service.createTimerNode(model);
+            const record = await this._service.createConditionalTimerNode(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');
             }
@@ -118,6 +118,23 @@ export class NodeController {
             const message = 'Node added successfully!';
             return ResponseHandler.success(request, response, message, 201, record);
         } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    createTerminatorNode = async (request: express.Request, response: express.Response) => {
+        try {
+            var model: NodeCreateModel = await this._validator.validateCreateTerminatorNodeRequest(request);
+            model.Type = NodeType.TerminatorNode;
+
+            const record = await this._service.create(model);
+            if (record === null) {
+                ErrorHandler.throwInternalServerError('Unable to add node!');
+            }
+            const message = 'Node added successfully!';
+            return ResponseHandler.success(request, response, message, 201, record);
+        }
+        catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
     };

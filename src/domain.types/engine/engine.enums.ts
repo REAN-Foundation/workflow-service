@@ -8,6 +8,7 @@ export enum WorkflowActivityType {
     NodeAction        = 'NodeAction',
     SystemEvent       = 'SystemEvent',
     SwitchCurrentNode = 'SwitchCurrentNode',
+    TerminateWorkflow = 'TerminateWorkflow',
 }
 
 export enum ParamType {
@@ -85,6 +86,7 @@ export enum NodeType {
     YesNoNode            = 'YesNoNode',
     ConditionalTimerNode = 'ConditionalTimerNode',   //Timer node executes some rule-logic, if not successful it times out
     DelayedActionNode    = 'DelayedActionNode',      //Delayed action node executes actions after a delay
+    TerminatorNode       = 'TerminatorNode',
 }
 
 export const NodeTypeList: NodeType[] = [
@@ -94,6 +96,7 @@ export const NodeTypeList: NodeType[] = [
     NodeType.YesNoNode,
     NodeType.ConditionalTimerNode,
     NodeType.DelayedActionNode,
+    NodeType.TerminatorNode,
 ];
 
 export enum ActionType {

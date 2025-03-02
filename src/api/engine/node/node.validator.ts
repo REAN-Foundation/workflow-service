@@ -245,6 +245,29 @@ export class NodeValidator extends BaseValidator {
         }
     };
 
+    public validateCreateTerminatorNodeRequest = async (request: express.Request)
+    : Promise<NodeCreateModel> => {
+        try {
+            const node = joi.object({
+                Type         : joi.string().valid(...Object.values(NodeType)).required(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
+                ParentNodeId : joi.string().allow(null).uuid().required(),
+                SchemaId     : joi.string().uuid().required(),
+            });
+            await node.validateAsync(request.body);
+            return {
+                Type         : request.body.Type,
+                Name         : request.body.Name,
+                Description  : request.body.Description ?? null,
+                ParentNodeId : request.body.ParentNodeId,
+                SchemaId     : request.body.SchemaId,
+            };
+        } catch (error) {
+            ErrorHandler.handleValidationError(error);
+        }
+    };
+
     public validateUpdateRequest = async (request: express.Request): Promise<NodeUpdateModel|undefined> => {
         try {
             const node = joi.object({

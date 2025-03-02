@@ -117,6 +117,9 @@ export enum ActionType {
     GetFromAlmanac                  = 'GetFromAlmanac',
     UpdateContextParams             = 'UpdateContextParams',
     GenerateRandomCode              = 'GenerateRandomCode',
+    ArraySort                       = 'ArraySort',
+    ArrayFilter                     = 'ArrayFilter',
+    ArrayGetElement                 = 'ArrayGetElement',
     Exit                            = 'Exit',
     Continue                        = 'Continue',
 }
@@ -142,6 +145,9 @@ export const ActionTypeList: ActionType[] = [
     ActionType.GetFromAlmanac,
     ActionType.UpdateContextParams,
     ActionType.GenerateRandomCode,
+    ActionType.ArraySort,
+    ActionType.ArrayFilter,
+    ActionType.ArrayGetElement,
     ActionType.Exit,
     ActionType.Continue,
 ];

@@ -546,6 +546,7 @@ export class SchemaEngine {
                 Event        : this._event,
             });
         }
+
         // Return the same node instance.
         // The timer node will be triggered by the TimerNodeTriggerHandler.
         // It will set the next node instance.
@@ -700,6 +701,15 @@ export class SchemaEngine {
         }
         else if (actionInstance.ActionType === ActionType.GenerateRandomCode) {
             result = await actionExecutioner.executeGenerateRandomCodeAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.ArraySort) {
+            result = await actionExecutioner.executeSortArrayAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.ArrayFilter) {
+            result = await actionExecutioner.executeFilterArrayAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.ArrayGetElement) {
+            result = await actionExecutioner.executeGetArrayElementAction(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.Continue) {
             return {

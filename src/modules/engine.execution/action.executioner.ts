@@ -622,6 +622,9 @@ export class ActionExecutioner {
                     Result  : null
                 };
             }
+            if (op.Type === ParamType.Array && p.Type !== ParamType.Array) {
+                value = [value];
+            }
             const parentAlmanac = new Almanac(parentSchemaInstanceId);
             await parentAlmanac.addFact(outputKey, value);
         }
@@ -1154,6 +1157,194 @@ export class ActionExecutioner {
             Success : true,
             Result  : items
         };
+    };
+
+    public executeSortArrayAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        // Get the input parameters
+        var pArray = input.Params && input.Params.length > 0 ?
+            input.Params.find(x => x.Type === ParamType.Array) : null;
+        if (!pArray) {
+            logger.error('Array parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var pSortBy = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'SortBy');
+        if (!pSortBy) {
+            logger.error('SortBy parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var pSortOrder = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'SortOrder');
+
+        var sortBy = pSortBy.Value;
+        var sortOrder = pSortOrder ? pSortOrder.Value : 'asc';
+        var isAscending = sortOrder === 'asc';
+        var array = pArray.Value;
+
+        if (!array || Array.isArray(array) === false) {
+            logger.error('Array not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var sortedArray = array.sort((a, b) => {
+            if (isAscending) {
+                return a[sortBy] - b[sortBy];
+            }
+            return b[sortBy] - a[sortBy];
+        });
+
+        var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
+        if (op) {
+            await this._almanac.addFact(op.Key, sortedArray);
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, sortedArray);
+
+        return {
+            Success : true,
+            Result  : sortedArray
+        };
+
+    };
+
+    public executeFilterArrayAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        // Get the input parameters
+        var pArray = input.Params && input.Params.length > 0 ?
+            input.Params.find(x => x.Type === ParamType.Array) : null;
+        if (!pArray) {
+            logger.error('Array parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var pFilterBy = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'FilterBy');
+        if (!pFilterBy) {
+            logger.error('FilterBy parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var pFilterValue = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'FilterValue');
+        if (!pFilterValue) {
+            logger.error('FilterValue parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var filterBy = pFilterBy.Value;
+        var filterValue = pFilterValue.Value;
+        var array = pArray.Value;
+
+        if (!array || Array.isArray(array) === false) {
+            logger.error('Array not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var filteredArray = array.filter(x => x[filterBy] === filterValue);
+
+        var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
+        if (op) {
+            await this._almanac.addFact(op.Key, filteredArray);
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, filteredArray);
+
+        return {
+            Success : true,
+            Result  : filteredArray
+        };
+
+    };
+
+    public executeGetArrayElementAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        // Get the input parameters
+        var pArray = input.Params && input.Params.length > 0 ?
+            input.Params.find(x => x.Type === ParamType.Array) : null;
+        if (!pArray) {
+            logger.error('Array parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var pIndex = input.Params.find(x => x.Type === ParamType.Integer && x.Key === 'Index');
+        if (!pIndex) {
+            logger.error('Index parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var index = parseInt(pIndex.Value);
+        var array = pArray.Value;
+
+        if (!array || Array.isArray(array) === false) {
+            logger.error('Array not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        if (index < 0 || index >= array.length) {
+            logger.error('Invalid index');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+        var element = array[index];
+
+        var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
+        if (op) {
+            await this._almanac.addFact(op.Key, element);
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, element);
+
+        return {
+            Success : true,
+            Result  : element
+        };
+
     };
 
     public sendBotMessage = async (

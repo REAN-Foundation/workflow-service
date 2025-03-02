@@ -53,13 +53,13 @@ body:json {
         "Input": {
           "Params": [
             {
-              "Type": "Array",
+              "Type": "Phonenumber",
               "Value": null,
               "Source": "Almanac",
               "Key": "ContextParams:CFR:Phonenumber"
             },
             {
-              "Type": "ParentSchemaInstanceId",
+              "Type": "SchemaInstanceId",
               "Value": null,
               "Source": "Almanac",
               "Key": "ParentSchemaInstanceId"
@@ -70,7 +70,8 @@ body:json {
           "Params": [
             {
               "Destination": "ParentSchemaInstanceAlmanac",
-              "Key": "CFR:Responders"
+              "Key": "CFR:Responders",
+              "Type": "Array"
             }
           ]
         }

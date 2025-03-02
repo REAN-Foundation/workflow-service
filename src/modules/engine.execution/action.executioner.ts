@@ -439,6 +439,10 @@ export class ActionExecutioner {
             };
         }
 
+        var pMessageType = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'MessageType');
+        var messageType = pMessageType ? pMessageType.Value : UserMessageType.Text;
+        messageType = messageType ? messageType : UserMessageType.Text;
+
         // Get the input parameters
         const p = input.Params.find(x => x.Type === ParamType.Array);
         if (!p) {
@@ -459,7 +463,7 @@ export class ActionExecutioner {
             arrayValues = p.Value;
         }
 
-        if (!arrayValues || arrayValues.length === 0) {
+        if (Array.isArray(arrayValues) === false || !arrayValues || arrayValues?.length === 0) {
             logger.error('Array values not found in input parameters');
             return {
                 Success : false,
@@ -471,15 +475,16 @@ export class ActionExecutioner {
 
         for await (var arrayItem of arrayValues) {
 
-            var messageType: UserMessageType = arrayItem['MessageType'] as UserMessageType || UserMessageType.Text;
-            var textMessage = messageType === UserMessageType.Text ? arrayItem['Message'] : null;
-            var location = messageType === UserMessageType.Location ? arrayItem['Location'] : null;
+            var textMessage = messageType === UserMessageType.Text ? arrayItem.find(x => x.Key === 'Message') : null;
+
+            var textMessage = messageType === UserMessageType.Text ? arrayItem : null;
+            var location = messageType === UserMessageType.Location ? arrayItem : null;
             if (location) {
                 if (!location.Latitude || !location.Longitude) {
                     continue;
                 }
             }
-            var questionId = messageType === UserMessageType.Question ? arrayItem['QuestionId'] : null;
+            var questionId = messageType === UserMessageType.Question ? arrayItem : null;
             if (!textMessage && !location && !questionId) {
                 continue;
             }
@@ -491,7 +496,6 @@ export class ActionExecutioner {
                     continue;
                 }
             }
-            const messageTemplateId = arrayItem['MessageTemplateId'];
 
             const placeholders: { Key: string, Value: string }[] = [];
             var messagePlaceholders = input.Params.filter(x => x.Type === ParamType.Placeholder);
@@ -523,7 +527,7 @@ export class ActionExecutioner {
                     ChannelType               : channelType,
                     ChannelMessageId          : null,
                     PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
-                    MessageTemplateId         : messageTemplateId,
+                    MessageTemplateId         : null,
                     PreviousMessageTemplateId : payload ? payload.MessageTemplateId : null,
                     BotMessageId              : null,
                     PreviousBotMessageId      : payload ? payload.BotMessageId : null,
@@ -1397,6 +1401,122 @@ export class ActionExecutioner {
         return {
             Success : true,
             Result  : value
+        };
+
+    };
+
+    public executeConstructTextArrayFromTemplateAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        // Get the input parameters
+
+        var pTemplate = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'Template');
+        if (!pTemplate) {
+            logger.error('Template parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var pArray = input.Params.find(x => x.Type === ParamType.Array);
+        if (!pArray) {
+            logger.error('Array parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var template = pTemplate.Value;
+        var array = pArray.Value;
+
+        if (!array || Array.isArray(array) === false) {
+            logger.error('Array not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var textArray = [];
+        for (var item of array) {
+            var objectParamTypes = item['ArrayObjectTypes'];
+            if (!objectParamTypes || objectParamTypes.length === 0) {
+                textArray.push(template);
+                continue;
+            }
+            var text = template;
+            objectParamTypes.forEach(element => {
+                var substr = element['Name'];
+                substr = substr ? '{{' + substr + '}}' : '';
+                var replacer = element['Value'];
+                if (replacer && replacer.length > 0) {
+                    text = text.replace(substr, replacer);
+                }
+            });
+            textArray.push(text);
+        }
+
+        var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
+        if (op) {
+            await this._almanac.addFact(op.Key, textArray);
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, textArray);
+
+        return {
+            Success : true,
+            Result  : textArray
+        };
+
+    };
+
+    public executeConstructTextFromTemplateAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        // Get the input parameters
+
+        var pTemplate = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'Template');
+        if (!pTemplate) {
+            logger.error('Template parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var template = pTemplate.Value;
+        var objectParams = input.Params.filter(x => x.Type === ParamType.Object);
+
+        var text = template;
+        for (var param of objectParams) {
+            var substr = param.Key;
+            substr = substr ? '{{' + substr + '}}' : '';
+            var replacer = param.Value;
+            if (replacer) {
+                text = text.replace(substr, replacer);
+            }
+        }
+
+        var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
+        if (op) {
+            await this._almanac.addFact(op.Key, text);
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, text);
+
+        return {
+            Success : true,
+            Result  : text
         };
 
     };

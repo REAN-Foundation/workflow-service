@@ -121,6 +121,8 @@ export enum ActionType {
     ArrayFilter                     = 'ArrayFilter',
     ArrayGetElement                 = 'ArrayGetElement',
     GetObjectParam                  = 'GetObjectParam',
+    ConstructTextArrayFromTemplate  = 'ConstructTextArrayFromTemplate',
+    ConstructTextFromTemplate       = 'ConstructTextFromTemplate',
     Exit                            = 'Exit',
     Continue                        = 'Continue',
 }
@@ -150,6 +152,8 @@ export const ActionTypeList: ActionType[] = [
     ActionType.ArrayFilter,
     ActionType.ArrayGetElement,
     ActionType.GetObjectParam,
+    ActionType.ConstructTextArrayFromTemplate,
+    ActionType.ConstructTextFromTemplate,
     ActionType.Exit,
     ActionType.Continue,
 ];

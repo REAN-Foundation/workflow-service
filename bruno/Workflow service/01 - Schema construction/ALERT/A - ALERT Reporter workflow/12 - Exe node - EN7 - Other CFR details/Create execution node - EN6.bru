@@ -45,17 +45,15 @@ body:json {
         }
       },
       {
-        "Type": "SendMultipleMessagesToOneUser",
-        "Name": "Send reporter ambulance numbers and locations",
-        "IsPathAction": true,
+        "Type": "ConstructTextArrayFromTemplate",
+        "Name": "Construct message array from responder details",
         "Input": {
           "Params": [
             {
-              "Name": "Reporter Phonenumber",
-              "Type": "Phonenumber",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:Reporter:Phonenumber"
+              "Type": "Text",
+              "Name": "Message Template",
+              "Key": "Template",
+              "Value": "Responder phonenumber - {{Phonenumber}}"
             },
             {
               "Name": "Responded CFR Details",
@@ -65,6 +63,11 @@ body:json {
               "Key": "CFR:Responders",
               "Value": null,
               "ArrayObjectTypes": [
+                {
+                  "Name": "MessageType",
+                  "Type": "Text",
+                  "Value": "Text"
+                },
                 {
                   "Name": "Name",
                   "Type": "String",
@@ -84,13 +87,48 @@ body:json {
                   "Name": "Address",
                   "Type": "String",
                   "Value": null
-                },
-                {
-                  "Name": "IsPrimaryContact",
-                  "Type": "Boolean",
-                  "Value": null
                 }
               ]
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "Messages containing other CFR phonenumbers",
+              "Type": "Array",
+              "Source": "Almanac",
+              "SubElementType": "Text",
+              "Key": "CFR:OtherCFR:Messages"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "SendMultipleMessagesToOneUser",
+        "Name": "Send reporter ambulance numbers and locations",
+        "IsPathAction": true,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phonenumber",
+              "Type": "Phonenumber",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phonenumber"
+            },
+            {
+              "Name": "Messages containing other CFR phonenumbers",
+              "Type": "Array",
+              "Source": "Almanac",
+              "SubElementType": "Text",
+              "Key": "CFR:OtherCFR:Messages"
+            },
+            {
+              "Name": "Message type",
+              "Type": "Text",
+              "Value": "Text",
+              "Key": "MessageType"
             }
           ]
         }

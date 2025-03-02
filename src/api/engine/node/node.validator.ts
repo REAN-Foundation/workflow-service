@@ -153,8 +153,8 @@ export class NodeValidator extends BaseValidator {
                 NumberOfTries       : joi.number().integer().required(),
                 TimerSeconds        : joi.number().integer().required(),
                 RawData             : joi.object().allow(null).optional(),
-                NextNodeIdOnSuccess : joi.string().uuid().optional(),
-                NextNodeIdOnTimeout : joi.string().uuid().optional(),
+                NextNodeIdOnSuccess : joi.string().allow(null).uuid().optional(),
+                NextNodeIdOnTimeout : joi.string().allow(null).uuid().optional(),
             });
             await node.validateAsync(request.body);
             return {

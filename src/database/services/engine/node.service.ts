@@ -215,7 +215,7 @@ export class NodeService extends BaseService {
 
     };
 
-    public createTimerNode = async (createModel: TimerNodeCreateModel) : Promise<NodeResponseDto> => {
+    public createTimerNode = async (createModel: ConditionalTimerNodeCreateModel) : Promise<NodeResponseDto> => {
 
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
@@ -243,16 +243,7 @@ export class NodeService extends BaseService {
             return null;
         }
 
-        var nodeActions: NodeActionResponseDto[] = [];
-        if (createModel.Actions && createModel.Actions?.length > 0) {
-            for await (const actionModel of createModel.Actions) {
-                var actionRecord = await this._commonUtilsService.createAction(actionModel, node);
-                var actionDto = NodeActionMapper.toResponseDto(actionRecord);
-                nodeActions.push(actionDto);
-            }
-        }
-
-        return NodeMapper.toResponseDto(record, nodeActions, null, null, null, null);
+        return NodeMapper.toResponseDto(record, null, null, null, null, null);
     };
 
     public getById = async (id: uuid): Promise<NodeResponseDto> => {

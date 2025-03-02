@@ -46,7 +46,7 @@ body:json {
         }
       },
       {
-        "Type": "StoreToAlmanacOtherInstance",
+        "Type": "StoreToAlmanac",
         "Name": "Store input data to almanac of the parent schema instance",
         "Description": "Store the CFR phone number in parent schema instance almanac",
         "Sequence": 2,
@@ -63,6 +63,14 @@ body:json {
               "Value": null,
               "Source": "Almanac",
               "Key": "ParentSchemaInstanceId"
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Destination": "ParentSchemaInstanceAlmanac",
+              "Key": "CFR:Responders"
             }
           ]
         }

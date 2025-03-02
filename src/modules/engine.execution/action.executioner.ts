@@ -604,7 +604,7 @@ export class ActionExecutioner {
         }
 
         const op = output && output.Params && output.Params.length > 0 ? output.Params[0] : null;
-        if (op && op.Key === 'ParentSchemaInstance') {
+        if (op && op.Destination === OutputDestinationType.ParentSchemaInstanceAlmanac) {
             const currentSchemaInstance = this._schemaInstance;
             const parentSchemaInstanceId = currentSchemaInstance.ParentSchemaInstanceId;
             if (!parentSchemaInstanceId) {
@@ -614,8 +614,16 @@ export class ActionExecutioner {
                     Result  : null
                 };
             }
+            const outputKey = op.Key;
+            if (!outputKey) {
+                logger.error('Output Key not found');
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
             const parentAlmanac = new Almanac(parentSchemaInstanceId);
-            await parentAlmanac.addFact(key, value);
+            await parentAlmanac.addFact(outputKey, value);
         }
         else {
             await this._almanac.addFact(key, value);

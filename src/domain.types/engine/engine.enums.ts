@@ -113,11 +113,8 @@ export enum ActionType {
     StoreToSqlDb                    = 'StoreToSqlDb',
     GetFromSqlDb                    = 'GetFromSqlDb',
     StoreToAlmanac                  = 'StoreToAlmanac',
-    StoreToAlmanacOtherInstance     = 'StoreToAlmanacOtherInstance',
     ExistsInAlmanac                 = 'ExistsInAlmanac',
-    ExistsInAlmanacOtherInstance    = 'ExistsInAlmanacOtherInstance',
     GetFromAlmanac                  = 'GetFromAlmanac',
-    GetFromAlmanacOtherInstance     = 'GetFromAlmanacOtherInstance',
     UpdateContextParams             = 'UpdateContextParams',
     GenerateRandomCode              = 'GenerateRandomCode',
     Exit                            = 'Exit',
@@ -141,11 +138,8 @@ export const ActionTypeList: ActionType[] = [
     ActionType.StoreToSqlDb,
     ActionType.GetFromSqlDb,
     ActionType.StoreToAlmanac,
-    ActionType.StoreToAlmanacOtherInstance,
     ActionType.ExistsInAlmanac,
-    ActionType.ExistsInAlmanacOtherInstance,
     ActionType.GetFromAlmanac,
-    ActionType.GetFromAlmanacOtherInstance,
     ActionType.UpdateContextParams,
     ActionType.GenerateRandomCode,
     ActionType.Exit,
@@ -360,10 +354,11 @@ export const InputSourceTypeList: InputSourceType[] = [
 ];
 
 export enum OutputDestinationType {
-    Database    = "Database",
-    Almanac     = "Almanac",
-    ApiEndpoint = "ApiEndpoint",
-    None        = "None",
+    Database                    = "Database",
+    Almanac                     = "Almanac",
+    ParentSchemaInstanceAlmanac = "ParentSchemaInstanceAlmanac",
+    ApiEndpoint                 = "ApiEndpoint",
+    None                        = "None",
 }
 
 export const OutputSourceTypeList: OutputDestinationType[] = [

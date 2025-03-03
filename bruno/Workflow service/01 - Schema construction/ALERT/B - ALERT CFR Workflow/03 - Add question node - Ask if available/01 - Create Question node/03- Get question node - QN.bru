@@ -1,11 +1,11 @@
 meta {
-  name: 01 - Create question node - QN
+  name: 03- Get question node - QN
   type: http
-  seq: 1
+  seq: 3
 }
 
-post {
-  url: {{BASE_URL}}/engine/nodes/question-node
+get {
+  url: {{BASE_URL}}/engine/nodes/{{CFR_QUESTION_1_ID}}
   body: json
   auth: none
 }
@@ -66,8 +66,7 @@ body:json {
 script:post-response {
   let status = res.getStatus();
   console.log(status)
-  if (status == 201) {
-    bru.setEnvVar("CFR_QUESTION_1_ID", res.body.Data.id);
+  if (status == 200) {
     bru.setEnvVar("CFR_QUESTION_1_ID_OPTION_1", res.body.Data.Question.Options[0].id);
     bru.setEnvVar("CFR_QUESTION_1_ID_OPTION_2", res.body.Data.Question.Options[1].id);
   }

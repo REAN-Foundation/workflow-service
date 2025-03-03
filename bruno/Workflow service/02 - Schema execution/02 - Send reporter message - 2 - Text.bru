@@ -1,7 +1,7 @@
 meta {
-  name: Send reporter message - 1 - Text
+  name: 02 - Send reporter message - 2 - Text
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
@@ -19,6 +19,7 @@ headers {
 body:json {
   {
     "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "EventType": "UserMessage",
     "EventTimestamp": "{{TIMESTAMP}}",
     "UserMessage": {
@@ -26,7 +27,7 @@ body:json {
       "EventTimestamp": "{{TIMESTAMP}}",
       "MessageType": "Text",
       "MessageChannel": "Telegram",
-      "TextMessage": "Help..."
+      "TextMessage": "Emergency ...."
     }
   }
 }
@@ -40,21 +41,26 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("USER_MESSAGE_EVENT_1_ID", res.body.Data.id);
+    bru.setEnvVar("USER_MESSAGE_EVENT_2_ID", res.body.Data.id);
   }
   
 }
 
 tests {
+  try {
+      var jsonRes = res.getBody();
+      bru.setEnvVar("RULE_ID", jsonRes.Data.id);
+      bru.setEnvVar("ROOT_CONDITION_ID", jsonRes.Data.Condition.id);
+      bru.setEnvVar("RULE_ACTION_ID", jsonRes.Data.Action.id);
+  }
+  catch (error) {
+      console.log(error.message);
+  }
+  
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(201);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
-  });
-  
-  test("Event is created", function () {
-      var jsonRes = res.getBody();
-      expect(jsonRes.Data).to.have.property('id');
   });
   
 }

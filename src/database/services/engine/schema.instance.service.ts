@@ -541,7 +541,9 @@ export class SchemaInstanceService extends BaseService {
         };
 
         if (filters.SchemaId) {
-            search.where['Schema'].id = filters.SchemaId;
+            search.where['Schema'] = {
+                id : filters.SchemaId
+            };
         }
         if (filters.TenantId) {
             search.where['TenantId'] = filters.TenantId;

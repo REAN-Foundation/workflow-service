@@ -29,7 +29,8 @@ export class UserMessageEventHandler {
         var tenantId = event.TenantId;
         var schema: SchemaResponseDto = null;
         if (!event.SchemaId) {
-            var schemas = await this._schemaService.getByTenantId(tenantId);
+            // If schema Id is not specified, then get the first top-level schema for the tenant
+            var schemas = await this._schemaService.getParentSchemasByTenantId(tenantId);
             if (schemas.length === 0) {
                 return false;
             }

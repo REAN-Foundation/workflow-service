@@ -228,6 +228,31 @@ export class SchemaService extends BaseService {
         }
     };
 
+    public getParentSchemasByTenantId = async (tenantId: uuid): Promise<SchemaResponseDto[]> => {
+        try {
+            var schemas = await this._schemaRepository.find({
+                where : {
+                    TenantId       : tenantId,
+                    ParentSchemaId : null
+                },
+                relations : {
+                    Nodes : true,
+                }
+            });
+            var dtos: SchemaResponseDto[] = [];
+            for (var schema of schemas) {
+                const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
+                var dto = SchemaMapper.toResponseDto(schema, rootNode);
+                dtos.push(dto);
+            }
+            return dtos;
+        }
+        catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public getByTenantCode = async (tenantCode: string): Promise<SchemaResponseDto[]> => {
         try {
             var schemas = await this._schemaRepository.find({

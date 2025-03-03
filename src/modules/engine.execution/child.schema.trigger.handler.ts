@@ -69,7 +69,7 @@ export default class ChildSchemaTriggerHandler {
                 logger.info(`Schema not set to execute immediately: ${schemaId}`);
                 return;
             }
-            logger.info(`Executing schema: ${schemaId}`);
+            logger.info(`Executing schema: ${schema.Name}`);
 
             const eventCreateModel: EventCreateModel = {
                 EventType        : EventType.TriggerChildWorkflow,

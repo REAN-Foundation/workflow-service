@@ -1,7 +1,7 @@
 meta {
-  name: 04 - Add trigger action - Location listening node
+  name: 05 - Add trigger action - Location listening node
   type: http
-  seq: 4
+  seq: 5
 }
 
 post {
@@ -21,7 +21,7 @@ body:json {
     "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
     "Type": "TriggerListeningNode",
     "Name": "Trigger location listener node",
-    "Sequence": 1,
+    "Sequence": 2,
     "Description": "This action triggers a location listener node, which starts listening to location-user message events",
     "Input": {
       "Params": [
@@ -45,18 +45,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Node is retrieved", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

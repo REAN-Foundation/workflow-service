@@ -1,7 +1,7 @@
 meta {
-  name: 03 - Add action - generate incident code
+  name: 04 - Add action - Incident code to context
   type: http
-  seq: 3
+  seq: 4
 }
 
 post {
@@ -18,53 +18,22 @@ headers {
 
 body:json {
   {
-    "Type": "GenerateRandomCode",
-    "Name": "Generate Incident code",
-    "Sequence": 0,
+    "Type": "UpdateContextParams",
+    "Name": "Update context params with the location data",
     "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+    "Sequence": 1,
     "Input": {
-      "Params": [
-        {
-          "Name": "Code name",
-          "Type": "Text",
-          "Value": "ContextParams:IncidenceCode",
-          "Key": "CodeName"
-        },
-        {
-          "Name": "Prefix",
-          "Type": "Text",
-          "Value": "EMRGNC",
-          "Key": "Prefix"
-        },
-        {
-          "Name": "Code Length",
-          "Type": "Integer",
-          "Value": "12",
-          "Key": "Length"
-        }
-      ]
-    },
-    "Output": {
       "Params": [
         {
           "Name": "Incidence Code",
           "Type": "Text",
           "Value": null,
-          "Destination": "Almanac",
+          "Source": "Almanac",
           "Key": "ContextParams:IncidenceCode"
         }
       ]
     }
   }
-}
-
-script:post-response {
-  let status = res.getStatus();
-  console.log(status)
-  if (status == 201) {
-    bru.setEnvVar("MAIN_EN1_ID", res.body.Data.id);
-  }
-
 }
 
 tests {
@@ -73,18 +42,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
-  test("Execution node is created", function () {
+  
+  test("Action is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

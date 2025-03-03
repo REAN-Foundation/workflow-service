@@ -146,6 +146,50 @@ export class DatabaseUtilsService {
         }
     };
 
+    public getActionInstaceById = async (actionInstanceId: uuid): Promise<NodeActionInstanceResponseDto> => {
+        try {
+            var actionInstance = await this._nodeActionInstanceRepository.findOne({
+                where : {
+                    id : actionInstanceId
+                }
+            });
+            if (!actionInstance) {
+                ErrorHandler.throwNotFoundError('ActionInstance not found');
+            }
+            var action = await this._actionRepository.findOne({
+                where : {
+                    id : actionInstance.ActionId
+                },
+                relations : {
+                    ParentNode : true
+                }
+            });
+            return NodeInstanceMapper.toNodeActionInstanceResponseDto(actionInstance, action);
+        }
+        catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public isActionInstanceExecuted = async (actionInstanceId: uuid): Promise<boolean> => {
+        try {
+            var actionInstance = await this._nodeActionInstanceRepository.findOne({
+                where : {
+                    id : actionInstanceId
+                }
+            });
+            if (!actionInstance) {
+                ErrorHandler.throwNotFoundError('ActionInstance not found');
+            }
+            return actionInstance.Executed;
+        }
+        catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public getOrCreateNodeActionInstances = async (nodeInstanceId: uuid, isPathAction = false)
         : Promise<NodeActionInstanceResponseDto[]> => {
         try {

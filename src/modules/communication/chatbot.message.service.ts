@@ -32,7 +32,17 @@ export class ChatbotMessageService {
             };
 
             const url = `${botApiUrl}/${tenantCode}/message/send`;
-            logger.info(url);
+
+            var msg = message.UserMessage?.TextMessage;
+            var location = message.UserMessage?.Location;
+            var question = message.UserMessage?.QuestionText;
+
+            logger.info(`Sending message through chatbot`);
+            logger.info(`Phone   : ${toPhone}`);
+            logger.info(`url     : ${url}`);
+            logger.info(`Message : ${msg}`);
+            logger.info(`Location: ${location}`);
+            logger.info(`Question: ${question}`);
 
             const response = await needle('post', url, message, options);
             if (response.statusCode !== 200) {

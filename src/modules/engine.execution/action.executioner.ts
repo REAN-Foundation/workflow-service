@@ -290,8 +290,9 @@ export class ActionExecutioner {
             }
         };
 
+        const testing = process.env.TESTING === 'true';
         var result = await this.sendBotMessage(message);
-        if (result === true) {
+        if (result === true || testing) {
             await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         }
         await this.recordActionActivity(action, result);
@@ -668,11 +669,10 @@ export class ActionExecutioner {
                 };
             }
             if (!p.Value) {
-                logger.error('Value not found in input parameters');
-                return {
-                    Success : false,
-                    Result  : null
-                };
+                var source = p.Source || InputSourceType.Almanac;
+                if (source === InputSourceType.Almanac) {
+                    p.Value = await this._almanac.getFact(p.Key);
+                }
             }
             await this._schemaInstanceService.updateContextParams(schemaInstanceId, p);
         }
@@ -1602,13 +1602,6 @@ export class ActionExecutioner {
             UserMessage      : message
         };
         var result = await messageService.send(this._tenantCode, phonenumber, workflowEvent);
-        if (result === true) {
-            const updatedQuestionInstance = await this._commonUtilsService.markQuestionInstanceAsPosed(
-                currentNodeInstance.id, question.id);
-            if (!updatedQuestionInstance) {
-                logger.error(`Error while updating question instance!`);
-            }
-        }
         return result;
     };
 

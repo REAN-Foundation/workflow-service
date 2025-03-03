@@ -3,7 +3,7 @@ import { Client } from '../../models/client/client.model';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { Source } from '../../../database/database.connector';
-import { FindManyOptions, Like, Repository } from 'typeorm';
+import { FindManyOptions, IsNull, Like, Repository } from 'typeorm';
 import { SchemaMapper } from '../../mappers/engine/schema.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
@@ -232,11 +232,8 @@ export class SchemaService extends BaseService {
         try {
             var schemas = await this._schemaRepository.find({
                 where : {
-                    TenantId       : tenantId,
-                    ParentSchemaId : null
-                },
-                relations : {
-                    Nodes : true,
+                    ParentSchemaId : IsNull(),
+                    TenantId       : tenantId
                 }
             });
             var dtos: SchemaResponseDto[] = [];

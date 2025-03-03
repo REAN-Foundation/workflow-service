@@ -429,12 +429,18 @@ export class SchemaInstanceService extends BaseService {
 
     public recordActivity = async (schemaInstanceId: uuid, type: WorkflowActivityType, payload: any, summary: any): Promise<void> => {
         try {
-            var activity = this._schemaInstanceActivityRepository.create({
+            const entity = {
                 Type             : type,
                 SchemaInstanceId : schemaInstanceId,
                 Payload          : payload,
                 Summary          : summary,
-            });
+            };
+
+            logger.info(`\n`);
+            logger.info(`Activity Type: ${type}`);
+            logger.info(`Summary: ${JSON.stringify(summary, null, 2)}`);
+
+            var activity = this._schemaInstanceActivityRepository.create(entity);
             await this._schemaInstanceActivityRepository.save(activity);
         } catch (error) {
             logger.error(error.message);

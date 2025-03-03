@@ -80,8 +80,8 @@ class DatabaseConnector {
         ],
         migrations  : [],
         subscribers : [],
-        //logger      : 'advanced-console', //Use console for the typeorm logging
-        // logger      : new DBLogger(),
+        // logger      : 'advanced-console', //Use console for the typeorm logging
+        logger      : null,
         logging     : false,
         poolSize    : Config.pool.max,
         cache       : true,

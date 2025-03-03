@@ -55,7 +55,7 @@ export class SchemaEngine {
 
     _conditionService: ConditionService = new ConditionService();
 
-    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
+    _dbUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     constructor(schema: SchemaResponseDto, schemaInstance: SchemaInstanceResponseDto, event: EventResponseDto) {
         this._schema = schema;
@@ -121,6 +121,9 @@ export class SchemaEngine {
 
     public async processCurrentNode(currentNodeInstance: NodeInstanceResponseDto) {
 
+        const currentNodeName = currentNodeInstance.Node.Name;
+        logger.info(`Current Node: ${currentNodeName}`);
+
         //If there are any listening nodes, handle them
         await this.handleListeningNodes();
 
@@ -151,7 +154,7 @@ export class SchemaEngine {
 
     private async handleListeningNodes() {
 
-        var listeningNodeInstances = await this._commonUtilsService.getActiveListeningNodeInstances(this._schemaInstance.id);
+        var listeningNodeInstances = await this._dbUtilsService.getActiveListeningNodeInstances(this._schemaInstance.id);
 
         for (var listeningNodeInstance of listeningNodeInstances) {
             var listeningNode = await this._nodeService.getById(listeningNodeInstance.Node.id);
@@ -181,7 +184,7 @@ export class SchemaEngine {
             }
             //Execute the actions
             var actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
-            var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(listeningNodeInstance.id);
+            var actionInstances = await this._dbUtilsService.getOrCreateNodeActionInstances(listeningNodeInstance.id);
             var results = new Map<string, NodeActionResult>();
             for (var actionInstance of actionInstances) {
                 if (actionInstance.Executed !== true) {
@@ -272,6 +275,10 @@ export class SchemaEngine {
                 }
 
                 // Add any other text parameters here
+                fact = await this._almanac.getFact(p.Key);
+                if (p.Value && !fact) {
+                    await this._almanac.addFact(p.Key, p.Value);
+                }
             }
 
             if (p.Type === ParamType.RandomCode) {
@@ -322,17 +329,20 @@ export class SchemaEngine {
 
         var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
         const questionId = currentNode.id; // Question node id is same as question id
-        const question: Question = await this._commonUtilsService.getQuestion(questionId);
+        const question: Question = await this._dbUtilsService.getQuestion(questionId);
         if (!question) {
             logger.error(`Question not found!`);
             return currentNodeInstance;
         }
 
-        var questionInstance: QuestionInstance = await this._commonUtilsService.getOrCreateQuestionInstance(currentNodeInstance.id, questionId);
+        var questionInstance: QuestionInstance = await this._dbUtilsService.getOrCreateQuestionInstance(
+            currentNodeInstance.id, questionId);
         if (!questionInstance) {
             logger.error(`Error creating question instance!`);
             return currentNodeInstance;
         }
+
+        logger.info(`Traversing Question Node: ${currentNode.Name}`);
 
         if (questionInstance.QuestionPosed === false) {
 
@@ -343,11 +353,14 @@ export class SchemaEngine {
             questionInstance.QuestionPosed = true;
             const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
             var result = await actionExecutioner.sendBotQuestion(currentNodeInstance, currentNode, question);
-            if (!result) {
-                logger.error(`Error while posing the question!`);
-                return currentNodeInstance;
+            const testing = process.env.TESTING === 'true';
+            if (result || testing) {
+                await this._dbUtilsService.markQuestionInstanceAsPosed(currentNodeInstance.id, questionId);
+                logger.info(`Question sent successfully!`);
+                logger.info(`Question Id  : ${question.id}`);
+                logger.info(`Question Text: ${question.QuestionText}`);
+                logger.info(`Options      : ${JSON.stringify(question.Options, null, 2)}`);
             }
-            await this._commonUtilsService.markQuestionInstanceAsPosed(currentNodeInstance.id, questionId);
             return currentNodeInstance;
         }
 
@@ -378,7 +391,7 @@ export class SchemaEngine {
             var chosenOptionSequence = response.SingleChoiceChosenOptionSequence;
             var options = response.QuestionOptions;
             if (!options || options.length === 0) {
-                options = await this._commonUtilsService.getQuestionOptions(questionId);
+                options = await this._dbUtilsService.getQuestionOptions(questionId);
             }
             if (options.length === 0) {
                 logger.error(`Question options not found!`);
@@ -404,7 +417,7 @@ export class SchemaEngine {
                 return currentNodeInstance;
             }
 
-            const paths = await this._commonUtilsService.getNodePaths(questionId);
+            const paths = await this._dbUtilsService.getNodePaths(questionId);
             if (!paths || paths.length === 0) {
                 logger.error(`Paths not found for Question Node ${currentNode.Name}`);
 
@@ -480,8 +493,8 @@ export class SchemaEngine {
         var yesAction = await this._actionService.getById(yesActionId);
         var noAction = await this._actionService.getById(noActionId);
 
-        var yesActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(yesAction.id, currentNodeInstance.id);
-        var noActionInstance = await this._commonUtilsService.getOrCreateNodeActionInstance(noAction.id, currentNodeInstance.id);
+        var yesActionInstance = await this._dbUtilsService.getOrCreateNodeActionInstance(yesAction.id, currentNodeInstance.id);
+        var noActionInstance = await this._dbUtilsService.getOrCreateNodeActionInstance(noAction.id, currentNodeInstance.id);
 
         var ruleId = currentNode.RuleId;
         var rule = await this._ruleService.getById(ruleId);
@@ -514,7 +527,7 @@ export class SchemaEngine {
         }
         else {
             result = await this.executeAction(actionToExecute, actionExecutioner);
-            logger.info(`Yes/No Node Action Result: ${JSON.stringify(result)}`);
+            logger.info(`Yes/No Node Action Result: ${JSON.stringify(result.Success)}`);
         }
         return currentNodeInstance;
     }
@@ -549,6 +562,8 @@ export class SchemaEngine {
                 return currentNodeInstance;
             }
 
+            logger.info(`Traversing Timer Node: ${currentNode.Name}`);
+
             await TimerNodeTriggerHandler.handle({
                 Node         : currentNode,
                 NodeInstance : currentNodeInstance,
@@ -580,15 +595,20 @@ export class SchemaEngine {
             return currentNodeInstance;
         }
 
+        logger.info(`Terminating workflow!`);
+
+        logger.info(`Terminating children schema instances!`);
         // Get children schema instances and terminate them
         var childrenSchemaInstances = await this._schemaInstanceService.getByParentSchemaInstanceId(currentSchemaInstanceId);
         if (childrenSchemaInstances.length > 0) {
             for await (var childSchemaInstance of childrenSchemaInstances) {
+                logger.info(`Terminating child schema instance: ${childSchemaInstance.id}`);
                 await this._schemaInstanceService.terminate(childSchemaInstance.id);
             }
         }
 
         // Set the schema instance status as terminated
+        logger.info(`Terminating schema instance: ${currentSchemaInstance.id}`);
         var currentSchemaInstanceId = currentSchemaInstance.id;
         await this._schemaInstanceService.terminate(currentSchemaInstanceId);
 
@@ -606,11 +626,11 @@ export class SchemaEngine {
 
         const includePathActions = false;
         const currentNodeId = currentNodeInstance.Node.id;
-        var actions = await this._commonUtilsService.getNodeActions(currentNodeId, includePathActions);
+        var actions = await this._dbUtilsService.getNodeActions(currentNodeId, includePathActions);
         if (actions.length === 0) {
             return true;
         }
-        var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(currentNodeInstance.id, includePathActions);
+        var actionInstances = await this._dbUtilsService.getOrCreateNodeActionInstances(currentNodeInstance.id, includePathActions);
         actionInstances = actionInstances.sort((a, b) => a.Sequence - b.Sequence);
 
         var results = new Map<string, NodeActionResult>();
@@ -619,11 +639,14 @@ export class SchemaEngine {
             if (actionInstance.Executed !== true) {
                 var result: NodeActionResult = await this.executeAction(actionInstance, actionExecutioner);
                 results.set(actionInstance.id, result);
+                var idx = currentNodeInstance.ActionInstances.findIndex(a => a.id === actionInstance.id);
+                if (idx !== -1) {
+                    currentNodeInstance.ActionInstances[idx].Executed = result.Success;
+                }
             }
         }
 
-        var keys = Array.from(results.keys());
-        var allExecuted = keys.every(k => results.get(k).Success === true);
+        var allExecuted = await this.allActionsExecuted(actionInstances);
         if (allExecuted) {
             await this._nodeInstanceService.setExecutionStatus(currentNodeInstance.id, ExecutionStatus.Executed);
         }
@@ -673,6 +696,16 @@ export class SchemaEngine {
         await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, currentNodeInstance.id);
         return { currentNode, currentNodeInstance };
     };
+
+    private async allActionsExecuted(actionInstances: NodeActionInstanceResponseDto[]) {
+        const executionResults: boolean[] = [];
+        for (var actionInstance of actionInstances) {
+            var exe = await this._dbUtilsService.isActionInstanceExecuted(actionInstance.id);
+            executionResults.push(exe);
+        }
+        var allExecuted = executionResults.every(k => k === true);
+        return allExecuted;
+    }
 
     private async delayedNodeExecution(nodeInstance: NodeInstanceResponseDto) {
         if (nodeInstance.Node.Type !== NodeType.DelayedActionNode) {

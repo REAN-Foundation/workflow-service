@@ -1,0 +1,15 @@
+meta {
+  name: Upload CFRs
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/{{TENANTID}}/upload-cfrs
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  file: @file(/C:/Users/91920/Documents/rean-admin-panel-reanfoundation/location-service/cfr_locations_pune.xlsx)
+}

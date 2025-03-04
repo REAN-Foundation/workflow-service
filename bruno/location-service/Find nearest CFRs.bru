@@ -1,0 +1,18 @@
+meta {
+  name: Find nearest CFRs
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/{{TENANTID}}/nearest-cfrs?latitude=18.8000&longitude=73.847&radiusInKm=2&itemsPerPage=5
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  latitude: 18.8000
+  longitude: 73.847
+  radiusInKm: 2
+  itemsPerPage: 5
+}

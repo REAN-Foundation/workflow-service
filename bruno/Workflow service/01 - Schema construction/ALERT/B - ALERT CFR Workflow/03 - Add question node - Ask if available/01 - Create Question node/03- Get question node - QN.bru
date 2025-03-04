@@ -75,7 +75,7 @@ script:post-response {
 
 tests {
   test("Request is successfull", function () {
-      expect(res.getStatus()).to.equal(201);
+      expect(res.getStatus()).to.equal(200);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });

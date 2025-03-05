@@ -54,7 +54,7 @@ body:json {
             {
               "Type": "RestApiParams",
               "Value": {
-                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/nearest-cfrs",
+                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/nearest-responders",
                 "Method": "GET",
                 "QueryParams": [
                   {
@@ -73,11 +73,11 @@ body:json {
                   },
                   {
                     "QueryParamKey": "radiusInKm",
-                    "QueryParamValue": 2
+                    "QueryParamValue": 10
                   },
                   {
                     "QueryParamKey": "itemsPerPage",
-                    "QueryParamValue": 5
+                    "QueryParamValue": 2
                   }
                 ],
                 "Headers": {

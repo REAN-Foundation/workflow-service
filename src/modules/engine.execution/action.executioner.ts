@@ -816,6 +816,9 @@ export class ActionExecutioner {
                             param.Value = v;
                         }
                     }
+                    else {
+                        param.Value = param.QueryParamValue;
+                    }
                     paramList.push(`${param.QueryParamKey}=${param.Value}`);
                 }
                 updatedUrl += paramList.join('&');
@@ -824,6 +827,13 @@ export class ActionExecutioner {
             var response = await needle(methodToUse, updatedUrl, options);
             if (response.statusCode === 200) {
                 responseBody = response.body;
+            }
+            else {
+                logger.error(`Error occurred while calling REST api!': ${response.body}`);
+                return {
+                    Success : false,
+                    Result  : null
+                };
             }
         }
         catch (error) {

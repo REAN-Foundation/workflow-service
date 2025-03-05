@@ -206,7 +206,7 @@ export default class TimerNodeTriggerHandler {
             }
 
             const schemaEngine = new SchemaEngine(schema, schemaInstance, null);
-            var result = await schemaEngine.setThisAsNextNodeInstance(
+            const result = await schemaEngine.setThisAsNextNodeInstance(
                 currentNode,
                 currentNodeInstance,
                 nextNodeId
@@ -220,6 +220,7 @@ export default class TimerNodeTriggerHandler {
         catch (error) {
             logger.error(`Error: ${error.message}`);
             logger.error(`Error: ${error.stack}`);
+            return null;
         }
     };
 

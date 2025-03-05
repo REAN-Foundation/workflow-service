@@ -31,11 +31,11 @@ body:json {
         "Input": {
           "Params": [
             {
-              "Name": "Reporter Phonenumber",
-              "Type": "Phonenumber",
+              "Name": "Reporter Phone",
+              "Type": "Phone",
               "Value": null,
               "Source": "Almanac",
-              "Key": "ContextParams:Reporter:Phonenumber"
+              "Key": "ContextParams:Reporter:Phone"
             },
             {
               "Name": "Thanks for the location",
@@ -83,7 +83,7 @@ body:json {
                 "Headers": {
                   "ContentType": "application/json"
                 },
-                "ResponseField": "Data",
+                "ResponseField": "Data:Items",
                 "ResponseType": "Array"
               }
             }
@@ -97,7 +97,7 @@ body:json {
               "Value": null,
               "Destination": "Almanac",
               "Key": "ContextParams:CFR:Phonenumbers",
-              "SubElementType": "Phonenumber"
+              "SubElementType": "Phone"
             }
           ]
         }
@@ -114,7 +114,7 @@ body:json {
               "Value": null,
               "Source": "Almanac",
               "Key": "ContextParams:CFR:Phonenumbers",
-              "SubElementType": "Phonenumber"
+              "SubElementType": "Phone"
             },
             {
               "Name": "Schema Id",
@@ -127,11 +127,11 @@ body:json {
         "Output": {
           "Params": [
             {
-              "Name": "CFR Phonenumber",
-              "Type": "Phonenumber",
+              "Name": "CFR Phone",
+              "Type": "Phone",
               "Value": null,
               "Destination": "Almanac",
-              "Key": "ContextParams:CFR:Phonenumber"
+              "Key": "ContextParams:CFR:Phone"
             }
           ]
         }

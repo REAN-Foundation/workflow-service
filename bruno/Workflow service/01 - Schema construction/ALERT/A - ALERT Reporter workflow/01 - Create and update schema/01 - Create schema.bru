@@ -27,11 +27,11 @@ body:json {
       "Name": "Schema instance context",
       "Params": [
         {
-          "Name": "Reporter Phonenumber",
-          "Type": "Phonenumber",
+          "Name": "Reporter Phone",
+          "Type": "Phone",
           "Description": "This is phone number of person reporting an emergency incident",
           "Value": null,
-          "Key": "ContextParams:Reporter:Phonenumber",
+          "Key": "ContextParams:Reporter:Phone",
           "Required": true
         },
         {
@@ -91,7 +91,7 @@ script:post-response {
     bru.setEnvVar("BASE_SCHEMA_ID", res.body.Data.id);
     bru.setEnvVar("MAIN_ROOT_NODE_ID", res.body.Data.RootNode.id);
   }
-  
+
 }
 
 tests {
@@ -99,7 +99,7 @@ tests {
       expect(res.getStatus()).to.equal(201);
       expect(res.body.Status).to.eql('success');
   });
-  
+
   test("Schema is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
@@ -108,11 +108,11 @@ tests {
       expect(jsonRes.Data).to.have.property('Description');
       expect(jsonRes.Data).to.have.property('RootNode');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

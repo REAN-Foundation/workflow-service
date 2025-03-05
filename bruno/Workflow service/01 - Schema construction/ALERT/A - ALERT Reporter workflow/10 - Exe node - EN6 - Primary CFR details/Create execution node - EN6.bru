@@ -44,8 +44,8 @@ body:json {
                   "Value": null
                 },
                 {
-                  "Name": "Phonenumber",
-                  "Type": "Phonenumber",
+                  "Name": "Phone",
+                  "Type": "Phone",
                   "Value": null
                 },
                 {
@@ -110,8 +110,8 @@ body:json {
                   "Value": null
                 },
                 {
-                  "Name": "Phonenumber",
-                  "Type": "Phonenumber",
+                  "Name": "Phone",
+                  "Type": "Phone",
                   "Value": null
                 },
                 {
@@ -165,8 +165,8 @@ body:json {
             {
               "Name": "Phone number key",
               "Type": "Text",
-              "Key": "Phonenumber",
-              "SubElementType": "Phonenumber"
+              "Key": "Phone",
+              "SubElementType": "Phone"
             }
           ]
         },
@@ -174,9 +174,9 @@ body:json {
           "Params": [
             {
               "Name": "Output to Almanac- Primary CFR phone number",
-              "Type": "Phonenumber",
+              "Type": "Phone",
               "Destination": "Almanac",
-              "Key": "CFR:PrimaryCFR:Phonenumber"
+              "Key": "CFR:PrimaryCFR:Phone"
             }
           ]
         }
@@ -188,21 +188,21 @@ body:json {
         "Input": {
           "Params": [
             {
-              "Name": "Reporter Phonenumber",
-              "Type": "Phonenumber",
+              "Name": "Reporter Phone",
+              "Type": "Phone",
               "Value": null,
               "Source": "Almanac",
-              "Key": "ContextParams:CFR:Phonenumber"
+              "Key": "ContextParams:CFR:Phone"
             },
             {
               "Name": "Primary CFR details message",
               "Type": "Text",
-              "Value": "Primary responder has been identified. The contact details - {{CFR:PrimaryCFR:Phonenumber}}."
+              "Value": "Primary responder has been identified. The contact details - {{CFR:PrimaryCFR:Phone}}."
             },
             {
               "Name": "Primary CFR phone number",
               "Type": "Placeholder",
-              "Key": "CFR:PrimaryCFR:Phonenumber",
+              "Key": "CFR:PrimaryCFR:Phone",
               "Source": "Almanac"
             }
           ]
@@ -218,7 +218,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("MAIN_EN6_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -227,18 +227,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

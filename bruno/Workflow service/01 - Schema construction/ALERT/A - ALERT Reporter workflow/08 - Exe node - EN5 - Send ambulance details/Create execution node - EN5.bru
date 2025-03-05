@@ -31,11 +31,11 @@ body:json {
         "Input": {
           "Params": [
             {
-              "Name": "Reporter Phonenumber",
-              "Type": "Phonenumber",
+              "Name": "Reporter Phone",
+              "Type": "Phone",
               "Value": null,
               "Source": "Almanac",
-              "Key": "ContextParams:Reporter:Phonenumber"
+              "Key": "ContextParams:Reporter:Phone"
             },
             {
               "Name": "Send message - No responders available.",
@@ -101,13 +101,13 @@ body:json {
         "Input": {
           "Params": [
             {
-              "Name": "Reporter Phonenumber",
-              "Type": "Phonenumber",
+              "Name": "Reporter Phone",
+              "Type": "Phone",
               "Value": null,
               "Source": "Almanac",
-              "Key": "ContextParams:Reporter:Phonenumber"
+              "Key": "ContextParams:Reporter:Phone"
             },
-            {                     
+            {
               "Name": "Details for nearby ambulances",
               "Type": "Array",
               "Value": null,
@@ -122,8 +122,8 @@ body:json {
                   "Value": null
                 },
                 {
-                  "Name": "Phonenumber",
-                  "Type": "Phonenumber",
+                  "Name": "Phone",
+                  "Type": "Phone",
                   "Value": null
                 },
                 {
@@ -156,7 +156,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("MAIN_EN5_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -165,18 +165,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

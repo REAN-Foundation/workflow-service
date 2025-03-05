@@ -112,7 +112,7 @@ export class UserMessageEventHandler {
     private matchContexts(schemaContextParams: ContextParams, event: EventResponseDto): Params[] {
         var matchingParams: Params[] = [];
         for (var p of schemaContextParams.Params) {
-            if (p.Type === ParamType.Phonenumber) {
+            if (p.Type === ParamType.Phone) {
                 if (p.Value !== event.UserMessage.Phone) {
                     if (p.Required) {
                         return [];

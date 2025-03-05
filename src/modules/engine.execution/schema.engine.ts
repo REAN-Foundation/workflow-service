@@ -216,7 +216,7 @@ export class SchemaEngine {
         const params = schemaInstance.ContextParams.Params;
         for await (var p of params) {
 
-            if (p.Type === ParamType.Phonenumber) {
+            if (p.Type === ParamType.Phone) {
                 fact = await this._almanac.getFact(p.Key);
                 if (p.Value) {
                     if (!fact) {
@@ -816,7 +816,7 @@ export class SchemaEngine {
 
         var schemaInstanceContextParams = schema.ContextParams;
         for (var p of schemaInstanceContextParams.Params) {
-            if (p.Type === ParamType.Phonenumber) {
+            if (p.Type === ParamType.Phone) {
                 p.Value = event.UserMessage.Phone;
             }
             if (p.Type === ParamType.Location) {

@@ -168,9 +168,9 @@ export class ActionExecutioner {
         const input = action.Input as ActionInputParams;
 
         // Get the input parameters
-        var phonenumber = await this.getActionParamValue(input, ParamType.Phonenumber, 'Phonenumber');
+        var phonenumber = await this.getActionParamValue(input, ParamType.Phone, 'Phone');
         if (!phonenumber) {
-            logger.error(`Phonenumber not found in almanac`);
+            logger.error(`Phone not found in almanac`);
             return {
                 Success : false,
                 Result  : null
@@ -330,7 +330,7 @@ export class ActionExecutioner {
 
         var phonenumebrs: string[] = [];
         if (values && values.length > 0) {
-            phonenumebrs = values.map(x => x["Phonenumber"]);
+            phonenumebrs = values.map(x => x["Phone"]);
         }
 
         var textMessage = await this.getActionParamValue(input, ParamType.Text, 'Message');
@@ -431,9 +431,9 @@ export class ActionExecutioner {
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
         const input = action.Input as ActionInputParams;
-        var phonenumber = await this.getActionParamValue(input, ParamType.Phonenumber, 'Phonenumber');
+        var phonenumber = await this.getActionParamValue(input, ParamType.Phone, 'Phone');
         if (!phonenumber) {
-            logger.error('Phonenumber not found in input parameters');
+            logger.error('Phone not found in input parameters');
             return {
                 Success : false,
                 Result  : null
@@ -846,7 +846,17 @@ export class ActionExecutioner {
 
         var data = null;
         if (responseBody && responseField && responseField.length > 0) {
-            data = responseBody[responseField];
+            var tokens = responseField.split(':');
+            if (tokens.length > 1) {
+                var obj = responseBody;
+                for (var i = 0; i < tokens.length; i++) {
+                    obj = obj[tokens[i]];
+                }
+                data = obj;
+            }
+            else {
+                data = responseBody[responseField];
+            }
         }
         if (data === null) {
             return {
@@ -1557,9 +1567,9 @@ export class ActionExecutioner {
         const input = currentNode.Input as ActionInputParams;
 
         // Get the input parameters
-        var phonenumber = await this.getActionParamValue(input, ParamType.Phonenumber, 'Phonenumber');
+        var phonenumber = await this.getActionParamValue(input, ParamType.Phone, 'Phone');
         if (!phonenumber) {
-            logger.error(`Phonenumber not found in almanac`);
+            logger.error(`Phone not found in almanac`);
             return false;
         }
 

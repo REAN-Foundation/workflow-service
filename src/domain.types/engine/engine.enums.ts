@@ -12,7 +12,7 @@ export enum WorkflowActivityType {
 }
 
 export enum ParamType {
-    Phonenumber      = "Phonenumber",
+    Phone      = "Phone",
     Email            = "Email",
     Location         = "Location",
     MessageChannel   = "MessageChannel",

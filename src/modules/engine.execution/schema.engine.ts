@@ -144,7 +144,8 @@ export class SchemaEngine {
             currentNodeInstance = newNodeInstance;
             if (currentNodeInstance.Node.Type === NodeType.ExecutionNode ||
                 currentNodeInstance.Node.Type === NodeType.YesNoNode ||
-                currentNodeInstance.Node.Type === NodeType.QuestionNode
+                currentNodeInstance.Node.Type === NodeType.QuestionNode ||
+                currentNodeInstance.Node.Type === NodeType.ConditionalTimerNode
             ) {
                 return await this.processCurrentNode(currentNodeInstance);
             }

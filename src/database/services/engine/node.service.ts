@@ -233,7 +233,6 @@ export class NodeService extends BaseService {
             RawData       : createModel.RawData,
             Input         : createModel.Input,
             NumberOfTries : createModel.NumberOfTries,
-            TimerSeconds  : createModel.TimerSeconds,
             YesActionId   : null,
             NoActionId    : null,
         });

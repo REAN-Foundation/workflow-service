@@ -55,7 +55,7 @@ export interface NodeInstanceResponseDto {
         }[];
     ActionInstances            ?: NodeActionInstanceResponseDto[];
     TimerNumberOfTriesCompleted : number;
-    DelayTimerFinished          : boolean;
+    TimerFinished          : boolean;
     CreatedAt                   : Date;
     UpdatedAt                   : Date;
 }

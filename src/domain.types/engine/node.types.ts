@@ -38,13 +38,8 @@ export interface QuestionNodeCreateModel extends NodeCreateModel {
 
 export interface ConditionalTimerNodeCreateModel extends NodeCreateModel {
     NumberOfTries: number;
-    TimerSeconds: number;
     NextNodeIdOnSuccess: uuid | null;
     NextNodeIdOnTimeout: uuid | null;
-}
-
-export interface DelayedActionNodeCreateModel extends NodeCreateModel {
-    TimerSeconds: number;
 }
 
 export interface NodeUpdateModel {
@@ -90,7 +85,6 @@ export interface NodeResponseDto {
     NoAction    ?: NodeActionResponseDto;
     DelaySeconds?: number;
     NumberOfTries: number;
-    TimerSeconds?: number;
     RuleId?      : uuid;
     RawData?     : any;
     Input?       : ActionInputParams;

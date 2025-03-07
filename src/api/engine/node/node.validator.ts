@@ -149,9 +149,8 @@ export class NodeValidator extends BaseValidator {
                 ParentNodeId        : joi.string().uuid().required(),
                 SchemaId            : joi.string().uuid().required(),
                 RuleId              : joi.string().uuid().optional(),
-                DelaySeconds        : joi.number().integer().optional(),
+                DelaySeconds        : joi.number().integer().required(),
                 NumberOfTries       : joi.number().integer().required(),
-                TimerSeconds        : joi.number().integer().required(),
                 RawData             : joi.object().allow(null).optional(),
                 NextNodeIdOnSuccess : joi.string().allow(null).uuid().optional(),
                 NextNodeIdOnTimeout : joi.string().allow(null).uuid().optional(),
@@ -169,7 +168,6 @@ export class NodeValidator extends BaseValidator {
                 RawData             : request.body.RawData ?? null,
                 Input               : request.body.Input ?? null,
                 NumberOfTries       : request.body.NumberOfTries,
-                TimerSeconds        : request.body.TimerSeconds,
                 NextNodeIdOnSuccess : request.body.NextNodeIdOnSuccess ?? null,
                 NextNodeIdOnTimeout : request.body.NextNodeIdOnTimeout ?? null,
             };

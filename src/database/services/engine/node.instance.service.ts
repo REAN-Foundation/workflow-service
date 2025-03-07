@@ -51,13 +51,11 @@ export class NodeInstanceService extends BaseService {
         var nodeInstanceDto = await this.getByNodeIdAndSchemaInstance(node.id, schemaInstance.id);
         if (!nodeInstanceDto) {
             var nodeInstance = await this._nodeInstanceRepository.create({
-                Node                        : node,
-                SchemaInstance              : schemaInstance,
-                ExecutionStatus             : createModel.ExecutionStatus,
-                Type                        : node.Type,
-                Input                       : createModel.Input,
-                TimerNumberOfTriesCompleted : 0,
-                DelayTimerFinished          : false,
+                Node            : node,
+                SchemaInstance  : schemaInstance,
+                ExecutionStatus : createModel.ExecutionStatus,
+                Type            : node.Type,
+                Input           : createModel.Input,
             });
             var record = await this._nodeInstanceRepository.save(nodeInstance);
             var actionInstances = await this._commonUtilsService.getOrCreateNodeActionInstances(record.id);
@@ -88,13 +86,11 @@ export class NodeInstanceService extends BaseService {
         var nodeInstanceDto = await this.getByNodeIdAndSchemaInstance(node.id, schemaInstance.id);
         if (!nodeInstanceDto) {
             var nodeInstance = await this._nodeInstanceRepository.create({
-                Node                        : node,
-                SchemaInstance              : schemaInstance,
-                ExecutionStatus             : ExecutionStatus.Pending,
-                Type                        : node.Type,
-                Input                       : node.Input,
-                TimerNumberOfTriesCompleted : 0,
-                DelayTimerFinished          : false,
+                Node            : node,
+                SchemaInstance  : schemaInstance,
+                ExecutionStatus : ExecutionStatus.Pending,
+                Type            : node.Type,
+                Input           : node.Input,
             });
             var record = await this._nodeInstanceRepository.save(nodeInstance);
             return await this.getById(record.id);
@@ -223,6 +219,24 @@ export class NodeInstanceService extends BaseService {
         }
     };
 
+    public getExecutionStatus = async (nodeInstanceId: uuid): Promise<ExecutionStatus> => {
+        try {
+            var record = await this._nodeInstanceRepository.findOne({
+                where : {
+                    id : nodeInstanceId
+                }
+            });
+            if (!record) {
+                ErrorHandler.throwNotFoundError(`NodeInstance with ID ${nodeInstanceId} not found`);
+            }
+            return record.ExecutionStatus;
+        }
+        catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public updateTimerTries = async (nodeInstanceId: uuid, tries: number): Promise<boolean> => {
         try {
             var record = await this._nodeInstanceRepository.findOne({
@@ -246,7 +260,7 @@ export class NodeInstanceService extends BaseService {
         }
     };
 
-    markDelayTimerFinished = async (nodeInstanceId: uuid): Promise<boolean> => {
+    setTimerFinished = async (nodeInstanceId: uuid): Promise<boolean> => {
         try {
             var record = await this._nodeInstanceRepository.findOne({
                 where : {
@@ -256,7 +270,7 @@ export class NodeInstanceService extends BaseService {
             if (!record) {
                 ErrorHandler.throwNotFoundError(`NodeInstance with ID ${nodeInstanceId} not found.`);
             }
-            record.DelayTimerFinished = true;
+            record.TimerFinished = true;
             await this._nodeInstanceRepository.save(record);
             return true;
         }

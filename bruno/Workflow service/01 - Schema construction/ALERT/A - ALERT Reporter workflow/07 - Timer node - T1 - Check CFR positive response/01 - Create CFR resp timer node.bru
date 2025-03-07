@@ -24,7 +24,7 @@ body:json {
     "ParentNodeId": "{{MAIN_EN2_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "NumberOfTries": 1,
-    "TimerSeconds": 180,
+    "DelaySeconds": 180,
     "NextNodeIdOnSuccess": null,
     "NextNodeIdOnTimeout": null
   }
@@ -36,7 +36,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("MAIN_TN1_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -45,16 +45,16 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Schema is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
   });
-  
+
 }
 
 docs {
   User login with username/phone/email and password.
-  
+
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

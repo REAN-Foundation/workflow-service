@@ -87,6 +87,9 @@ export default class TimerNodeTriggerHandler {
 
             const timeIntervalMiliSeconds = Math.abs(node.TimerSeconds) * 1000;
             setTimeout(async () => {
+                logger.info(`Starting timer: ${node.TimerSeconds} seconds`);
+                const now = new Date();
+                logger.info(`Current time: ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`);
                 await this.executeTimerNode(nodeInstance.id);
             }, timeIntervalMiliSeconds);
 

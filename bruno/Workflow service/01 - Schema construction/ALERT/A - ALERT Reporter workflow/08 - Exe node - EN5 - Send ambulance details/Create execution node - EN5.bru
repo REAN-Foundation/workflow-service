@@ -47,14 +47,14 @@ body:json {
       },
       {
         "Type": "RestApiCall",
-        "Name": "Make REST API call to get nearest CFRs",
+        "Name": "REST API call for nearest ambulances",
         "Sequence": 1,
         "Input": {
           "Params": [
             {
               "Type": "RestApiParams",
               "Value": {
-                "Url": "http://localhost:3000/api/ambulance-contacts",
+                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/nearest-ambulances",
                 "Method": "GET",
                 "QueryParams": [
                   {
@@ -70,6 +70,14 @@ body:json {
                     "Source": "Almanac",
                     "SourceKey": "ContextParams:Location",
                     "SourceValueKey": "Latitude"
+                  },
+                  {
+                    "QueryParamKey": "radiusInKm",
+                    "QueryParamValue": 10
+                  },
+                  {
+                    "QueryParamKey": "itemsPerPage",
+                    "QueryParamValue": 2
                   }
                 ],
                 "Headers": {
@@ -156,7 +164,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("MAIN_EN5_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -165,18 +173,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

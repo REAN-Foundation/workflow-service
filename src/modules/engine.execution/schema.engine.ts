@@ -567,11 +567,6 @@ export class SchemaEngine {
         if (executionStatus !== ExecutionStatus.Executed) {
 
             var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
-            if (!currentNode?.NextNodeId) {
-                logger.error(`Next node not found for Node ${currentNode.Name}`);
-                return currentNodeInstance;
-            }
-
             logger.info(`Traversing Timer Node: ${currentNode.Name}`);
 
             await TimerNodeTriggerHandler.handle({

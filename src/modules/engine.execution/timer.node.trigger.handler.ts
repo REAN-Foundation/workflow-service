@@ -158,16 +158,16 @@ export default class TimerNodeTriggerHandler {
 
                 logger.info(`Condition not met for Timer node: ${timerNode.id}`);
 
-                const totalTries = timerNode.NumberOfTries + 1;
-                const completedTries = timerNodeInstance.TimerNumberOfTriesCompleted;
-                if (completedTries >= totalTries) {
+                const allowedTries = timerNode.NumberOfTries;
+                const completedTries = timerNodeInstance.TimerNumberOfTriesCompleted + 1;
+                if (completedTries >= allowedTries) {
                     logger.info(`Timer node tries exhausted: ${timerNode.Name}`);
                     logger.info(`Setting next node on timer timeout`);
                     await nodeInstanceService.setExecutionStatus(timerNodeInstance.id, ExecutionStatus.Executed);
                     return await this.setNextNode(
                         schema, schemaInstance, timerNode, timerNode.NextNodeIdOnTimeout);
                 }
-                await nodeInstanceService.updateTimerTries(timerNodeInstance.id, totalTries);
+                await nodeInstanceService.updateTimerTries(timerNodeInstance.id, allowedTries);
                 const timeIntervalMiliSeconds = Math.abs(timerNode.DelaySeconds) * 1000;
                 setTimeout(async () => {
                     await this.executeTimerNode(timerNodeInstance.id);

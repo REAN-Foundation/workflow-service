@@ -430,141 +430,152 @@ export class ActionExecutioner {
     public executeSendMultipleMessagesToOneUserAction = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
-        const input = action.Input as ActionInputParams;
-        var phonenumber = await this.getActionParamValue(input, ParamType.Phone, 'Phone');
-        if (!phonenumber) {
-            logger.error('Phone not found in input parameters');
-            return {
-                Success : false,
-                Result  : null
-            };
-        }
-
-        var pMessageType = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'MessageType');
-        var messageType = pMessageType ? pMessageType.Value : UserMessageType.Text;
-        messageType = messageType ? messageType : UserMessageType.Text;
-
-        // Get the input parameters
-        const p = input.Params.find(x => x.Type === ParamType.Array);
-        if (!p) {
-            logger.error('Input parameters not found');
-            return {
-                Success : false,
-                Result  : null
-            };
-        }
-        var arrayValues = null;
-        if (!p.Value) {
-            const source = p.Source || InputSourceType.Almanac;
-            if (source === InputSourceType.Almanac) {
-                arrayValues = await this._almanac.getFact(p.Key);
+        try {
+            const input = action.Input as ActionInputParams;
+            var phonenumber = await this.getActionParamValue(input, ParamType.Phone, 'Phone');
+            if (!phonenumber) {
+                logger.error('Phone not found in input parameters');
+                return {
+                    Success : false,
+                    Result  : null
+                };
             }
-        }
-        else {
-            arrayValues = p.Value;
-        }
 
-        if (Array.isArray(arrayValues) === false || !arrayValues || arrayValues?.length === 0) {
-            logger.error('Array values not found in input parameters');
-            return {
-                Success : false,
-                Result  : null
-            };
-        }
+            var pMessageType = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'MessageType');
+            var messageType = pMessageType ? pMessageType.Value : UserMessageType.Text;
+            messageType = messageType ? messageType : UserMessageType.Text;
 
-        var failedMessageDeliveries = [];
+            // Get the input parameters
+            const p = input.Params.find(x => x.Type === ParamType.Array);
+            if (!p) {
+                logger.error('Input parameters not found');
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
+            var arrayValues = null;
+            if (!p.Value) {
+                const source = p.Source || InputSourceType.Almanac;
+                if (source === InputSourceType.Almanac) {
+                    arrayValues = await this._almanac.getFact(p.Key);
+                }
+            }
+            else {
+                arrayValues = p.Value;
+            }
 
-        for await (var arrayItem of arrayValues) {
+            if (Array.isArray(arrayValues) === false || !arrayValues || arrayValues?.length === 0) {
+                logger.error('Array values not found in input parameters');
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
 
-            var textMessage = messageType === UserMessageType.Text ? arrayItem.find(x => x.Key === 'Message') : null;
+            var failedMessageDeliveries = [];
 
-            var textMessage = messageType === UserMessageType.Text ? arrayItem : null;
-            var location = messageType === UserMessageType.Location ? arrayItem : null;
-            if (location) {
-                if (!location.Latitude || !location.Longitude) {
+            logger.info(`ArrayValues : ${JSON.stringify(arrayValues)}`);
+
+            for await (var arrayItem of arrayValues) {
+
+                var textMessage = messageType === UserMessageType.Text ? arrayItem.find(x => x.Key === 'Message') : null;
+
+                var textMessage = messageType === UserMessageType.Text ? arrayItem : null;
+                var location = messageType === UserMessageType.Location ? arrayItem : null;
+                if (location) {
+                    if (!location.Latitude || !location.Longitude) {
+                        continue;
+                    }
+                }
+                var questionId = messageType === UserMessageType.Question ? arrayItem : null;
+                if (!textMessage && !location && !questionId) {
                     continue;
                 }
-            }
-            var questionId = messageType === UserMessageType.Question ? arrayItem : null;
-            if (!textMessage && !location && !questionId) {
-                continue;
-            }
 
-            var questionNode: NodeResponseDto | null = null;
-            if (questionId) {
-                questionNode = await this._commonUtilsService.getQuestionNode(questionId);
-                if (!questionNode) {
-                    continue;
+                var questionNode: NodeResponseDto | null = null;
+                if (questionId) {
+                    questionNode = await this._commonUtilsService.getQuestionNode(questionId);
+                    if (!questionNode) {
+                        continue;
+                    }
+                }
+
+                const placeholders: { Key: string, Value: string }[] = [];
+                var messagePlaceholders = input.Params.filter(x => x.Type === ParamType.Placeholder);
+                messagePlaceholders.forEach(async (placeholder) => {
+                    var placeholderKey = placeholder.Key;
+                    var placeholderValue = placeholder.Value;
+                    if (placeholderKey === 'Timestamp') {
+                        placeholderValue = new Date().toISOString();
+                    }
+
+                    placeholders.push({ Key: placeholderKey, Value: placeholderValue });
+                });
+
+                const payload = this._event?.Payload;
+                const channelType = await this.getMessageChannel(input, payload);
+
+                const message: WorkflowMessage = {
+                    MessageType     : UserMessageType.Text,
+                    EventTimestamp  : new Date(),
+                    MessageChannel  : channelType,
+                    TextMessage     : textMessage ?? null,
+                    Location        : location ?? null,
+                    QuestionText    : questionNode ? questionNode.Question.QuestionText : null,
+                    QuestionOptions : questionNode ? questionNode.Question.Options : null,
+                    Placeholders    : placeholders,
+                    Payload         : {
+                        MessageType               : UserMessageType.Text,
+                        ProcessingEventId         : this._event?.id,
+                        ChannelType               : channelType,
+                        ChannelMessageId          : null,
+                        PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
+                        MessageTemplateId         : null,
+                        PreviousMessageTemplateId : payload ? payload.MessageTemplateId : null,
+                        BotMessageId              : null,
+                        PreviousBotMessageId      : payload ? payload.BotMessageId : null,
+                        SchemaId                  : this._schema.id,
+                        SchemaInstanceId          : this._schemaInstance.id,
+                        SchemaInstanceCode        : this._schemaInstance.Code,
+                        SchemaName                : this._schema.Name,
+                        NodeInstanceId            : action.NodeInstanceId,
+                        NodeId                    : action.NodeId,
+                        ActionId                  : action.id,
+                        Metadata                  : payload ? payload.Metadata : null,
+                    }
+                };
+
+                message.Phone = phonenumber;
+                var result = await this.sendBotMessage(message);
+                if (!result) {
+                    failedMessageDeliveries.push(phonenumber);
                 }
             }
 
-            const placeholders: { Key: string, Value: string }[] = [];
-            var messagePlaceholders = input.Params.filter(x => x.Type === ParamType.Placeholder);
-            messagePlaceholders.forEach(async (placeholder) => {
-                var placeholderKey = placeholder.Key;
-                var placeholderValue = placeholder.Value;
-                if (placeholderKey === 'Timestamp') {
-                    placeholderValue = new Date().toISOString();
-                }
+            await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+            await this.recordActionActivity(action, failedMessageDeliveries);
 
-                placeholders.push({ Key: placeholderKey, Value: placeholderValue });
-            });
+            if (failedMessageDeliveries.length > 0) {
+                logger.error(`Failed to deliver messages to the following phone numbers: ${failedMessageDeliveries.join(',')}`);
+                return {
+                    Success : false,
+                    Result  : failedMessageDeliveries
+                };
+            }
 
-            const payload = this._event?.Payload;
-            const channelType = await this.getMessageChannel(input, payload);
-
-            const message: WorkflowMessage = {
-                MessageType     : UserMessageType.Text,
-                EventTimestamp  : new Date(),
-                MessageChannel  : channelType,
-                TextMessage     : textMessage ?? null,
-                Location        : location ?? null,
-                QuestionText    : questionNode ? questionNode.Question.QuestionText : null,
-                QuestionOptions : questionNode ? questionNode.Question.Options : null,
-                Placeholders    : placeholders,
-                Payload         : {
-                    MessageType               : UserMessageType.Text,
-                    ProcessingEventId         : this._event?.id,
-                    ChannelType               : channelType,
-                    ChannelMessageId          : null,
-                    PreviousChannelMessageId  : payload ? payload.ChannelMessageId : null,
-                    MessageTemplateId         : null,
-                    PreviousMessageTemplateId : payload ? payload.MessageTemplateId : null,
-                    BotMessageId              : null,
-                    PreviousBotMessageId      : payload ? payload.BotMessageId : null,
-                    SchemaId                  : this._schema.id,
-                    SchemaInstanceId          : this._schemaInstance.id,
-                    SchemaInstanceCode        : this._schemaInstance.Code,
-                    SchemaName                : this._schema.Name,
-                    NodeInstanceId            : action.NodeInstanceId,
-                    NodeId                    : action.NodeId,
-                    ActionId                  : action.id,
-                    Metadata                  : payload ? payload.Metadata : null,
-                }
+            return {
+                Success : true,
+                Result  : true
             };
-
-            message.Phone = phonenumber;
-            var result = await this.sendBotMessage(message);
-            if (!result) {
-                failedMessageDeliveries.push(phonenumber);
-            }
         }
-
-        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
-        await this.recordActionActivity(action, failedMessageDeliveries);
-
-        if (failedMessageDeliveries.length > 0) {
-            logger.error(`Failed to deliver messages to the following phone numbers: ${failedMessageDeliveries.join(',')}`);
+        catch (error) {
+            logger.error(`Error occurred while sending messages: ${error.message}`);
             return {
                 Success : false,
-                Result  : failedMessageDeliveries
+                Result  : error.message
             };
         }
-
-        return {
-            Success : true,
-            Result  : true
-        };
 
     };
 
@@ -1453,6 +1464,16 @@ export class ActionExecutioner {
 
         var template = pTemplate.Value;
         var array = pArray.Value;
+        if (!array) {
+            var source = pArray.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                array = await this._almanac.getFact(pArray.Key);
+                if (array) {
+                    pArray.Value = array;
+                }
+            }
+        }
+        array = pArray.Value;
 
         if (!array || Array.isArray(array) === false) {
             logger.error('Array not found in input parameters');
@@ -1462,19 +1483,20 @@ export class ActionExecutioner {
             };
         }
 
+        const objectParamTypes = pArray.ArrayObjectTypes || [];
+
         var textArray = [];
         for (var item of array) {
-            var objectParamTypes = item['ArrayObjectTypes'];
             if (!objectParamTypes || objectParamTypes.length === 0) {
                 textArray.push(template);
                 continue;
             }
             var text = template;
             objectParamTypes.forEach(element => {
-                var substr = element['Name'];
-                substr = substr ? '{{' + substr + '}}' : '';
-                var replacer = element['Value'];
-                if (replacer && replacer.length > 0) {
+                var key = element['Name'];
+                var substr = key ? '{{' + key + '}}' : '';
+                var replacer = item[key] || '';
+                if (replacer && replacer.length > 0 && key.length > 0) {
                     text = text.replace(substr, replacer);
                 }
             });

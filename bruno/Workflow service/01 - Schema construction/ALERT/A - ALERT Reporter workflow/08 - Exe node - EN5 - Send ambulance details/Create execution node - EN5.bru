@@ -18,7 +18,7 @@ headers {
 
 body:json {
   {
-    "Name": "EN4-Get nearby ambulances",
+    "Name": "EN5-Get nearby ambulances",
     "Description": "This execution node holds actions to send message to reporter telling no responder responded. Also get nearby ambulance information.",
     "Type": "ExecutionNode",
     "ParentNodeId": "{{MAIN_TN1_ID}}",
@@ -103,27 +103,24 @@ body:json {
         }
       },
       {
-        "Type": "SendMultipleMessagesToOneUser",
-        "Name": "Send reporter ambulance numbers and locations",
+        "Type": "ConstructTextArrayFromTemplate",
+        "Name": "Construct Ambulance details messages from ambulance list",
         "Sequence": 2,
-        "IsPathAction": true,
         "Input": {
           "Params": [
             {
-              "Name": "Reporter Phone",
-              "Type": "Phone",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:Reporter:Phone"
+              "Type": "Text",
+              "Name": "Message Template",
+              "Key": "Template",
+              "Value": "Ambulance: phone number - {{Phone}}, Address: {{Address}}"
             },
             {
               "Name": "Details for nearby ambulances",
               "Type": "Array",
               "Value": null,
-              "Destination": "Almanac",
+              "Source": "Almanac",
               "Key": "ContextParams:Ambulances",
               "SubElementType": "Object",
-              "Value": null,
               "ArrayObjectTypes": [
                 {
                   "Name": "Name",
@@ -144,13 +141,44 @@ body:json {
                   "Name": "Address",
                   "Type": "String",
                   "Value": null
-                },
-                {
-                  "Name": "IsPrimaryContact",
-                  "Type": "Boolean",
-                  "Value": null
                 }
               ]
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "Details for nearby ambulances",
+              "Type": "Array",
+              "Value": null,
+              "Destination": "Almanac",
+              "SubElementType": "Text",
+              "Key": "NearbyAmbulances:Details:Messages"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "SendMultipleMessagesToOneUser",
+        "Name": "Send reporter ambulance numbers and locations",
+        "Sequence": 3,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "Messages with details for nearby ambulances",
+              "Type": "Array",
+              "Destination": "Almanac",
+              "Key": "NearbyAmbulances:Details:Messages",
+              "SubElementType": "Text",
+              "Value": null
             }
           ]
         }

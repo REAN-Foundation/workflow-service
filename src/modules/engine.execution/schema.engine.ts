@@ -805,6 +805,9 @@ export class SchemaEngine {
         else if (actionInstance.ActionType === ActionType.ConstructTextArrayFromTemplate) {
             result = await actionExecutioner.executeConstructTextArrayFromTemplateAction(actionInstance);
         }
+        else if (actionInstance.ActionType === ActionType.ConstructObject) {
+            result = await actionExecutioner.executeConstructObjectAction(actionInstance);
+        }
         else if (actionInstance.ActionType === ActionType.Continue) {
             return {
                 Success : true,

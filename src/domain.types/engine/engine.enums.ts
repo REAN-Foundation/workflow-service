@@ -126,6 +126,7 @@ export enum ActionType {
     GetObjectParam                  = 'GetObjectParam',
     ConstructTextArrayFromTemplate  = 'ConstructTextArrayFromTemplate',
     ConstructTextFromTemplate       = 'ConstructTextFromTemplate',
+    ConstructObject                 = 'ConstructObject',
     Exit                            = 'Exit',
     Continue                        = 'Continue',
 }
@@ -157,6 +158,7 @@ export const ActionTypeList: ActionType[] = [
     ActionType.GetObjectParam,
     ActionType.ConstructTextArrayFromTemplate,
     ActionType.ConstructTextFromTemplate,
+    ActionType.ConstructObject,
     ActionType.Exit,
     ActionType.Continue,
 ];

@@ -1468,17 +1468,73 @@ export class ActionExecutioner {
 
         // Get the input parameters
 
-        var pKey = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'Key');
-        if (!pKey) {
-            logger.error('Key parameter not found');
+        var opObjectParam = output.Params.find(x => x.Type === ParamType.Object);
+        if (!opObjectParam) {
+            logger.error('Object parameter not found');
             return {
                 Success : false,
                 Result  : null
             };
         }
 
-        var key = pKey.Value;
-        var objectParams = input.Params.filter(x => x.Type === ParamType.Object);
+        const objParamTypes = opObjectParam.ObjectParamTypes || [];
+        if (objParamTypes.length === 0) {
+            logger.error('Object param types not found. Cannot create empty objects.');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var obj = {};
+
+        for (var param of objParamTypes) {
+            if (!param.Type && !param.Name) {
+                logger.error('Object param type or name not found');
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
+            var value = null;
+            const p = input.Params.find(x => x.Type === param.Type || x.Key === param.Name);
+            if (!p) {
+                continue;
+            }
+            if (p.Value) {
+                value = p.Value;
+            }
+            else {
+                const source = p.Source || InputSourceType.Almanac;
+                if (source === InputSourceType.Almanac) {
+                    value = await this._almanac.getFact(p.Key);
+                }
+            }
+            obj[param.Name] = value;
+        }
+
+        //Check if the object is empty
+        var isEmpty = obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+        if (isEmpty) {
+            logger.error('Object is empty');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
+        if (op) {
+            await this._almanac.addFact(op.Key, obj);
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, obj);
+
+        return {
+            Success : true,
+            Result  : obj
+        };
 
     };
 
@@ -1525,7 +1581,7 @@ export class ActionExecutioner {
             };
         }
 
-        const objectParamTypes = pArray.ArrayObjectTypes || [];
+        const objectParamTypes = pArray.ObjectParamTypes || [];
         const noObjectParams = !objectParamTypes || objectParamTypes.length === 0;
 
         var textArray = [];

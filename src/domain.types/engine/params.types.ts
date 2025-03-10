@@ -7,7 +7,7 @@ export interface Params {
     Name                : string;
     Type                : ParamType;
     SubType            ?: ParamType;
-    ArrayObjectTypes   ?: {
+    ObjectParamTypes   ?: {
         Name : string;
         Type : ParamType;
         Value: any;

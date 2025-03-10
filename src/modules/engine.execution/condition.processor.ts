@@ -2,7 +2,14 @@ import { ConditionOperand } from "../../domain.types/engine/rule.types";
 import { ConditionService } from "../../database/services/engine/condition.service";
 import { RuleService } from "../../database/services/engine/rule.service";
 import { uuid } from "../../domain.types/miscellaneous/system.types";
-import { CompositionOperatorType, InputSourceType, LogicalOperatorType, OperandDataType, OperatorType, QuestionResponseType, UserMessageType } from "../../domain.types/engine/engine.enums";
+import {
+    CompositionOperatorType,
+    InputSourceType,
+    LogicalOperatorType,
+    OperandDataType,
+    OperatorType,
+    QuestionResponseType,
+    UserMessageType } from "../../domain.types/engine/engine.enums";
 import { ConditionResponseDto } from "../../domain.types/engine/condition.types";
 import { Almanac } from "./almanac";
 import { EventResponseDto } from "../../domain.types/engine/event.types";
@@ -21,7 +28,7 @@ export class ConditionProcessor {
 
     _event: EventResponseDto | null = null;
 
-    constructor(almanac: Almanac, event: EventResponseDto) {
+    constructor(almanac: Almanac, event?: EventResponseDto) {
         this._almanac = almanac;
         this._event = event;
     }
@@ -84,7 +91,7 @@ export class ConditionProcessor {
         if (!first.Value) {
             first.Value = await this.fetchOperandValue(first, first.Value);
         }
-        if (!second.Value) {
+        if (second && !second.Value) {
             second.Value = await this.fetchOperandValue(second, second.Value);
         }
         if (third && !third.Value) {
@@ -104,6 +111,14 @@ export class ConditionProcessor {
             }
             case LogicalOperatorType.In: {
                 resolved = this.in(first, second);
+                break;
+            }
+            case LogicalOperatorType.IsEmpty: {
+                resolved = this.isEmpty(first);
+                break;
+            }
+            case LogicalOperatorType.IsNotEmpty: {
+                resolved = !this.isEmpty(first);
                 break;
             }
             case LogicalOperatorType.IsFalse: {
@@ -154,15 +169,15 @@ export class ConditionProcessor {
         }
         else if (operand.Source === InputSourceType.UserEvent) {
 
-            var message = this._event.UserMessage;
+            var message = this._event?.UserMessage;
             const isQuestionResponse = message &&
                 message.QuestionResponse &&
-                message.MessageType === UserMessageType.Question;
+                message.MessageType === UserMessageType.QuestionResponse;
 
             if (isQuestionResponse) {
-                const isSingleChoice = message.QuestionResponse.ResponseType === QuestionResponseType.SingleChoiceSelection;
+                const isSingleChoice = message.QuestionResponse.QuestionResponseType === QuestionResponseType.SingleChoiceSelection;
                 if (isSingleChoice) {
-                    value = message.QuestionResponse.SingleChoiceChosenOption;
+                    value = message.QuestionResponse.SingleChoiceChosenOptionSequence;
                 }
                 else {
                     value = message.QuestionResponse.ResponseContent;
@@ -238,6 +253,16 @@ export class ConditionProcessor {
     private in(first: ConditionOperand, second: ConditionOperand): boolean {
         const secondArray: any[] = second.Value as any[];
         return secondArray.includes(first);
+    }
+
+    private isEmpty(first: ConditionOperand): boolean {
+        if (first.DataType === OperandDataType.Array) {
+            if (first.Value === null || first.Value === undefined) {
+                return true;
+            }
+            return (first.Value as any[]).length === 0;
+        }
+        return first.Value === null || first.Value === undefined || first.Value === '';
     }
 
     private isFalse(first: ConditionOperand): boolean {

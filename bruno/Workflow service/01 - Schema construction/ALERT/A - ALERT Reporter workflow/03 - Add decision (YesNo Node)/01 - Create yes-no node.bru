@@ -1,0 +1,86 @@
+meta {
+  name: 01 - Create yes-no node
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/yes-no-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Decision (Yes/No) node for location check",
+    "Description": "This decision (Yes/No) node basically checks whether location of the emergency has been stored in the Almanac or not. If it is stored, it triggers 'Yes' action which is to proceed ahead to the next node (Continue-action), else send user message prompting for location. Please note that, current node status in schema instance is not changed if the 'No' is fired.",
+    "Type": "YesNoNode",
+    "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "NoAction": {
+      "Type": "SendMessage",
+      "Name": "Send message - Prompt for location",
+      "IsPathAction": true,
+      "Input": {
+        "Params": [
+          {
+            "Name": "Reporter Phone",
+            "Type": "Phone",
+            "Value": null,
+            "Source": "Almanac",
+            "Key": "ContextParams:Reporter:Phone"
+          },
+          {
+            "Name": "Location Prompt Message",
+            "Type": "Text",
+            "Value": "Please send location of the emergency"
+          }
+        ]
+      }
+    },
+    "YesAction": {
+      "Type": "Continue",
+      "Name": "Continue to next node.",
+      "IsPathAction": true,
+      "Description": "This will set the next node as current node.",
+      "Input": null
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_YNN1_ID", res.body.Data.id);
+  }
+
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Question node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+
+}
+
+docs {
+  User login with username/phone/email and password.
+
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

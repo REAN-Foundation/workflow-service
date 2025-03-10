@@ -52,6 +52,8 @@ export class SchemaInstanceMapper {
             ContextParams             : instance.ContextParams,
             ExecutionStarted          : instance.ExecutionStarted,
             ExecutionStartedTimestamp : instance.ExecutionStartedTimestamp,
+            Terminated                : instance.Terminated,
+            TerminatedTimestamp       : instance.TerminatedTimestamp,
             CreatedAt                 : instance.CreatedAt,
             UpdatedAt                 : instance.UpdatedAt,
         };

@@ -11,7 +11,7 @@
     {
         "Role": "Moderator",
         "FirstName": "Content",
-        "LastName": "Moderator",
+        "LastName": "ContentModerator",
         "CountryCode": "+91",
         "Phone": "1111111111",
         "UserName": "moderator",

@@ -25,10 +25,10 @@ export class SchemaInstanceActivity {
     SchemaInstanceId: uuid;
 
     @Column({ type: 'json', nullable: true })
-    Payload: any;
+    Summary: any;
 
     @Column({ type: 'json', nullable: true })
-    Summary: any;
+    Payload: any;
 
     @CreateDateColumn()
     CreatedAt : Date;

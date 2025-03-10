@@ -5,7 +5,8 @@ import {
     NodeUpdateModel,
     NodeSearchFilters,
     QuestionNodeCreateModel,
-    YesNoNodeCreateModel
+    YesNoNodeCreateModel,
+    ConditionalTimerNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
@@ -138,6 +139,43 @@ export class NodeValidator extends BaseValidator {
         }
     };
 
+    public validateCreateTimerNodeRequest = async (request: express.Request)
+    : Promise<ConditionalTimerNodeCreateModel> => {
+        try {
+            const node = joi.object({
+                Type                : joi.string().valid(...Object.values(NodeType)).required(),
+                Name                : joi.string().max(64).required(),
+                Description         : joi.string().max(512).optional(),
+                ParentNodeId        : joi.string().uuid().required(),
+                SchemaId            : joi.string().uuid().required(),
+                RuleId              : joi.string().uuid().optional(),
+                DelaySeconds        : joi.number().integer().required(),
+                NumberOfTries       : joi.number().integer().required(),
+                RawData             : joi.object().allow(null).optional(),
+                NextNodeIdOnSuccess : joi.string().allow(null).uuid().optional(),
+                NextNodeIdOnTimeout : joi.string().allow(null).uuid().optional(),
+            });
+            await node.validateAsync(request.body);
+            return {
+                Type                : request.body.Type,
+                Name                : request.body.Name,
+                Description         : request.body.Description ?? null,
+                ParentNodeId        : request.body.ParentNodeId,
+                SchemaId            : request.body.SchemaId,
+                Actions             : request.body.Actions ?? null,
+                DelaySeconds        : request.body.DelaySeconds ?? null,
+                RuleId              : request.body.RuleId ?? null,
+                RawData             : request.body.RawData ?? null,
+                Input               : request.body.Input ?? null,
+                NumberOfTries       : request.body.NumberOfTries,
+                NextNodeIdOnSuccess : request.body.NextNodeIdOnSuccess ?? null,
+                NextNodeIdOnTimeout : request.body.NextNodeIdOnTimeout ?? null,
+            };
+        } catch (error) {
+            ErrorHandler.handleValidationError(error);
+        }
+    };
+
     public validateCreateQuestionNodeRequest = async (request: express.Request)
     : Promise<QuestionNodeCreateModel> => {
         try {
@@ -168,6 +206,18 @@ export class NodeValidator extends BaseValidator {
                         Value : joi.any().required(),
                     })).optional(),
                 })).optional(),
+                Input : joi.object({
+                    Params : joi.array().items(joi.object({
+                        Name        : joi.string().max(128).required(),
+                        Description : joi.string().max(512).optional(),
+                        ActionType  : joi.string().valid(...Object.values(ActionType)).optional(),
+                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
+                        Value       : joi.any().allow(null).required(),
+                        Source      : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                        Key         : joi.string().max(256).optional(),
+                        Required    : joi.boolean().optional(),
+                    })).required(),
+                }).optional(),
                 RuleId       : joi.string().uuid().optional(),
                 DelaySeconds : joi.number().integer().optional(),
                 RawData      : joi.object().allow(null).optional(),
@@ -186,6 +236,30 @@ export class NodeValidator extends BaseValidator {
                 DelaySeconds : request.body.ExecutionDelaySeconds ?? null,
                 RuleId       : request.body.ExecutionRuleId ?? null,
                 RawData      : request.body.RawData ?? null,
+                Input        : request.body.Input ?? null,
+            };
+        } catch (error) {
+            ErrorHandler.handleValidationError(error);
+        }
+    };
+
+    public validateCreateTerminatorNodeRequest = async (request: express.Request)
+    : Promise<NodeCreateModel> => {
+        try {
+            const node = joi.object({
+                Type         : joi.string().valid(...Object.values(NodeType)).required(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
+                ParentNodeId : joi.string().allow(null).uuid().required(),
+                SchemaId     : joi.string().uuid().required(),
+            });
+            await node.validateAsync(request.body);
+            return {
+                Type         : request.body.Type,
+                Name         : request.body.Name,
+                Description  : request.body.Description ?? null,
+                ParentNodeId : request.body.ParentNodeId,
+                SchemaId     : request.body.SchemaId,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

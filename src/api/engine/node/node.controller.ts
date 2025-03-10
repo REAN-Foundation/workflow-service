@@ -3,7 +3,14 @@ import { ResponseHandler } from '../../../common/handlers/response.handler';
 import { NodeValidator } from './node.validator';
 import { NodeService } from '../../../database/services/engine/node.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { YesNoNodeCreateModel, NodeCreateModel, NodeSearchFilters, NodeUpdateModel, QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
+import {
+    YesNoNodeCreateModel,
+    NodeCreateModel,
+    NodeSearchFilters,
+    NodeUpdateModel,
+    QuestionNodeCreateModel,
+    ConditionalTimerNodeCreateModel
+} from '../../../domain.types/engine/node.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 
@@ -82,6 +89,56 @@ export class NodeController {
         }
     };
 
+    createConditionalTimerNode = async (request: express.Request, response: express.Response) => {
+        try {
+            var model: ConditionalTimerNodeCreateModel = await this._validator.validateCreateTimerNodeRequest(request);
+            model.Type = NodeType.ConditionalTimerNode;
+
+            const record = await this._service.createConditionalTimerNode(model);
+            if (record === null) {
+                ErrorHandler.throwInternalServerError('Unable to add node!');
+            }
+            const message = 'Node added successfully!';
+            return ResponseHandler.success(request, response, message, 201, record);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    createDelayedActionNode = async (request: express.Request, response: express.Response) => {
+        try {
+            var model: NodeCreateModel = await this._validator.validateCreateRequest(request);
+            model.Type = NodeType.DelayedActionNode;
+
+            //Please note that the delayed action node is just an execution node with some time delay
+            const record = await this._service.create(model);
+            if (record === null) {
+                ErrorHandler.throwInternalServerError('Unable to add node!');
+            }
+            const message = 'Node added successfully!';
+            return ResponseHandler.success(request, response, message, 201, record);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    createTerminatorNode = async (request: express.Request, response: express.Response) => {
+        try {
+            var model: NodeCreateModel = await this._validator.validateCreateTerminatorNodeRequest(request);
+            model.Type = NodeType.TerminatorNode;
+
+            const record = await this._service.create(model);
+            if (record === null) {
+                ErrorHandler.throwInternalServerError('Unable to add node!');
+            }
+            const message = 'Node added successfully!';
+            return ResponseHandler.success(request, response, message, 201, record);
+        }
+        catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
     getById = async (request: express.Request, response: express.Response) => {
         try {
             var id: uuid = await this._validator.requestParamAsUUID(request, 'id');
@@ -135,6 +192,32 @@ export class NodeController {
             const message = 'Next node set successfully!';
             ResponseHandler.success(request, response, message, 200, updatedRecord);
         } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    setNextNodeOnTimerSuccess = async (request: express.Request, response: express.Response) => {
+        try {
+            const id = await this._validator.requestParamAsUUID(request, 'id');
+            const nextNodeId = await this._validator.requestParamAsUUID(request, 'nextNodeId');
+            const updatedRecord = await this._service.setNextNodeOnTimerSuccess(id, nextNodeId);
+            const message = 'Next node set successfully!';
+            ResponseHandler.success(request, response, message, 200, updatedRecord);
+        }
+        catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    setNextNodeOnTimerTimeout = async (request: express.Request, response: express.Response) => {
+        try {
+            const id = await this._validator.requestParamAsUUID(request, 'id');
+            const nextNodeId = await this._validator.requestParamAsUUID(request, 'nextNodeId');
+            const updatedRecord = await this._service.setNextNodeOnTimerTimeout(id, nextNodeId);
+            const message = 'Next node set successfully!';
+            ResponseHandler.success(request, response, message, 200, updatedRecord);
+        }
+        catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
     };

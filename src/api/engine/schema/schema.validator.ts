@@ -13,6 +13,7 @@ export class SchemaValidator extends BaseValidator {
         try {
             const schema = joi.object({
                 TenantId           : joi.string().uuid().required(),
+                TenantCode         : joi.string().required(),
                 Name               : joi.string().max(64).required(),
                 Type               : joi.string().valid(...Object.values(SchemaType)).required(),
                 Description        : joi.string().max(512).optional(),
@@ -21,11 +22,14 @@ export class SchemaValidator extends BaseValidator {
                 ContextParams      : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
-                        Name        : joi.string().max(128).required(),
-                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
-                        Description : joi.string().max(512).optional(),
-                        Value       : joi.any().allow(null).optional(),
-                        Key         : joi.string().max(256).optional(),
+                        Name                : joi.string().max(128).required(),
+                        Type                : joi.string().valid(...Object.values(ParamType)).required(),
+                        Description         : joi.string().max(512).optional(),
+                        Value               : joi.any().allow(null).optional(),
+                        Key                 : joi.string().max(256).optional(),
+                        Required            : joi.boolean().optional(),
+                        ComparisonThreshold : joi.number().allow(null).optional(),
+                        ComparisonUnit      : joi.string().allow(null).optional(),
                     })).required()
                 }).optional(),
                 RootNode : joi.object({
@@ -59,6 +63,7 @@ export class SchemaValidator extends BaseValidator {
 
             return {
                 TenantId           : request.body.TenantId,
+                TenantCode         : request.body.TenantCode,
                 ParentSchemaId     : request.body.ParentSchemaId ?? null,
                 Name               : request.body.Name,
                 Description        : request.body.Description ?? null,
@@ -84,10 +89,13 @@ export class SchemaValidator extends BaseValidator {
                 ContextParams      : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
-                        Name        : joi.string().max(128).required(),
-                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
-                        Description : joi.string().max(512).optional(),
-                        Value       : joi.any().required(),
+                        Name                : joi.string().max(128).required(),
+                        Type                : joi.string().valid(...Object.values(ParamType)).required(),
+                        Description         : joi.string().max(512).optional(),
+                        Value               : joi.any().required(),
+                        Required            : joi.boolean().optional(),
+                        ComparisonThreshold : joi.number().allow(null).optional(),
+                        ComparisonUnit      : joi.string().allow(null).optional(),
                     })).required()
                 }).optional(),
             });

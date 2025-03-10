@@ -1,0 +1,50 @@
+meta {
+  name: 04 - Get reporter schema instance id
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BASE_URL}}/engine/schema-instances/search?schemaId={{MAIN_SCHEMA_ID}}
+  body: json
+  auth: none
+}
+
+params:query {
+  schemaId: {{MAIN_SCHEMA_ID}}
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+      bru.setEnvVar("REPORTER_SCHEMA_INSTANCE_ID", res.body.Data.Items[0].id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody(); 
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

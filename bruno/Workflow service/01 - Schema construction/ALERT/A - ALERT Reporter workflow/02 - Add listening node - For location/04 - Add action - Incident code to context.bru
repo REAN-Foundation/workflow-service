@@ -1,0 +1,59 @@
+meta {
+  name: 04 - Add action - Incident code to context
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/engine/node-actions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Type": "UpdateContextParams",
+    "Name": "Update context params with the location data",
+    "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+    "Sequence": 1,
+    "Input": {
+      "Params": [
+        {
+          "Name": "Incidence Code",
+          "Type": "Text",
+          "Value": null,
+          "Source": "Almanac",
+          "Key": "ContextParams:IncidenceCode"
+        }
+      ]
+    }
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Action is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

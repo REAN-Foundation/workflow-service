@@ -4,7 +4,6 @@ import { ResponseHandler } from '../../../common/handlers/response.handler';
 import { FileResourceService } from '../../../database/services/general/file.resource.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { ApiError, ErrorHandler } from '../../../common/handlers/error.handler';
-import BaseValidator from '../../base.validator';
 import * as mime from 'mime-types';
 import { FileResourceCreateModel } from '../../../domain.types/general/file.resource.domain.types';
 import { FileUtils } from '../../../common/utilities/file.utils';
@@ -16,6 +15,7 @@ import { Helper } from '../../../common/helper';
 import { DownloadDisposition } from '../../../domain.types/general/file.resource/file.resource.types';
 import { FileResourceValidator } from './file.resource.validator';
 import { Injector } from '../../../startup/injector';
+import { logger } from '../../../logger/logger';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -65,7 +65,7 @@ export class FileResourceController {
             var record = await this._service.create(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to create file resource!', 400);
-            }            
+            }
 
             const message = 'File resource uploaded successfully!';
             ResponseHandler.success(request, response, message, 201, record);
@@ -73,7 +73,7 @@ export class FileResourceController {
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
-    }
+    };
 
     download = async (request: express.Request, response: express.Response): Promise < void > => {
         try {
@@ -109,7 +109,7 @@ export class FileResourceController {
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
-    }
+    };
 
     getById = async (request: express.Request, response: express.Response): Promise <void> => {
         try {
@@ -123,7 +123,7 @@ export class FileResourceController {
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
-    }
+    };
 
     delete = async (request: express.Request, response: express.Response): Promise < void > => {
         try {
@@ -171,7 +171,7 @@ export class FileResourceController {
                 await AuthHandler.verifyAccess(request);
             }
 
-            console.log(`Download request for Resource Id:: ${metadata.ResourceId}
+            logger.info(`Download request for Resource Id:: ${metadata.ResourceId}
                 and Version:: ${metadata.Version}`);
             const localDestination = await this._service.DownloadByVersion(
                 metadata.ResourceId,
@@ -203,7 +203,7 @@ export class FileResourceController {
 
         var filestream = fs.createReadStream(localDestination);
         filestream.pipe(response);
-    };
+    }
 
     private setDownloadResponseHeaders(
         response: express.Response,

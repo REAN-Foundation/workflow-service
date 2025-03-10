@@ -13,11 +13,11 @@ import { NodeResponseDto } from "./node.types";
 //////////////////////////////////////////////////////////////
 
 export interface NodeInstanceCreateModel {
-    Type            : NodeType;
-    Input           : ActionInputParams;
-    NodeId          : uuid;
-    SchemaInstanceId: uuid;
-    ExecutionStatus : ExecutionStatus;
+    Type              : NodeType;
+    Input             : ActionInputParams;
+    NodeId            : uuid;
+    SchemaInstanceId  : uuid;
+    ExecutionStatus   : ExecutionStatus;
 }
 
 export interface NodeInstanceUpdateModel {
@@ -53,9 +53,11 @@ export interface NodeInstanceResponseDto {
                 Name: string;
             };
         }[];
-    ActionInstances?: NodeActionInstanceResponseDto[];
-    CreatedAt       : Date;
-    UpdatedAt       : Date;
+    ActionInstances            ?: NodeActionInstanceResponseDto[];
+    TimerNumberOfTriesCompleted : number;
+    TimerFinished          : boolean;
+    CreatedAt                   : Date;
+    UpdatedAt                   : Date;
 }
 
 export interface NodeInstanceSearchFilters extends BaseSearchFilters {

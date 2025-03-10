@@ -14,7 +14,7 @@ import {
     NodeActionSearchFilters,
     NodeActionSearchResults,
     NodeActionUpdateModel } from '../../../domain.types/engine/node.action.types';
-import { CommonUtilsService } from './common.utils.service';
+import { DatabaseUtilsService } from './database.utils.service';
 import { NodeActionMapper } from '../../../database/mappers/engine/node.action.mapper';
 
 ///////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ export class NodeActionService extends BaseService {
 
     _ruleRepository: Repository<Rule> = Source.getRepository(Rule);
 
-    _commonUtils: CommonUtilsService = new CommonUtilsService();
+    _commonUtils: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
 
@@ -43,7 +43,7 @@ export class NodeActionService extends BaseService {
 
     public getById = async (id: uuid): Promise<NodeActionResponseDto> => {
         try {
-            var node = await this._actionRepository.findOne({
+            var action = await this._actionRepository.findOne({
                 where : {
                     id : id
                 },
@@ -51,7 +51,7 @@ export class NodeActionService extends BaseService {
                     ParentNode : true,
                 }
             });
-            return NodeActionMapper.toResponseDto(node);
+            return NodeActionMapper.toResponseDto(action);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

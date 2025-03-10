@@ -1,0 +1,80 @@
+meta {
+  name: Create execution node - EN4
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN4-Send responder availability message",
+    "Description": "This execution node holds actions to send message to reporter telling no responder responded. Also get nearby ambulance information.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{MAIN_TN1_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message to reporter - Responders positive response",
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "Send message - Responders positively responded.",
+              "Type": "Text",
+              "Value": "Some responders have positively responded. The details will be shared shortly."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_EN4_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

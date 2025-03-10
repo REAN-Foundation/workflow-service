@@ -1,0 +1,80 @@
+meta {
+  name: Create execution node - EN9
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN4-Send message to reporter assuring help",
+    "Description": "This execution node holds actions to send message to reporter reassuring that help is on the way and reponsers have been notified.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{MAIN_EN7_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - Thanks for your prompt action",
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "Thanks to the reporter",
+              "Type": "Text",
+              "Value": "Thanks for your prompt action!"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_EN9_ID", res.body.Data.id);
+  }
+
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+
+}
+
+docs {
+  User login with username/phone/email and password.
+
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

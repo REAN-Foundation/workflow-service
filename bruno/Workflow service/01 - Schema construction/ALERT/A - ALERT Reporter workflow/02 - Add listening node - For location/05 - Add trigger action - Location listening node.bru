@@ -1,0 +1,62 @@
+meta {
+  name: 05 - Add trigger action - Location listening node
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/engine/node-actions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+    "Type": "TriggerListeningNode",
+    "Name": "Trigger location listener node",
+    "Sequence": 2,
+    "Description": "This action triggers a location listener node, which starts listening to location-user message events",
+    "Input": {
+      "Params": [
+        {
+          "Name": "Listening Node to trigger",
+          "Description": "Node Id of the listening node which should be triggered",
+          "ActionType": "TriggerListeningNode",
+          "Type": "NodeId",
+          "Value": "{{MAIN_LN1_ID}}",
+          "Key": "LocationListeningNode",
+          "Required": true
+        }
+      ]
+    }
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Node is retrieved", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

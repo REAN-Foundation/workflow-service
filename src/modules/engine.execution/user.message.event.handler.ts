@@ -29,7 +29,8 @@ export class UserMessageEventHandler {
         var tenantId = event.TenantId;
         var schema: SchemaResponseDto = null;
         if (!event.SchemaId) {
-            var schemas = await this._schemaService.getByTenantId(tenantId);
+            // If schema Id is not specified, then get the first top-level schema for the tenant
+            var schemas = await this._schemaService.getParentSchemasByTenantId(tenantId);
             if (schemas.length === 0) {
                 return false;
             }
@@ -47,9 +48,17 @@ export class UserMessageEventHandler {
         var schemaInstance: SchemaInstanceResponseDto = null;
         if (event.SchemaInstanceId) {
             schemaInstance = await this._schemaInstanceService.getById(event.SchemaInstanceId);
+            if (!schemaInstance || schemaInstance.Terminated) {
+                logger.error(`Schema Instance not found or terminated: ${event.SchemaInstanceId}`);
+                return false;
+            }
         }
         else {
             var schemaInstances = await this._schemaInstanceService.getBySchemaId(schema.id);
+
+            //Filter out those that are terminated
+            schemaInstances = schemaInstances.filter(x => !x.Terminated);
+
             if (schemaInstances.length > 0) {
                 var matchedSchema = schemaInstances.find(x => this.checkSchemaInstanceCodeMatch(x, event));
                 if (matchedSchema) {
@@ -103,7 +112,7 @@ export class UserMessageEventHandler {
     private matchContexts(schemaContextParams: ContextParams, event: EventResponseDto): Params[] {
         var matchingParams: Params[] = [];
         for (var p of schemaContextParams.Params) {
-            if (p.Type === ParamType.Phonenumber) {
+            if (p.Type === ParamType.Phone) {
                 if (p.Value !== event.UserMessage.Phone) {
                     if (p.Required) {
                         return [];

@@ -1,0 +1,169 @@
+meta {
+  name: Create execution node - EN6
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN4-Other responders details (Non-primary CFRs)",
+    "Description": "This execution node holds actions to find and share the non-primary responder details.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{MAIN_EN4_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - Following are the details of other responders",
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "Details of other responders",
+              "Type": "Text",
+              "Value": "Thanks for your prompt action!"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "ConstructTextArrayFromTemplate",
+        "Name": "Construct message array from responder details",
+        "Input": {
+          "Params": [
+            {
+              "Type": "Text",
+              "Name": "Message Template",
+              "Key": "Template",
+              "Value": "Responder phonenumber - {{Phone}}"
+            },
+            {
+              "Name": "Responded CFR Details",
+              "Type": "Array",
+              "Source": "Almanac",
+              "SubElementType": "Object",
+              "Key": "CFR:Responders",
+              "Value": null,
+              "ArrayObjectTypes": [
+                {
+                  "Name": "MessageType",
+                  "Type": "Text",
+                  "Value": "Text"
+                },
+                {
+                  "Name": "Name",
+                  "Type": "String",
+                  "Value": null
+                },
+                {
+                  "Name": "Phone",
+                  "Type": "Phone",
+                  "Value": null
+                },
+                {
+                  "Name": "Location",
+                  "Type": "Location",
+                  "Value": null
+                },
+                {
+                  "Name": "Address",
+                  "Type": "String",
+                  "Value": null
+                }
+              ]
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "Messages containing other CFR phonenumbers",
+              "Type": "Array",
+              "Source": "Almanac",
+              "SubElementType": "Text",
+              "Key": "CFR:OtherCFR:Messages"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "SendMultipleMessagesToOneUser",
+        "Name": "Send reporter ambulance numbers and locations",
+        "IsPathAction": true,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "Messages containing other CFR phonenumbers",
+              "Type": "Array",
+              "Source": "Almanac",
+              "SubElementType": "Text",
+              "Key": "CFR:OtherCFR:Messages"
+            },
+            {
+              "Name": "Message type",
+              "Type": "Text",
+              "Value": "Text",
+              "Key": "MessageType"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_EN7_ID", res.body.Data.id);
+  }
+
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+
+}
+
+docs {
+  User login with username/phone/email and password.
+
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

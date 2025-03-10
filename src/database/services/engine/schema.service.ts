@@ -3,7 +3,7 @@ import { Client } from '../../models/client/client.model';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { Source } from '../../../database/database.connector';
-import { FindManyOptions, Like, Repository } from 'typeorm';
+import { FindManyOptions, IsNull, Like, Repository } from 'typeorm';
 import { SchemaMapper } from '../../mappers/engine/schema.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
@@ -16,7 +16,7 @@ import {
 import { Rule } from '../../models/engine/rule.model';
 import { Node } from '../../models/engine/node.model';
 import { Condition } from '../../models/engine/condition.model';
-import { CommonUtilsService } from './common.utils.service';
+import { DatabaseUtilsService } from './database.utils.service';
 import { NodeAction } from '../../models/engine/node.action.model';
 import { StringUtils } from '../../../common/utilities/string.utils';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
@@ -39,7 +39,7 @@ export class SchemaService extends BaseService {
 
     _conditionRepository: Repository<Condition> = Source.getRepository(Condition);
 
-    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
 
@@ -80,6 +80,7 @@ export class SchemaService extends BaseService {
 
         const schema = await this._schemaRepository.create({
             TenantId           : createModel.TenantId,
+            TenantCode         : createModel.TenantCode,
             ParentSchemaId     : createModel.ParentSchemaId,
             Name               : createModel.Name,
             Description        : createModel.Description,
@@ -209,6 +210,51 @@ export class SchemaService extends BaseService {
             var schemas = await this._schemaRepository.find({
                 where : {
                     TenantId : tenantId
+                },
+                relations : {
+                    Nodes : true,
+                }
+            });
+            var dtos: SchemaResponseDto[] = [];
+            for (var schema of schemas) {
+                const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
+                var dto = SchemaMapper.toResponseDto(schema, rootNode);
+                dtos.push(dto);
+            }
+            return dtos;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getParentSchemasByTenantId = async (tenantId: uuid): Promise<SchemaResponseDto[]> => {
+        try {
+            var schemas = await this._schemaRepository.find({
+                where : {
+                    ParentSchemaId : IsNull(),
+                    TenantId       : tenantId
+                }
+            });
+            var dtos: SchemaResponseDto[] = [];
+            for (var schema of schemas) {
+                const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
+                var dto = SchemaMapper.toResponseDto(schema, rootNode);
+                dtos.push(dto);
+            }
+            return dtos;
+        }
+        catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getByTenantCode = async (tenantCode: string): Promise<SchemaResponseDto[]> => {
+        try {
+            var schemas = await this._schemaRepository.find({
+                where : {
+                    TenantCode : tenantCode
                 },
                 relations : {
                     Nodes : true,

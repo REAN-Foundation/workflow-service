@@ -1,0 +1,101 @@
+meta {
+  name: 05 - Get current CFR schema instance id
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{BASE_URL}}/engine/schema-instances/search?parentSchemaInstanceId={{REPORTER_SCHEMA_INSTANCE_ID}}
+  body: json
+  auth: none
+}
+
+params:query {
+  parentSchemaInstanceId: {{REPORTER_SCHEMA_INSTANCE_ID}}
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{CFR_SCHEMA_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "SchemaInstanceId": "{{}}",
+    "UserMessage": {
+      "Phone": "7563998694",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "QuestionResponse",
+      "MessageChannel": "WhatsApp",
+      "QuestionResponse": {
+        "QuestionId": "{{CFR_QUESTION_1_ID}}",
+        "ResponseContent": "Available",
+        "QuestionResponseType": "Single Choice Selection",
+        "SingleChoiceChosenOptionSequence": 1,
+        "SingleChoiceChosenOption": "Available",
+        "QuestionOptions": [
+          {
+            "id": "{{CFR_QUESTION_1_ID_OPTION_1}}",
+            "Text": "Available",
+            "ImageUrl": null,
+            "Sequence": 1,
+            "Metadata": [
+              {
+                "Key": "ButtonId",
+                "Value": "button-id-1"
+              }
+            ]
+          },
+          {
+            "id": "{{CFR_QUESTION_1_ID_OPTION_2}}",
+            "Text": "Not Available",
+            "ImageUrl": null,
+            "Sequence": 2,
+            "Metadata": [
+              {
+                "Key": "ButtonId",
+                "Value": "button-id-2"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+      bru.setEnvVar("CFR_SCHEMA_INSTANCE_1_ID", res.body.Data.Items[0].id);
+      bru.setEnvVar("CFR_SCHEMA_INSTANCE_2_ID", res.body.Data.Items[1].id);
+      bru.setEnvVar("CFR_SCHEMA_INSTANCE_3_ID", res.body.Data.Items[2].id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

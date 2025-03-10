@@ -1,0 +1,66 @@
+meta {
+  name: 04- Create base condition
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/engine/conditions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Base condition for CFR response check",
+    "Description": "This is the base condition for the CFR response check",
+    "ParentRuleId": "{{T1_RULE_ID}}",
+    "ParentConditionId": null,
+    "OperatorType": "Logical",
+    "LogicalOperatorType": "IsNotEmpty",
+    "FirstOperand": {
+      "DataType": "Array",
+      "Name": "Responded CFR list",
+      "Value": null,
+      "Source": "Almanac",
+      "Key": "CFR:Responders"
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("T1_RULE_BASE_CONDITION_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Base condition is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

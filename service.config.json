@@ -1,5 +1,5 @@
 {
-    "SystemIdentifier": "Awards Service",
+    "SystemIdentifier": "Workflow Service",
     "Auth" : {
         "Authentication": "Custom",
         "Authorization": "Custom"

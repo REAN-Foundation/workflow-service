@@ -15,7 +15,7 @@ import {
     SchemaInstanceUpdateModel } from '../../../domain.types/engine/schema.instance.types';
 import { NodeInstance } from '../../models/engine/node.instance.model';
 import { Node } from '../../models/engine/node.model';
-import { CommonUtilsService } from './common.utils.service';
+import { DatabaseUtilsService } from './database.utils.service';
 import { NodeActionInstance } from '../../../database/models/engine/node.action.instance.model';
 import { Params } from '../../../domain.types/engine/params.types';
 import { ExecutionStatus, WorkflowActivityType } from '../../../domain.types/engine/engine.enums';
@@ -39,7 +39,7 @@ export class SchemaInstanceService extends BaseService {
 
     _schemaInstanceActivityRepository: Repository<SchemaInstanceActivity> = Source.getRepository(SchemaInstanceActivity);
 
-    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
 
@@ -184,6 +184,30 @@ export class SchemaInstanceService extends BaseService {
             }
             schemaInstance.CurrentNodeInstance = nodeInstance;
             await this._schemaInstanceRepository.save(schemaInstance);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getCurrentNodeInstanceId = async (schemaInstanceId: uuid): Promise<uuid> => {
+        try {
+            var schemaInstance = await this._schemaInstanceRepository.findOne({
+                where : {
+                    id : schemaInstanceId
+                },
+                relations : {
+                    CurrentNodeInstance : true
+                }
+            });
+            if (!schemaInstance) {
+                ErrorHandler.throwNotFoundError('SchemaInstance not found!');
+            }
+            var currentNodeInstance = schemaInstance.CurrentNodeInstance;
+            if (!currentNodeInstance) {
+                return null;
+            }
+            return schemaInstance.CurrentNodeInstance.id;
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
@@ -405,14 +429,57 @@ export class SchemaInstanceService extends BaseService {
 
     public recordActivity = async (schemaInstanceId: uuid, type: WorkflowActivityType, payload: any, summary: any): Promise<void> => {
         try {
-            var activity = this._schemaInstanceActivityRepository.create({
+            const entity = {
                 Type             : type,
                 SchemaInstanceId : schemaInstanceId,
                 Payload          : payload,
                 Summary          : summary,
-            });
+            };
+
+            logger.info(`\n`);
+            logger.info(`Activity Type: ${type}`);
+            logger.info(`Summary: ${JSON.stringify(summary, null, 2)}`);
+
+            var activity = this._schemaInstanceActivityRepository.create(entity);
             await this._schemaInstanceActivityRepository.save(activity);
         } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public terminate = async (schemaInstanceId: uuid): Promise<void> => {
+        try {
+            var schemaInstance = await this._schemaInstanceRepository.findOne({
+                where : {
+                    id : schemaInstanceId
+                }
+            });
+            if (!schemaInstance) {
+                ErrorHandler.throwNotFoundError('SchemaInstance not found!');
+            }
+            schemaInstance.Terminated = true;
+            schemaInstance.TerminatedTimestamp = new Date();
+            await this._schemaInstanceRepository.save(schemaInstance);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public isTerminated = async (schemaInstanceId: uuid): Promise<boolean> => {
+        try {
+            var schemaInstance = await this._schemaInstanceRepository.findOne({
+                where : {
+                    id : schemaInstanceId
+                }
+            });
+            if (!schemaInstance) {
+                ErrorHandler.throwNotFoundError('SchemaInstance not found!');
+            }
+            return schemaInstance.Terminated;
+        }
+        catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
         }
@@ -474,7 +541,9 @@ export class SchemaInstanceService extends BaseService {
         };
 
         if (filters.SchemaId) {
-            search.where['Schema'].id = filters.SchemaId;
+            search.where['Schema'] = {
+                id : filters.SchemaId
+            };
         }
         if (filters.TenantId) {
             search.where['TenantId'] = filters.TenantId;

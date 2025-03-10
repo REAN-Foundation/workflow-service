@@ -4,6 +4,7 @@ import {
 } from '../../../domain.types/engine/node.types';
 import { Question } from '../../../database/models/engine/question.model';
 import { NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
+import { QuestionOption } from '../../../database/models/engine/question.option.model';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -13,6 +14,7 @@ export class NodeMapper {
         node: Node,
         actions?: NodeActionResponseDto[],
         question?: Question,
+        questionOptions?: QuestionOption[],
         yesActionDto?: NodeActionResponseDto,
         noActionDto?: NodeActionResponseDto): NodeResponseDto => {
         if (node == null) {
@@ -43,7 +45,7 @@ export class NodeMapper {
             Question : question ? {
                 ResponseType : question.ResponseType,
                 QuestionText : question.QuestionText ?? null,
-                Options      : question.Options ? question.Options.map(x => {
+                Options      : questionOptions ? questionOptions.map(x => {
                     return {
                         id       : x.id,
                         Text     : x.Text,
@@ -53,16 +55,19 @@ export class NodeMapper {
                     };
                 }) : null,
             } : null,
-            NextNodeId   : node.NextNodeId,
-            Actions      : actions,
-            DelaySeconds : node.DelaySeconds,
-            RuleId       : node.RuleId,
-            YesAction    : yesActionDto,
-            NoAction     : noActionDto,
-            RawData      : node.RawData,
-            Input        : node.Input,
-            CreatedAt    : node.CreatedAt,
-            UpdatedAt    : node.UpdatedAt,
+            NextNodeId          : node.NextNodeId,
+            Actions             : actions,
+            DelaySeconds        : node.DelaySeconds,
+            NumberOfTries       : node.NumberOfTries,
+            RuleId              : node.RuleId,
+            YesAction           : yesActionDto,
+            NoAction            : noActionDto,
+            RawData             : node.RawData,
+            Input               : node.Input,
+            NextNodeIdOnSuccess : node.NextNodeIdOnSuccess,
+            NextNodeIdOnTimeout : node.NextNodeIdOnTimeout,
+            CreatedAt           : node.CreatedAt,
+            UpdatedAt           : node.UpdatedAt,
         };
         return dto;
     };

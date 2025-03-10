@@ -25,6 +25,7 @@ import { NodePath } from "./models/engine/node.path.model";
 import { NodeActionInstance } from "./models/engine/node.action.instance.model";
 import { Question } from "./models/engine/question.model";
 import { QuestionOption } from "./models/engine/question.option.model";
+import { QuestionInstance } from "./models/engine/question.instance.model";
 import { Event } from "./models/engine/event.model";
 import { SchemaInstanceActivity } from "./models/engine/schema.instance.activity.model";
 
@@ -74,12 +75,13 @@ class DatabaseConnector {
             FileResourceVersion,
             Question,
             QuestionOption,
+            QuestionInstance,
             SchemaInstanceActivity,
         ],
         migrations  : [],
         subscribers : [],
-        //logger      : 'advanced-console', //Use console for the typeorm logging
-        // logger      : new DBLogger(),
+        // logger      : 'advanced-console', //Use console for the typeorm logging
+        logger      : null,
         logging     : false,
         poolSize    : Config.pool.max,
         cache       : true,

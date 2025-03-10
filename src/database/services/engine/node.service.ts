@@ -16,13 +16,16 @@ import {
     NodeSearchFilters,
     NodeSearchResults,
     NodeUpdateModel,
-    QuestionNodeCreateModel } from '../../../domain.types/engine/node.types';
-import { CommonUtilsService } from './common.utils.service';
+    QuestionNodeCreateModel,
+    ConditionalTimerNodeCreateModel
+} from '../../../domain.types/engine/node.types';
+import { DatabaseUtilsService } from './database.utils.service';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 import { Question } from '../../../database/models/engine/question.model';
 import { StringUtils } from '../../../common/utilities/string.utils';
 import { NodeActionResponseDto } from '../../../domain.types/engine/node.action.types';
 import { NodeActionMapper } from '../../../database/mappers/engine/node.action.mapper';
+import { QuestionOption } from '../../../database/models/engine/question.option.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -36,11 +39,13 @@ export class NodeService extends BaseService {
 
     _questionRepository: Repository<Question> = Source.getRepository(Question);
 
+    _questionOptionRepository: Repository<QuestionOption> = Source.getRepository(QuestionOption);
+
     _ruleRepository: Repository<Rule> = Source.getRepository(Rule);
 
     _actionRepository: Repository<NodeAction> = Source.getRepository(NodeAction);
 
-    _commonUtilsService: CommonUtilsService = new CommonUtilsService();
+    _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
     //#endregion
 
@@ -49,7 +54,7 @@ export class NodeService extends BaseService {
 
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
-        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+        const prefix = 'E_NODE';
 
         const node = this._nodeRepository.create({
             Code         : StringUtils.generateDisplayCode_RandomChars(12, prefix),
@@ -80,14 +85,14 @@ export class NodeService extends BaseService {
             }
         }
 
-        return NodeMapper.toResponseDto(record, nodeActions, null, null, null);
+        return NodeMapper.toResponseDto(record, nodeActions, null, null, null, null);
     };
 
     public createQuestionNode = async (createModel: QuestionNodeCreateModel) : Promise<NodeResponseDto> => {
 
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
-        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+        const prefix = 'Q_NODE';
 
         const node = this._nodeRepository.create({
             Code         : StringUtils.generateDisplayCode_RandomChars(12, prefix),
@@ -113,10 +118,29 @@ export class NodeService extends BaseService {
             id           : record.id, // nodeId,
             QuestionText : createModel.QuestionText,
             ResponseType : createModel.ResponseType,
-            Options      : createModel.Options,
         };
         var question = await this._questionRepository.create(questionModel);
-        await this._questionRepository.save(question);
+        question = await this._questionRepository.save(question);
+        if (createModel.Options && createModel.Options?.length > 0) {
+            for await (const option of createModel.Options) {
+                var optionModel = {
+                    Question : question,
+                    Text     : option.Text,
+                    ImageUrl : option.ImageUrl,
+                    Sequence : option.Sequence,
+                    Metadata : option.Metadata,
+                };
+                var opt = await this._questionOptionRepository.create(optionModel);
+                opt = await this._questionOptionRepository.save(opt);
+            }
+        }
+        var questionOptions = await this._questionOptionRepository.find({
+            where : {
+                Question : {
+                    id : record.id
+                }
+            }
+        });
 
         var nodeActions: NodeActionResponseDto[] = [];
         if (createModel.Actions && createModel.Actions?.length > 0) {
@@ -127,14 +151,14 @@ export class NodeService extends BaseService {
             }
         }
 
-        return NodeMapper.toResponseDto(record, nodeActions, question, null, null);
+        return NodeMapper.toResponseDto(record, nodeActions, question, questionOptions, null, null);
     };
 
     public createYesNoNode = async (createModel: YesNoNodeCreateModel)
         : Promise<NodeResponseDto> => {
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
-        const prefix = createModel.Type === NodeType.QuestionNode ? 'QNODE' : 'ENODE';
+        const prefix = 'YN_NODE';
 
         var yesActionModel = (createModel as YesNoNodeCreateModel).YesAction;
         yesActionModel.IsPathAction = true;
@@ -187,8 +211,62 @@ export class NodeService extends BaseService {
             await this._actionRepository.save(noAction);
         }
 
-        return NodeMapper.toResponseDto(record, nodeActions, null, yesActionDto, noActionDto);
+        return NodeMapper.toResponseDto(record, nodeActions, null, null, yesActionDto, noActionDto);
 
+    };
+
+    public createConditionalTimerNode = async (createModel: ConditionalTimerNodeCreateModel) : Promise<NodeResponseDto> => {
+
+        const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
+        const parentNode = await this.getNode(createModel.ParentNodeId);
+        const prefix = 'TIMER_NODE';
+
+        const node = this._nodeRepository.create({
+            Code          : StringUtils.generateDisplayCode_RandomChars(12, prefix),
+            Type          : NodeType.ConditionalTimerNode,
+            Schema        : schema,
+            ParentNode    : parentNode,
+            Name          : createModel.Name,
+            Description   : createModel.Description,
+            DelaySeconds  : createModel.DelaySeconds,
+            RuleId        : createModel.RuleId,
+            RawData       : createModel.RawData,
+            Input         : createModel.Input,
+            NumberOfTries : createModel.NumberOfTries,
+            YesActionId   : null,
+            NoActionId    : null,
+        });
+        var record = await this._nodeRepository.save(node);
+        if (record == null)
+        {
+            return null;
+        }
+
+        return NodeMapper.toResponseDto(record, null, null, null, null, null);
+    };
+
+    public createTerminatorNode = async (createModel: NodeCreateModel | QuestionNodeCreateModel | YesNoNodeCreateModel)
+    : Promise<NodeResponseDto> => {
+
+        const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
+        const parentNode = await this.getNode(createModel.ParentNodeId);
+        const prefix = 'TERM_NODE';
+
+        const node = this._nodeRepository.create({
+            Code        : StringUtils.generateDisplayCode_RandomChars(12, prefix),
+            Type        : createModel.Type,
+            Schema      : schema,
+            ParentNode  : parentNode,
+            Name        : createModel.Name,
+            Description : createModel.Description,
+        });
+        var record = await this._nodeRepository.save(node);
+        if (record == null)
+        {
+            return null;
+        }
+
+        return NodeMapper.toResponseDto(record, null, null, null, null, null);
     };
 
     public getById = async (id: uuid): Promise<NodeResponseDto> => {
@@ -230,11 +308,14 @@ export class NodeService extends BaseService {
                 question = await this._questionRepository.findOne({
                     where : {
                         id : id
+                    },
+                    relations : {
+                        Options : true
                     }
                 });
             }
             var nodeActions = await this._commonUtilsService.getNodeActions(id);
-            return NodeMapper.toResponseDto(node, nodeActions, question, yesActionDto, noActionDto);
+            return NodeMapper.toResponseDto(node, nodeActions, question, question?.Options ?? null, yesActionDto, noActionDto);
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
@@ -338,6 +419,60 @@ export class NodeService extends BaseService {
                 ErrorHandler.throwNotFoundError('Next Node not found!');
             }
             node.NextNodeId = nextNodeId;
+            var result = await this._nodeRepository.save(node);
+            return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public setNextNodeOnTimerSuccess = async (id: uuid, nextNodeId: uuid): Promise<boolean> => {
+        try {
+            var node = await this._nodeRepository.findOne({
+                where : {
+                    id : id
+                }
+            });
+            if (!node) {
+                ErrorHandler.throwNotFoundError('Node not found!');
+            }
+            var nextNode = await this._nodeRepository.findOne({
+                where : {
+                    id : nextNodeId
+                }
+            });
+            if (!nextNode) {
+                ErrorHandler.throwNotFoundError('Next Node not found!');
+            }
+            node.NextNodeIdOnSuccess = nextNodeId;
+            var result = await this._nodeRepository.save(node);
+            return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public setNextNodeOnTimerTimeout = async (id: uuid, nextNodeId: uuid): Promise<boolean> => {
+        try {
+            var node = await this._nodeRepository.findOne({
+                where : {
+                    id : id
+                }
+            });
+            if (!node) {
+                ErrorHandler.throwNotFoundError('Node not found!');
+            }
+            var nextNode = await this._nodeRepository.findOne({
+                where : {
+                    id : nextNodeId
+                }
+            });
+            if (!nextNode) {
+                ErrorHandler.throwNotFoundError('Next Node not found!');
+            }
+            node.NextNodeIdOnTimeout = nextNodeId;
             var result = await this._nodeRepository.save(node);
             return result != null;
         } catch (error) {

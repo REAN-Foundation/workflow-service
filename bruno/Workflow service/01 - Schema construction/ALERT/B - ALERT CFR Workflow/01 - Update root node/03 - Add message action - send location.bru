@@ -1,0 +1,68 @@
+meta {
+  name: 03 - Add message action - send location
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/engine/node-actions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Type": "SendMessage",
+    "Name": "Send location message - To CFR",
+    "Description": "Sending location to the CFR",
+    "Sequence": 2,
+    "ParentNodeId": "{{CHILD_MAIN_ROOT_NODE_ID}}",
+    "Input": {
+      "Params": [
+        {
+          "Type": "Phone",
+          "Value": null,
+          "Source": "Almanac",
+          "Key": "ContextParams:CFR:Phone"
+        },
+        {
+          "Type": "Location",
+          "Name": "Incident Location",
+          "Source": "Almanac",
+          "Key": "ContextParams:Location",
+          "Value": {
+            "Latitude": null,
+            "Longitude": null
+          }
+        }
+      ]
+    }
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Action is added", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+  });
+
+}
+
+docs {
+  User login with username/phone/email and password.
+
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

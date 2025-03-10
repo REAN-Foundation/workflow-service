@@ -77,6 +77,15 @@ export class Node {
     @Column({ type: 'uuid', nullable: true })
     NextNodeId: string;
 
+    @Column({ type: 'int', nullable: false, default: 0 })
+    NumberOfTries: number;
+
+    @Column({ type: 'uuid', nullable: true })
+    NextNodeIdOnSuccess: string;
+
+    @Column({ type: 'uuid', nullable: true })
+    NextNodeIdOnTimeout: string;
+
     @CreateDateColumn()
     CreatedAt : Date;
 

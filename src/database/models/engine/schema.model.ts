@@ -35,6 +35,9 @@ export class Schema {
     @Column({ type: 'uuid', nullable: false })
     TenantId : string;
 
+    @Column({ type: 'varchar', length: 256, nullable: false })
+    TenantCode : string;
+
     @Column({ type: 'uuid', nullable: true })
     RootNodeId: string;
 

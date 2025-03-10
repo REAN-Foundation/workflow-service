@@ -3,7 +3,7 @@ import express from 'express';
 import { EventCreateModel, EventSearchFilters } from '../../../domain.types/engine/event.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
-import { MessageChannelType, UserMessageType } from '../../../domain.types/engine/engine.enums';
+import { MessageChannelType, QuestionResponseType, UserMessageType } from '../../../domain.types/engine/engine.enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,19 +32,31 @@ export class EventValidator extends BaseValidator {
                         Longitude : joi.number().required(),
                     }).optional(),
                     QuestionResponse : joi.object({
-                        QuestionId      : joi.string().uuid().optional(),
-                        QuestionText    : joi.string().optional(),
-                        QuestionOptions : joi.array().items(joi.object({
-                            Text     : joi.string().allow(null).max(512).required(),
-                            ImageUrl : joi.string().allow(null).max(512).optional(),
-                            Sequence : joi.number().integer().allow(null).max(10).optional(),
-                            Metadata : joi.string().allow(null).max(1024).optional(),
+                        QuestionResponseType : joi.string().valid(...Object.values(QuestionResponseType)).optional(),
+                        QuestionId           : joi.string().uuid().optional(),
+                        QuestionText         : joi.string().optional(),
+                        QuestionOptions      : joi.array().items(joi.object({
+                            id        : joi.string().uuid().optional(),
+                            Text      : joi.string().allow(null).max(512).required(),
+                            ImageUrl  : joi.string().allow(null).max(512).optional(),
+                            Sequence  : joi.number().integer().allow(null).max(10).optional(),
+                            Metadata  : joi.any().allow(null).optional(),
+                            CreatedAt : joi.date().allow(null).optional(),
+                            UpdatedAt : joi.date().allow(null).optional(),
+                            DeletedAt : joi.date().allow(null).optional(),
                         })).optional(),
-                        ChosenOption         : joi.string().allow(null).optional(),
-                        ChosenOptionSequence : joi.number().integer().allow(null).optional(),
-                        PreviousMessageId    : joi.string().allow(null).uuid().optional(),
-                        PreviousNodeId       : joi.string().allow(null).uuid().optional(),
+                        ResponseType                     : joi.string().valid(...Object.values(QuestionResponseType)).optional(),
+                        ResponseContent                  : joi.any().optional(),
+                        SingleChoiceChosenOption         : joi.string().allow(null).optional(),
+                        SingleChoiceChosenOptionSequence : joi.number().integer().allow(null).optional(),
+                        PreviousMessageId                : joi.string().allow(null).uuid().optional(),
+                        PreviousNodeId                   : joi.string().allow(null).uuid().optional(),
                     }).optional(),
+                    Payload      : joi.object().allow(null).optional(),
+                    Placeholders : joi.array().items(joi.object({
+                        Key   : joi.string().required(),
+                        Value : joi.string().required(),
+                    })).allow(null).optional(),
                 }).optional(),
                 EventTimestamp : joi.date().required(),
                 Payload        : joi.object().allow(null).optional(),

@@ -8,12 +8,14 @@ export enum WorkflowActivityType {
     NodeAction        = 'NodeAction',
     SystemEvent       = 'SystemEvent',
     SwitchCurrentNode = 'SwitchCurrentNode',
+    TerminateWorkflow = 'TerminateWorkflow',
 }
 
 export enum ParamType {
-    Phonenumber      = "Phonenumber",
+    Phone      = "Phone",
     Email            = "Email",
     Location         = "Location",
+    MessageChannel   = "MessageChannel",
     RestApiParams    = "RestApiParams",
     Date             = "Date",
     DateTime         = "DateTime",
@@ -47,6 +49,7 @@ export enum UserMessageType {
     Location = 'Location',
     File     = 'File',
     Question = 'Question',
+    QuestionResponse = 'QuestionResponse',
     Image    = 'Image',
 }
 
@@ -57,6 +60,9 @@ export const MessageTypeList: UserMessageType[] = [
     UserMessageType.Link,
     UserMessageType.Location,
     UserMessageType.File,
+    UserMessageType.Question,
+    UserMessageType.QuestionResponse,
+    UserMessageType.Image,
 ];
 
 export enum MessageChannelType {
@@ -74,11 +80,13 @@ export const MessageChannelList: MessageChannelType[] = [
 ];
 
 export enum NodeType {
-    ExecutionNode = 'ExecutionNode',
-    QuestionNode  = 'QuestionNode',
-    ListeningNode = 'ListeningNode',
-    YesNoNode     = 'YesNoNode',
-    WaitNode      = 'WaitNode',
+    ExecutionNode        = 'ExecutionNode',
+    QuestionNode         = 'QuestionNode',
+    ListeningNode        = 'ListeningNode',
+    YesNoNode            = 'YesNoNode',
+    ConditionalTimerNode = 'ConditionalTimerNode',   //Timer node executes some rule-logic, if not successful it times out
+    DelayedActionNode    = 'DelayedActionNode',      //Delayed action node executes actions after a delay
+    TerminatorNode       = 'TerminatorNode',
 }
 
 export const NodeTypeList: NodeType[] = [
@@ -86,18 +94,22 @@ export const NodeTypeList: NodeType[] = [
     NodeType.QuestionNode,
     NodeType.ListeningNode,
     NodeType.YesNoNode,
-    NodeType.WaitNode,
+    NodeType.ConditionalTimerNode,
+    NodeType.DelayedActionNode,
+    NodeType.TerminatorNode,
 ];
 
 export enum ActionType {
     TriggerListeningNode            = 'TriggerListeningNode',
-    TriggerWaitNode                 = 'TriggerWaitNode',
+    TriggerTimerNode                = 'TriggerTimerNode',
     TriggerChildWorkflow            = 'TriggerChildWorkflow',
     TriggerMultipleChildrenWorkflow = 'TriggerMultipleChildrenWorkflow',
     SendMessage                     = 'SendMessage',
-    SendMultipleMessages            = 'SendMultipleMessages',
+    SendMultipleMessagesToOneUser   = 'SendMultipleMessagesToOneUser',
+    SendOneMessageToMultipleUsers   = 'SendOneMessageToMultipleUsers',
     SendEmail                       = 'SendEmail',
     SendSms                         = 'SendSms',
+    SetNextNode                     = 'SetNextNode',
     RestApiCall                     = 'RestApiCall',
     PythonFunCall                   = 'PythonFunCall',
     LambdaFunCall                   = 'LambdaFunCall',
@@ -107,19 +119,28 @@ export enum ActionType {
     ExistsInAlmanac                 = 'ExistsInAlmanac',
     GetFromAlmanac                  = 'GetFromAlmanac',
     UpdateContextParams             = 'UpdateContextParams',
+    GenerateRandomCode              = 'GenerateRandomCode',
+    ArraySort                       = 'ArraySort',
+    ArrayFilter                     = 'ArrayFilter',
+    ArrayGetElement                 = 'ArrayGetElement',
+    GetObjectParam                  = 'GetObjectParam',
+    ConstructTextArrayFromTemplate  = 'ConstructTextArrayFromTemplate',
+    ConstructTextFromTemplate       = 'ConstructTextFromTemplate',
     Exit                            = 'Exit',
     Continue                        = 'Continue',
 }
 
 export const ActionTypeList: ActionType[] = [
     ActionType.TriggerListeningNode,
-    ActionType.TriggerWaitNode,
+    ActionType.TriggerTimerNode,
     ActionType.TriggerChildWorkflow,
     ActionType.TriggerMultipleChildrenWorkflow,
     ActionType.SendMessage,
-    ActionType.SendMultipleMessages,
+    ActionType.SendMultipleMessagesToOneUser,
+    ActionType.SendOneMessageToMultipleUsers,
     ActionType.SendEmail,
     ActionType.SendSms,
+    ActionType.SetNextNode,
     ActionType.RestApiCall,
     ActionType.PythonFunCall,
     ActionType.LambdaFunCall,
@@ -129,6 +150,13 @@ export const ActionTypeList: ActionType[] = [
     ActionType.ExistsInAlmanac,
     ActionType.GetFromAlmanac,
     ActionType.UpdateContextParams,
+    ActionType.GenerateRandomCode,
+    ActionType.ArraySort,
+    ActionType.ArrayFilter,
+    ActionType.ArrayGetElement,
+    ActionType.GetObjectParam,
+    ActionType.ConstructTextArrayFromTemplate,
+    ActionType.ConstructTextFromTemplate,
     ActionType.Exit,
     ActionType.Continue,
 ];
@@ -218,6 +246,8 @@ export enum LogicalOperatorType {
     In                        = 'In',
     NotIn                     = 'NotIn',
     Contains                  = 'Contains',
+    IsEmpty                   = 'IsEmpty',
+    IsNotEmpty                = 'IsNotEmpty',
     DoesNotContain            = 'DoesNotContain',
     Between                   = 'Between',
     IsTrue                    = 'IsTrue',
@@ -238,6 +268,8 @@ export const LogicalOperatorList: LogicalOperatorType[] = [
     LogicalOperatorType.In,
     LogicalOperatorType.NotIn,
     LogicalOperatorType.Contains,
+    LogicalOperatorType.IsEmpty,
+    LogicalOperatorType.IsNotEmpty,
     LogicalOperatorType.DoesNotContain,
     LogicalOperatorType.Between,
     LogicalOperatorType.IsTrue,
@@ -325,6 +357,7 @@ export enum InputSourceType {
 export const InputSourceTypeList: InputSourceType[] = [
     InputSourceType.UserEvent,
     InputSourceType.SystemEvent,
+    InputSourceType.SystemData,
     InputSourceType.Database,
     InputSourceType.Almanac,
     InputSourceType.ApiEndpoint,
@@ -336,14 +369,16 @@ export const InputSourceTypeList: InputSourceType[] = [
 ];
 
 export enum OutputDestinationType {
-    Database    = "Database",
-    Almanac     = "Almanac",
-    ApiEndpoint = "ApiEndpoint",
-    None        = "None",
+    Database                    = "Database",
+    Almanac                     = "Almanac",
+    ParentSchemaInstanceAlmanac = "ParentSchemaInstanceAlmanac",
+    ApiEndpoint                 = "ApiEndpoint",
+    None                        = "None",
 }
 
 export const OutputSourceTypeList: OutputDestinationType[] = [
     OutputDestinationType.Database,
     OutputDestinationType.Almanac,
     OutputDestinationType.ApiEndpoint,
+    OutputDestinationType.None,
 ];

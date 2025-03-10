@@ -1,0 +1,32 @@
+meta {
+  name: 05 - Set condition to rule
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{BASE_URL}}/engine/rules/{{T1_RULE_ID}}/base-condition/{{T1_RULE_BASE_CONDITION_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

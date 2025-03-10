@@ -36,6 +36,12 @@ export interface QuestionNodeCreateModel extends NodeCreateModel {
     Options      : QuestionAnswerOption[];
 }
 
+export interface ConditionalTimerNodeCreateModel extends NodeCreateModel {
+    NumberOfTries: number;
+    NextNodeIdOnSuccess: uuid | null;
+    NextNodeIdOnTimeout: uuid | null;
+}
+
 export interface NodeUpdateModel {
     Type        ?: NodeType;
     Name        ?: string;
@@ -78,9 +84,12 @@ export interface NodeResponseDto {
     YesAction   ?: NodeActionResponseDto;
     NoAction    ?: NodeActionResponseDto;
     DelaySeconds?: number;
+    NumberOfTries: number;
     RuleId?      : uuid;
     RawData?     : any;
     Input?       : ActionInputParams;
+    NextNodeIdOnSuccess: uuid | null;
+    NextNodeIdOnTimeout: uuid | null;
     CreatedAt    : Date;
     UpdatedAt    : Date;
 }

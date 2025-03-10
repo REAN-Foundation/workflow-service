@@ -49,9 +49,11 @@ export class NodeInstanceMapper {
                     } : null
                 };
             }) : [],
-            ActionInstances : actionInstances,
-            CreatedAt       : instance.CreatedAt,
-            UpdatedAt       : instance.UpdatedAt,
+            ActionInstances             : actionInstances,
+            TimerNumberOfTriesCompleted : instance.TimerNumberOfTriesCompleted,
+            TimerFinished               : instance.TimerFinished,
+            CreatedAt                   : instance.CreatedAt,
+            UpdatedAt                   : instance.UpdatedAt,
         };
         return dto;
     };

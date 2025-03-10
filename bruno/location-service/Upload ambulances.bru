@@ -1,0 +1,15 @@
+meta {
+  name: Upload ambulances
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/{{TENANT_ID}}/upload-ambulances
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  file: @file(/C:/Users/91920/Documents/rean-admin-panel-reanfoundation/location-service/ambulance_locations_pune.xlsx)
+}

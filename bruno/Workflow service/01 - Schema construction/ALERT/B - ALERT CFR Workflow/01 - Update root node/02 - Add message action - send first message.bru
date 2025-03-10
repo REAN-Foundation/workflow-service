@@ -1,0 +1,69 @@
+meta {
+  name: 02 - Add message action - send first message
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/engine/node-actions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Type": "SendMessage",
+    "Name": "Send message - Notify CFR of the incident.",
+    "Sequence": 1,
+    "ParentNodeId": "{{CHILD_MAIN_ROOT_NODE_ID}}",
+    "Input": {
+      "Params": [
+        {
+          "Name": "CFR Phone",
+          "Type": "Phone",
+          "Value": null,
+          "Source": "Almanac",
+          "Key": "ContextParams:CFR:Phone"
+        },
+        {
+          "Name": "Incident report Message",
+          "Type": "Text",
+          "Value": "An emergency incident has been reported in your locality at {{ContextParams:Timestamp}}."
+        },
+        {
+          "Name": "Incident Timestamp",
+          "Type": "Placeholder",
+          "Key": "ContextParams:Timestamp",
+          "Source": "Almanac"
+        }
+      ]
+    }
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Action is added", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+  });
+
+}
+
+docs {
+  User login with username/phone/email and password.
+
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

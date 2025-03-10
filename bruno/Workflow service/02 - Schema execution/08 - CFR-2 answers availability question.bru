@@ -1,17 +1,13 @@
 meta {
-  name: 05 - Get current CFR schema instance id
+  name: 08 - CFR-2 answers availability question
   type: http
-  seq: 5
+  seq: 8
 }
 
-get {
-  url: {{BASE_URL}}/engine/schema-instances/search?parentSchemaInstanceId={{REPORTER_SCHEMA_INSTANCE_ID}}
+post {
+  url: {{BASE_URL}}/engine/events/user-message
   body: json
   auth: none
-}
-
-params:query {
-  parentSchemaInstanceId: {{REPORTER_SCHEMA_INSTANCE_ID}}
 }
 
 headers {
@@ -26,9 +22,9 @@ body:json {
     "SchemaId": "{{CFR_SCHEMA_ID}}",
     "EventType": "UserMessage",
     "EventTimestamp": "{{TIMESTAMP}}",
-    "SchemaInstanceId": "{{}}",
+    "SchemaInstanceId": "{{CFR_SCHEMA_INSTANCE_2_ID}}",
     "UserMessage": {
-      "Phone": "7563998694",
+      "Phone": "{{CFR_2_PHONE}}",
       "EventTimestamp": "{{TIMESTAMP}}",
       "MessageType": "QuestionResponse",
       "MessageChannel": "WhatsApp",
@@ -64,7 +60,8 @@ body:json {
             ]
           }
         ]
-      }
+      },
+      "Payload": {}
     }
   }
 }
@@ -77,17 +74,15 @@ script:pre-request {
 script:post-response {
   let status = res.getStatus();
   console.log(status)
-  if (status == 200) {
-      bru.setEnvVar("CFR_SCHEMA_INSTANCE_1_ID", res.body.Data.Items[0].id);
-      bru.setEnvVar("CFR_SCHEMA_INSTANCE_2_ID", res.body.Data.Items[1].id);
-      bru.setEnvVar("CFR_SCHEMA_INSTANCE_3_ID", res.body.Data.Items[2].id);
+  if (status == 201) {
+    bru.setEnvVar("USER_MESSAGE_EVENT_3_ID", res.body.Data.id);
   }
   
 }
 
 tests {
   test("Request is successfull", function () {
-      expect(res.getStatus()).to.equal(200);
+      expect(res.getStatus()).to.equal(201);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });

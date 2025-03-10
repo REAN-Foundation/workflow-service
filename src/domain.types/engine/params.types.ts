@@ -6,7 +6,7 @@ import { InputSourceType, OutputDestinationType, ParamType } from "./engine.enum
 export interface Params {
     Name                : string;
     Type                : ParamType;
-    SubElementType     ?: ParamType;
+    SubType            ?: ParamType;
     ArrayObjectTypes   ?: {
         Name : string;
         Type : ParamType;

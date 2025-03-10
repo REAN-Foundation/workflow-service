@@ -601,16 +601,16 @@ export class ActionExecutioner {
                 Result  : null
             };
         }
-        var value = p.Value;
-        if (!value) {
+        var inValue = p.Value;
+        if (!inValue) {
             if (p.Source && p.Source === InputSourceType.Almanac) {
-                value = await this._almanac.getFact(p.Key);
-                if (value) {
-                    p.Value = value;
+                inValue = await this._almanac.getFact(p.Key);
+                if (inValue) {
+                    p.Value = inValue;
                 }
             }
         }
-        if (!value) {
+        if (!inValue) {
             logger.error('Value not found in input parameters');
             return {
                 Success : false,
@@ -629,6 +629,7 @@ export class ActionExecutioner {
                     Result  : null
                 };
             }
+            const parentAlmanac = await Almanac.getAlmanac(parentSchemaInstanceId);
             const outputKey = op.Key;
             if (!outputKey) {
                 logger.error('Output Key not found');
@@ -637,18 +638,35 @@ export class ActionExecutioner {
                     Result  : null
                 };
             }
-            if (op.Type === ParamType.Array && p.Type !== ParamType.Array) {
-                value = [value];
+            var value = inValue;
+            if (op.Type === ParamType.Array) {
+                var existingValue = await parentAlmanac.getFact(outputKey);
+                if (existingValue) {
+                    if (Array.isArray(existingValue)) {
+                        if (Array.isArray(inValue)) {
+                            existingValue = existingValue.concat(inValue);
+                        }
+                        else {
+                            existingValue.push(inValue);
+                        }
+                    }
+                    else {
+                        existingValue = [existingValue, inValue];
+                    }
+                    value = existingValue;
+                }
+                else {
+                    value = [inValue];
+                }
             }
-            const parentAlmanac = new Almanac(parentSchemaInstanceId);
             await parentAlmanac.addFact(outputKey, value);
         }
         else {
-            await this._almanac.addFact(key, value);
+            await this._almanac.addFact(key, inValue);
         }
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
-        await this.recordActionActivity(action, { Key: key, Value: value });
+        await this.recordActionActivity(action, { Key: key, Value: inValue });
 
         return {
             Success : true,
@@ -1068,7 +1086,7 @@ export class ActionExecutioner {
         for (let i = 0; i < items.length; i++) {
 
             const arrayItem = items[i];
-            const subElementType = inputArrayParam.SubElementType;
+            const subElementType = inputArrayParam.SubType;
 
             const childContextParams: Params[] = [];
 
@@ -1225,6 +1243,13 @@ export class ActionExecutioner {
         var sortOrder = pSortOrder ? pSortOrder.Value : 'asc';
         var isAscending = sortOrder === 'asc';
         var array = pArray.Value;
+
+        if (!array) {
+            const source = pArray.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                array = await this._almanac.getFact(pArray.Key);
+            }
+        }
 
         if (!array || Array.isArray(array) === false) {
             logger.error('Array not found in input parameters');
@@ -1432,6 +1457,28 @@ export class ActionExecutioner {
             Success : true,
             Result  : value
         };
+
+    };
+
+    public executeConstructObjectAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        // Get the input parameters
+
+        var pKey = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'Key');
+        if (!pKey) {
+            logger.error('Key parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var key = pKey.Value;
+        var objectParams = input.Params.filter(x => x.Type === ParamType.Object);
 
     };
 

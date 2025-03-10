@@ -134,7 +134,7 @@ export default class TimerNodeTriggerHandler {
                 logger.error(`Timer node execution: Schema instance not found: ${schemaInstanceId}`);
                 return;
             }
-            var almanac = new Almanac(schemaInstance.id);
+            var almanac = await Almanac.getAlmanac(schemaInstance.id);
 
             const ruleId = timerNode.RuleId;
             if (!ruleId) {

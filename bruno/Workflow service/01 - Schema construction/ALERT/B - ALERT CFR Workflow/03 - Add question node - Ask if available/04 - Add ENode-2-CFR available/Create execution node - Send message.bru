@@ -28,7 +28,7 @@ body:json {
         "Type": "SendMessage",
         "Name": "Send message - To CFR",
         "Description": "Sending message - Thanks for the support!",
-        "Sequence": 1,
+        "Sequence": 0,
         "Input": {
           "Params": [
             {
@@ -46,10 +46,10 @@ body:json {
         }
       },
       {
-        "Type": "StoreToAlmanac",
-        "Name": "Store input data to almanac of the parent schema instance",
-        "Description": "Store the CFR phone number in parent schema instance almanac",
-        "Sequence": 2,
+        "Name": "Construct Primary Responder object",
+        "Type": "ConstructObject",
+        "Description": "Construct an object reprsenting primary responder",
+        "Sequence": 1,
         "Input": {
           "Params": [
             {
@@ -57,6 +57,63 @@ body:json {
               "Value": null,
               "Source": "Almanac",
               "Key": "ContextParams:CFR:Phone"
+            },
+            {
+              "Type": "DateTime",
+              "Name": "Timestamp",
+              "SubType": "Timestamp",
+              "Key": "ResponderTimestamp",
+              "Value": null
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Type": "Object",
+              "Key": "ResponderInfo",
+              "Destination": "Almanac",
+              "ArrayObjectTypes": [
+                {
+                  "Name": "Phone",
+                  "Type": "Phone",
+                  "Value": null
+                },
+                {
+                  "Name": "ResponseTimestamp",
+                  "Type": "DateTime",
+                  "Value": null
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "Type": "StoreToAlmanac",
+        "Name": "Store input data to almanac of the parent schema instance",
+        "Description": "Store the CFR phone number in parent schema instance almanac",
+        "Sequence": 2,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Responder details",
+              "Type": "Object",
+              "Source": "Almanac",
+              "Key": "ResponderInfo",
+              "Value": null,
+              "ArrayObjectTypes": [
+                {
+                  "Name": "Phone",
+                  "Type": "Phone",
+                  "Value": null
+                },
+                {
+                  "Name": "ResponseTimestamp",
+                  "Type": "DateTime",
+                  "Value": null
+                }
+              ]
             },
             {
               "Type": "SchemaInstanceId",
@@ -86,7 +143,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("CFR_EN2_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -95,18 +152,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

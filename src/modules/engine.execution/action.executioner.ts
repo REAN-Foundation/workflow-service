@@ -1374,6 +1374,13 @@ export class ActionExecutioner {
         var index = parseInt(pIndex.Value);
         var array = pArray.Value;
 
+        if (!array) {
+            const source = pArray.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                array = await this._almanac.getFact(pArray.Key);
+            }
+        }
+
         if (!array || Array.isArray(array) === false) {
             logger.error('Array not found in input parameters');
             return {
@@ -1423,7 +1430,23 @@ export class ActionExecutioner {
             };
         }
 
-        var pKey = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'Key');
+        var valueObj = pObject.Value;
+        if (!valueObj) {
+            const source = pObject.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                valueObj = await this._almanac.getFact(pObject.Key);
+            }
+        }
+
+        if (!valueObj || typeof valueObj !== 'object') {
+            logger.error('Object not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var pKey = input.Params.find(x => x.Type === ParamType.Text && x.SubType === ParamType.ObjectKey);
         if (!pKey) {
             logger.error('Key parameter not found');
             return {
@@ -1432,18 +1455,8 @@ export class ActionExecutioner {
             };
         }
 
-        var key = pKey.Value;
-        var obj = pObject.Value;
-
-        if (!obj || typeof obj !== 'object') {
-            logger.error('Object not found in input parameters');
-            return {
-                Success : false,
-                Result  : null
-            };
-        }
-
-        var value = obj[key];
+        var key = pKey.Value ?? pKey.Key;
+        var value = valueObj[key];
 
         var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
         if (op) {
@@ -1451,11 +1464,11 @@ export class ActionExecutioner {
         }
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
-        await this.recordActionActivity(action, value);
+        await this.recordActionActivity(action, valueObj);
 
         return {
             Success : true,
-            Result  : value
+            Result  : valueObj
         };
 
     };
@@ -1505,9 +1518,14 @@ export class ActionExecutioner {
                 value = p.Value;
             }
             else {
-                const source = p.Source || InputSourceType.Almanac;
-                if (source === InputSourceType.Almanac) {
-                    value = await this._almanac.getFact(p.Key);
+                if (p.Type === ParamType.DateTime && p.SubType === ParamType.Timestamp) {
+                    value = new Date().getTime();
+                }
+                else {
+                    const source = p.Source || InputSourceType.Almanac;
+                    if (source === InputSourceType.Almanac) {
+                        value = await this._almanac.getFact(p.Key);
+                    }
                 }
             }
             obj[param.Name] = value;

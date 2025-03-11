@@ -295,7 +295,7 @@ export class SchemaInstanceService extends BaseService {
         }
     };
 
-    public updateAlmanac = async (schemaInstanceId: uuid, almanac: any): Promise<void> => {
+    public updateAlmanacObjects = async (schemaInstanceId: uuid, almanac: any): Promise<void> => {
         try {
             var schemaInstance = await this._schemaInstanceRepository.findOne({
                 where : {
@@ -313,7 +313,7 @@ export class SchemaInstanceService extends BaseService {
         }
     };
 
-    public getAlmanac = async (schemaInstanceId: uuid): Promise<any> => {
+    public getAlmanacObjects = async (schemaInstanceId: uuid): Promise<any> => {
         try {
             var schemaInstance = await this._schemaInstanceRepository.findOne({
                 where : {

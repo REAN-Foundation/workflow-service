@@ -12,13 +12,14 @@ export enum WorkflowActivityType {
 }
 
 export enum ParamType {
-    Phone      = "Phone",
+    Phone            = "Phone",
     Email            = "Email",
     Location         = "Location",
     MessageChannel   = "MessageChannel",
     RestApiParams    = "RestApiParams",
     Date             = "Date",
     DateTime         = "DateTime",
+    Timestamp        = "Timestamp",
     Float            = 'Float',
     Integer          = 'Integer',
     Boolean          = 'Boolean',
@@ -26,6 +27,8 @@ export enum ParamType {
     RandomCode       = 'RandomCode',
     Array            = 'Array',
     Object           = 'Object',
+    ObjectKey        = 'ObjectKey',
+    ObjectParam      = 'ObjectParam',
     Placeholder      = 'Placeholder',
     NodeId           = 'NodeId',
     SchemaId         = 'SchemaId',
@@ -126,6 +129,7 @@ export enum ActionType {
     GetObjectParam                  = 'GetObjectParam',
     ConstructTextArrayFromTemplate  = 'ConstructTextArrayFromTemplate',
     ConstructTextFromTemplate       = 'ConstructTextFromTemplate',
+    ConstructObject                 = 'ConstructObject',
     Exit                            = 'Exit',
     Continue                        = 'Continue',
 }
@@ -157,6 +161,7 @@ export const ActionTypeList: ActionType[] = [
     ActionType.GetObjectParam,
     ActionType.ConstructTextArrayFromTemplate,
     ActionType.ConstructTextFromTemplate,
+    ActionType.ConstructObject,
     ActionType.Exit,
     ActionType.Continue,
 ];

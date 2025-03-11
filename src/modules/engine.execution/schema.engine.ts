@@ -64,7 +64,9 @@ export class SchemaEngine {
         this._tenantId = schema.TenantId;
         this._tenantCode = schema.TenantCode;
         if (schemaInstance) {
-            this._almanac = new Almanac(schemaInstance.id);
+            (async () => {
+                this._almanac = await Almanac.getAlmanac(schemaInstance.id);
+            })();
         }
     }
 
@@ -107,7 +109,7 @@ export class SchemaEngine {
             this._schemaInstance.id, WorkflowActivityType.UserEvent, this._event, summary);
 
         //Set up the almanac
-        this._almanac = new Almanac(this._schemaInstance.id);
+        this._almanac = await Almanac.getAlmanac(this._schemaInstance.id);
 
         //Sync the almanac with the schema instance
         await this.syncWithAlmanac(this._schemaInstance);
@@ -802,6 +804,9 @@ export class SchemaEngine {
         }
         else if (actionInstance.ActionType === ActionType.ConstructTextArrayFromTemplate) {
             result = await actionExecutioner.executeConstructTextArrayFromTemplateAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.ConstructObject) {
+            result = await actionExecutioner.executeConstructObjectAction(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.Continue) {
             return {

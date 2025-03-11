@@ -601,16 +601,16 @@ export class ActionExecutioner {
                 Result  : null
             };
         }
-        var value = p.Value;
-        if (!value) {
+        var inValue = p.Value;
+        if (!inValue) {
             if (p.Source && p.Source === InputSourceType.Almanac) {
-                value = await this._almanac.getFact(p.Key);
-                if (value) {
-                    p.Value = value;
+                inValue = await this._almanac.getFact(p.Key);
+                if (inValue) {
+                    p.Value = inValue;
                 }
             }
         }
-        if (!value) {
+        if (!inValue) {
             logger.error('Value not found in input parameters');
             return {
                 Success : false,
@@ -629,6 +629,7 @@ export class ActionExecutioner {
                     Result  : null
                 };
             }
+            const parentAlmanac = await Almanac.getAlmanac(parentSchemaInstanceId);
             const outputKey = op.Key;
             if (!outputKey) {
                 logger.error('Output Key not found');
@@ -637,18 +638,35 @@ export class ActionExecutioner {
                     Result  : null
                 };
             }
-            if (op.Type === ParamType.Array && p.Type !== ParamType.Array) {
-                value = [value];
+            var value = inValue;
+            if (op.Type === ParamType.Array) {
+                var existingValue = await parentAlmanac.getFact(outputKey);
+                if (existingValue) {
+                    if (Array.isArray(existingValue)) {
+                        if (Array.isArray(inValue)) {
+                            existingValue = existingValue.concat(inValue);
+                        }
+                        else {
+                            existingValue.push(inValue);
+                        }
+                    }
+                    else {
+                        existingValue = [existingValue, inValue];
+                    }
+                    value = existingValue;
+                }
+                else {
+                    value = [inValue];
+                }
             }
-            const parentAlmanac = new Almanac(parentSchemaInstanceId);
             await parentAlmanac.addFact(outputKey, value);
         }
         else {
-            await this._almanac.addFact(key, value);
+            await this._almanac.addFact(key, inValue);
         }
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
-        await this.recordActionActivity(action, { Key: key, Value: value });
+        await this.recordActionActivity(action, { Key: key, Value: inValue });
 
         return {
             Success : true,
@@ -1068,7 +1086,7 @@ export class ActionExecutioner {
         for (let i = 0; i < items.length; i++) {
 
             const arrayItem = items[i];
-            const subElementType = inputArrayParam.SubElementType;
+            const subElementType = inputArrayParam.SubType;
 
             const childContextParams: Params[] = [];
 
@@ -1226,6 +1244,13 @@ export class ActionExecutioner {
         var isAscending = sortOrder === 'asc';
         var array = pArray.Value;
 
+        if (!array) {
+            const source = pArray.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                array = await this._almanac.getFact(pArray.Key);
+            }
+        }
+
         if (!array || Array.isArray(array) === false) {
             logger.error('Array not found in input parameters');
             return {
@@ -1349,6 +1374,13 @@ export class ActionExecutioner {
         var index = parseInt(pIndex.Value);
         var array = pArray.Value;
 
+        if (!array) {
+            const source = pArray.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                array = await this._almanac.getFact(pArray.Key);
+            }
+        }
+
         if (!array || Array.isArray(array) === false) {
             logger.error('Array not found in input parameters');
             return {
@@ -1398,7 +1430,23 @@ export class ActionExecutioner {
             };
         }
 
-        var pKey = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'Key');
+        var valueObj = pObject.Value;
+        if (!valueObj) {
+            const source = pObject.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                valueObj = await this._almanac.getFact(pObject.Key);
+            }
+        }
+
+        if (!valueObj || typeof valueObj !== 'object') {
+            logger.error('Object not found in input parameters');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var pKey = input.Params.find(x => x.Type === ParamType.Text && x.SubType === ParamType.ObjectKey);
         if (!pKey) {
             logger.error('Key parameter not found');
             return {
@@ -1407,18 +1455,8 @@ export class ActionExecutioner {
             };
         }
 
-        var key = pKey.Value;
-        var obj = pObject.Value;
-
-        if (!obj || typeof obj !== 'object') {
-            logger.error('Object not found in input parameters');
-            return {
-                Success : false,
-                Result  : null
-            };
-        }
-
-        var value = obj[key];
+        var key = pKey.Value ?? pKey.Key;
+        var value = valueObj[key];
 
         var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
         if (op) {
@@ -1426,11 +1464,94 @@ export class ActionExecutioner {
         }
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
-        await this.recordActionActivity(action, value);
+        await this.recordActionActivity(action, valueObj);
 
         return {
             Success : true,
-            Result  : value
+            Result  : valueObj
+        };
+
+    };
+
+    public executeConstructObjectAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const input = action.Input as ActionInputParams;
+        const output = action.Output as ActionOutputParams;
+
+        // Get the input parameters
+
+        var opObjectParam = output.Params.find(x => x.Type === ParamType.Object);
+        if (!opObjectParam) {
+            logger.error('Object parameter not found');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        const objParamTypes = opObjectParam.ObjectParamTypes || [];
+        if (objParamTypes.length === 0) {
+            logger.error('Object param types not found. Cannot create empty objects.');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var obj = {};
+
+        for (var param of objParamTypes) {
+            if (!param.Type && !param.Name) {
+                logger.error('Object param type or name not found');
+                return {
+                    Success : false,
+                    Result  : null
+                };
+            }
+            var value = null;
+            const p = input.Params.find(x => x.Type === param.Type || x.Key === param.Name);
+            if (!p) {
+                continue;
+            }
+            if (p.Value) {
+                value = p.Value;
+            }
+            else {
+                if (p.Type === ParamType.DateTime && p.SubType === ParamType.Timestamp) {
+                    value = new Date().getTime();
+                }
+                else {
+                    const source = p.Source || InputSourceType.Almanac;
+                    if (source === InputSourceType.Almanac) {
+                        value = await this._almanac.getFact(p.Key);
+                    }
+                }
+            }
+            obj[param.Name] = value;
+        }
+
+        //Check if the object is empty
+        var isEmpty = obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+        if (isEmpty) {
+            logger.error('Object is empty');
+            return {
+                Success : false,
+                Result  : null
+            };
+        }
+
+        var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
+        if (op) {
+            await this._almanac.addFact(op.Key, obj);
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, obj);
+
+        return {
+            Success : true,
+            Result  : obj
         };
 
     };
@@ -1478,7 +1599,7 @@ export class ActionExecutioner {
             };
         }
 
-        const objectParamTypes = pArray.ArrayObjectTypes || [];
+        const objectParamTypes = pArray.ObjectParamTypes || [];
         const noObjectParams = !objectParamTypes || objectParamTypes.length === 0;
 
         var textArray = [];

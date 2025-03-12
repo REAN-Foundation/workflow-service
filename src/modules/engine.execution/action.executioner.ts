@@ -1,5 +1,5 @@
 import needle = require('needle');
-import { InputSourceType, MessageChannelType, OutputDestinationType, ParamType, UserMessageType, WorkflowActivityType } from "../../domain.types/engine/engine.enums";
+import { ActionType, InputSourceType, MessageChannelType, OutputDestinationType, ParamType, UserMessageType, WorkflowActivityType } from "../../domain.types/engine/engine.enums";
 import { ActionInputParams, ActionOutputParams, ContextParams, Params } from "../../domain.types/engine/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
@@ -18,13 +18,14 @@ import { uuid } from "../../domain.types/miscellaneous/system.types";
 import { TimeUtils } from "../../common/utilities/time.utils";
 import { WorkflowMessage } from '../../domain.types/engine/user.event.types';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
-import ChildSchemaTriggerHandler from './child.schema.trigger.handler';
+import ChildSchemaTriggerHandler from './handlers/child.schema.trigger.handler';
 import { EventType } from '../../domain.types/enums/event.type';
-import TimerNodeTriggerHandler from './timer.node.trigger.handler';
+import LogicalTimerNodeTriggerHandler from './handlers/logical.timer.node.trigger.handler';
 import { Agent as HttpAgent } from 'http'; // For HTTP
 import { Agent as HttpsAgent } from 'https'; // For HTTPS
 import { Question } from '../../database/models/engine/question.model';
 import { StringUtils } from '../../common/utilities/string.utils';
+import TimerNodeTriggerHandler from './handlers/timer.node.trigger.handler';
 
 ////////////////////////////////////////////////////////////////
 
@@ -146,11 +147,22 @@ export class ActionExecutioner {
             };
         }
 
-        await TimerNodeTriggerHandler.handle({
-            Node         : node,
-            NodeInstance : nodeInstance,
-            Event        : this._event,
-        });
+        const actionType = action.ActionType;
+
+        if (actionType === ActionType.TriggerLogicalTimerNode) {
+            await LogicalTimerNodeTriggerHandler.handle({
+                Node: node,
+                NodeInstance: nodeInstance,
+                Event: this._event,
+            });
+        }
+        else {
+            await TimerNodeTriggerHandler.handle({
+                Node: node,
+                NodeInstance: nodeInstance,
+                Event: this._event,
+            });
+        }
 
         await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
         await this.recordActionActivity(action, nodeInstance);

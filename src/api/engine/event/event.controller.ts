@@ -5,7 +5,7 @@ import { EventService } from '../../../database/services/engine/event.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { EventSearchFilters, EventCreateModel } from '../../../domain.types/engine/event.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import EventHandler from '../../../modules/engine.execution/event.handler';
+import EventHandler from '../../../modules/engine.execution/handlers/event.handler';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

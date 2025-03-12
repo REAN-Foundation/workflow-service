@@ -36,7 +36,7 @@ export interface QuestionNodeCreateModel extends NodeCreateModel {
     Options      : QuestionAnswerOption[];
 }
 
-export interface ConditionalTimerNodeCreateModel extends NodeCreateModel {
+export interface LogicalTimerNodeCreateModel extends NodeCreateModel {
     NumberOfTries: number;
     NextNodeIdOnSuccess: uuid | null;
     NextNodeIdOnTimeout: uuid | null;

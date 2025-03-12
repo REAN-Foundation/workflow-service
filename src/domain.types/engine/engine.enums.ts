@@ -87,8 +87,9 @@ export enum NodeType {
     QuestionNode         = 'QuestionNode',
     ListeningNode        = 'ListeningNode',
     YesNoNode            = 'YesNoNode',
-    ConditionalTimerNode = 'ConditionalTimerNode',   //Timer node executes some rule-logic, if not successful it times out
-    DelayedActionNode    = 'DelayedActionNode',      //Delayed action node executes actions after a delay
+    TimerNode            = 'TimerNode',
+    LogicalTimerNode     = 'LogicalTimerNode',   //Timer node executes some rule-logic once it times out
+    DelayedActionNode    = 'DelayedActionNode',  //Delayed action node executes actions after a delay
     TerminatorNode       = 'TerminatorNode',
 }
 
@@ -97,7 +98,8 @@ export const NodeTypeList: NodeType[] = [
     NodeType.QuestionNode,
     NodeType.ListeningNode,
     NodeType.YesNoNode,
-    NodeType.ConditionalTimerNode,
+    NodeType.TimerNode,
+    NodeType.LogicalTimerNode,
     NodeType.DelayedActionNode,
     NodeType.TerminatorNode,
 ];
@@ -105,6 +107,7 @@ export const NodeTypeList: NodeType[] = [
 export enum ActionType {
     TriggerListeningNode            = 'TriggerListeningNode',
     TriggerTimerNode                = 'TriggerTimerNode',
+    TriggerLogicalTimerNode         = 'TriggerLogicalTimerNode',
     TriggerChildWorkflow            = 'TriggerChildWorkflow',
     TriggerMultipleChildrenWorkflow = 'TriggerMultipleChildrenWorkflow',
     SendMessage                     = 'SendMessage',
@@ -137,6 +140,7 @@ export enum ActionType {
 export const ActionTypeList: ActionType[] = [
     ActionType.TriggerListeningNode,
     ActionType.TriggerTimerNode,
+    ActionType.TriggerLogicalTimerNode,
     ActionType.TriggerChildWorkflow,
     ActionType.TriggerMultipleChildrenWorkflow,
     ActionType.SendMessage,

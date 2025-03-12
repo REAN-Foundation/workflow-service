@@ -6,7 +6,7 @@ import {
     NodeSearchFilters,
     QuestionNodeCreateModel,
     YesNoNodeCreateModel,
-    ConditionalTimerNodeCreateModel
+    LogicalTimerNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
@@ -140,7 +140,7 @@ export class NodeValidator extends BaseValidator {
     };
 
     public validateCreateTimerNodeRequest = async (request: express.Request)
-    : Promise<ConditionalTimerNodeCreateModel> => {
+    : Promise<LogicalTimerNodeCreateModel> => {
         try {
             const node = joi.object({
                 Type                : joi.string().valid(...Object.values(NodeType)).required(),

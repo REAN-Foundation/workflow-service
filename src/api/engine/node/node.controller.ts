@@ -9,7 +9,7 @@ import {
     NodeSearchFilters,
     NodeUpdateModel,
     QuestionNodeCreateModel,
-    ConditionalTimerNodeCreateModel
+    LogicalTimerNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
@@ -89,12 +89,12 @@ export class NodeController {
         }
     };
 
-    createConditionalTimerNode = async (request: express.Request, response: express.Response) => {
+    createLogicalTimerNode = async (request: express.Request, response: express.Response) => {
         try {
-            var model: ConditionalTimerNodeCreateModel = await this._validator.validateCreateTimerNodeRequest(request);
-            model.Type = NodeType.ConditionalTimerNode;
+            var model: LogicalTimerNodeCreateModel = await this._validator.validateCreateTimerNodeRequest(request);
+            model.Type = NodeType.LogicalTimerNode;
 
-            const record = await this._service.createConditionalTimerNode(model);
+            const record = await this._service.createLogicalTimerNode(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');
             }

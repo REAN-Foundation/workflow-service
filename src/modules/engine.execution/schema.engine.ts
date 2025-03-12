@@ -23,7 +23,8 @@ import { StringUtils } from '../../common/utilities/string.utils';
 import { QuestionInstance } from '../../database/models/engine/question.instance.model';
 import { Question } from '../../database/models/engine/question.model';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
-import TimerNodeTriggerHandler from './timer.node.trigger.handler';
+import LogicalTimerNodeTriggerHandler from './handlers/logical.timer.node.trigger.handler';
+import TimerNodeTriggerHandler from './handlers/timer.node.trigger.handler';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -149,7 +150,7 @@ export class SchemaEngine {
             if (currentNodeInstance.Node.Type === NodeType.ExecutionNode ||
                 currentNodeInstance.Node.Type === NodeType.YesNoNode ||
                 currentNodeInstance.Node.Type === NodeType.QuestionNode ||
-                currentNodeInstance.Node.Type === NodeType.ConditionalTimerNode
+                currentNodeInstance.Node.Type === NodeType.LogicalTimerNode
             ) {
                 logger.info(`Processing node: ${currentNodeInstance.Node.Name}`);
                 return await this.processCurrentNode(currentNodeInstance);
@@ -320,7 +321,9 @@ export class SchemaEngine {
         ) {
             return await this.traverseExecutionNode(currentNodeInstance);
         }
-        else if (currentNodeType === NodeType.ConditionalTimerNode) {
+        else if (currentNodeType === NodeType.LogicalTimerNode ||
+                currentNodeType === NodeType.TimerNode
+        ) {
             return await this.traverseTimerNode(currentNodeInstance);
         }
         else if (currentNodeType === NodeType.TerminatorNode) {
@@ -571,11 +574,22 @@ export class SchemaEngine {
             var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
             logger.info(`Traversing Timer Node: ${currentNode.Name}`);
 
-            await TimerNodeTriggerHandler.handle({
-                Node         : currentNode,
-                NodeInstance : currentNodeInstance,
-                Event        : this._event,
-            });
+            var currentNodeType = currentNodeInstance.Node.Type;
+
+            if (currentNodeType === NodeType.TimerNode) {
+                await TimerNodeTriggerHandler.handle({
+                    Node         : currentNode,
+                    NodeInstance : currentNodeInstance,
+                    Event        : this._event,
+                });
+            }
+            else if (currentNodeType === NodeType.LogicalTimerNode) {
+                await LogicalTimerNodeTriggerHandler.handle({
+                    Node         : currentNode,
+                    NodeInstance : currentNodeInstance,
+                    Event        : this._event,
+                });
+            }
         }
 
         // Return the same node instance.
@@ -754,7 +768,8 @@ export class SchemaEngine {
         if (actionInstance.ActionType === ActionType.TriggerListeningNode) {
             result = await actionExecutioner.triggerListeningNode(actionInstance);
         }
-        else if (actionInstance.ActionType === ActionType.TriggerTimerNode) {
+        else if (actionInstance.ActionType === ActionType.TriggerTimerNode ||
+            actionInstance.ActionType === ActionType.TriggerLogicalTimerNode) {
             result = await actionExecutioner.triggerTimerNode(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.SendMessage) {

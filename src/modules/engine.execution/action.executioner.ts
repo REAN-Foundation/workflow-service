@@ -1689,7 +1689,7 @@ export class ActionExecutioner {
 
         const workflowEvent: WorkflowEvent = {
             EventType        : EventType.WorkflowSystemMessage,
-            TenantId         : this._event?.TenantId,
+            TenantId         : this._event?.TenantId ?? this._schema.TenantId,
             SchemaId         : this._schema.id,
             SchemaInstanceId : this._schemaInstance.id,
             UserMessage      : message
@@ -1755,7 +1755,7 @@ export class ActionExecutioner {
 
         const workflowEvent: WorkflowEvent = {
             EventType        : EventType.WorkflowSystemMessage,
-            TenantId         : this._event?.TenantId,
+            TenantId         : this._event?.TenantId ?? this._schema.TenantId,
             SchemaId         : this._schema.id,
             SchemaInstanceId : this._schemaInstance.id,
             UserMessage      : message

@@ -51,7 +51,7 @@ export class NodeInstanceMapper {
             }) : [],
             ActionInstances             : actionInstances,
             TimerNumberOfTriesCompleted : instance.TimerNumberOfTriesCompleted,
-            DelayTimerFinished          : instance.DelayTimerFinished,
+            TimerFinished               : instance.TimerFinished,
             CreatedAt                   : instance.CreatedAt,
             UpdatedAt                   : instance.UpdatedAt,
         };

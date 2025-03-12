@@ -1,0 +1,29 @@
+meta {
+  name: 06 - Get nearest CFR details
+  type: http
+  seq: 6
+}
+
+get {
+  url: https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/0086ad27-dee6-4fef-8189-f618128b0245/nearest-responders?latitude=18.5074&longitude=73.8077&radiusInKm=2&itemsPerPage=5
+  body: none
+  auth: none
+}
+
+params:query {
+  latitude: 18.5074
+  longitude: 73.8077
+  radiusInKm: 2
+  itemsPerPage: 5
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+      bru.setEnvVar("CFR_1_PHONE", res.body.Data.Items[0].Phone);
+      bru.setEnvVar("CFR_2_PHONE", res.body.Data.Items[1].Phone);
+      bru.setEnvVar("CFR_3_PHONE", res.body.Data.Items[2].Phone);
+  }
+  
+}

@@ -34,28 +34,13 @@ body:json {
               "Name": "Responded CFR Details",
               "Type": "Array",
               "Source": "Almanac",
-              "SubElementType": "Object",
+              "SubType": "Object",
               "Key": "CFR:Responders",
               "Value": null,
-              "ArrayObjectTypes": [
-                {
-                  "Name": "Name",
-                  "Type": "String",
-                  "Value": null
-                },
+              "ObjectParamTypes": [
                 {
                   "Name": "Phone",
                   "Type": "Phone",
-                  "Value": null
-                },
-                {
-                  "Name": "Location",
-                  "Type": "Location",
-                  "Value": null
-                },
-                {
-                  "Name": "Address",
-                  "Type": "String",
                   "Value": null
                 },
                 {
@@ -100,28 +85,13 @@ body:json {
               "Name": "Responded CFR Details - Sorted list",
               "Type": "Array",
               "Source": "Almanac",
-              "SubElementType": "Object",
+              "SubType": "Object",
               "Key": "CFR:Responders",
               "Value": null,
-              "ArrayObjectTypes": [
-                {
-                  "Name": "Name",
-                  "Type": "String",
-                  "Value": null
-                },
+              "ObjectParamTypes": [
                 {
                   "Name": "Phone",
                   "Type": "Phone",
-                  "Value": null
-                },
-                {
-                  "Name": "Location",
-                  "Type": "Location",
-                  "Value": null
-                },
-                {
-                  "Name": "Address",
-                  "Type": "String",
                   "Value": null
                 },
                 {
@@ -165,8 +135,9 @@ body:json {
             {
               "Name": "Phone number key",
               "Type": "Text",
+              "SubType": "ObjectKey",
               "Key": "Phone",
-              "SubElementType": "Phone"
+              "Value": "Phone"
             }
           ]
         },
@@ -192,7 +163,7 @@ body:json {
               "Type": "Phone",
               "Value": null,
               "Source": "Almanac",
-              "Key": "ContextParams:CFR:Phone"
+              "Key": "ContextParams:Reporter:Phone"
             },
             {
               "Name": "Primary CFR details message",
@@ -218,7 +189,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("MAIN_EN6_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -227,18 +198,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

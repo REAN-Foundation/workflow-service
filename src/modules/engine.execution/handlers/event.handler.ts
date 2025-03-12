@@ -1,18 +1,11 @@
-import { logger } from "../../logger/logger";
-import { EventResponseDto } from "../../domain.types/engine/event.types";
+import { logger } from "../../../logger/logger";
+import { EventResponseDto } from "../../../domain.types/engine/event.types";
 import * as asyncLib from 'async';
-import { EventType } from "../../domain.types/enums/event.type";
+import { EventType } from "../../../domain.types/enums/event.type";
 import { UserMessageEventHandler } from './user.message.event.handler';
-
-// import { ContextService } from "../../database/services/engine/context.service";
-// import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
-// import { SchemaEngine } from "./schema.engine";
-// import { SchemaService } from "../../database/services/engine/schema.service";
-// import { SchemaInstanceResponseDto, SchemaInstanceSearchFilters } from "../../domain.types/engine/schema.instance.types";
+import { ASYNC_TASK_COUNT } from "./common.types";
 
 //////////////////////////////////////////////////////////////////////////////
-
-const ASYNC_TASK_COUNT = 4;
 
 export default class EventHandler {
 
@@ -100,7 +93,7 @@ export default class EventHandler {
         }
         catch (error) {
             logger.error(`Error: ${error.message}`);
-            logger.error(`Error: ${error.stack}`);
+            logger.debug(`Error: ${error.stack}`);
         }
 
     };

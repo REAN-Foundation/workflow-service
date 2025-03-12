@@ -12,13 +12,14 @@ export enum WorkflowActivityType {
 }
 
 export enum ParamType {
-    Phone      = "Phone",
+    Phone            = "Phone",
     Email            = "Email",
     Location         = "Location",
     MessageChannel   = "MessageChannel",
     RestApiParams    = "RestApiParams",
     Date             = "Date",
     DateTime         = "DateTime",
+    Timestamp        = "Timestamp",
     Float            = 'Float',
     Integer          = 'Integer',
     Boolean          = 'Boolean',
@@ -26,6 +27,8 @@ export enum ParamType {
     RandomCode       = 'RandomCode',
     Array            = 'Array',
     Object           = 'Object',
+    ObjectKey        = 'ObjectKey',
+    ObjectParam      = 'ObjectParam',
     Placeholder      = 'Placeholder',
     NodeId           = 'NodeId',
     SchemaId         = 'SchemaId',
@@ -84,8 +87,8 @@ export enum NodeType {
     QuestionNode         = 'QuestionNode',
     ListeningNode        = 'ListeningNode',
     YesNoNode            = 'YesNoNode',
-    ConditionalTimerNode = 'ConditionalTimerNode',   //Timer node executes some rule-logic, if not successful it times out
-    DelayedActionNode    = 'DelayedActionNode',      //Delayed action node executes actions after a delay
+    TimerNode            = 'TimerNode',
+    LogicalTimerNode     = 'LogicalTimerNode',   //Timer node executes some rule-logic once it times out
     TerminatorNode       = 'TerminatorNode',
 }
 
@@ -94,14 +97,15 @@ export const NodeTypeList: NodeType[] = [
     NodeType.QuestionNode,
     NodeType.ListeningNode,
     NodeType.YesNoNode,
-    NodeType.ConditionalTimerNode,
-    NodeType.DelayedActionNode,
+    NodeType.TimerNode,
+    NodeType.LogicalTimerNode,
     NodeType.TerminatorNode,
 ];
 
 export enum ActionType {
     TriggerListeningNode            = 'TriggerListeningNode',
     TriggerTimerNode                = 'TriggerTimerNode',
+    TriggerLogicalTimerNode         = 'TriggerLogicalTimerNode',
     TriggerChildWorkflow            = 'TriggerChildWorkflow',
     TriggerMultipleChildrenWorkflow = 'TriggerMultipleChildrenWorkflow',
     SendMessage                     = 'SendMessage',
@@ -126,6 +130,7 @@ export enum ActionType {
     GetObjectParam                  = 'GetObjectParam',
     ConstructTextArrayFromTemplate  = 'ConstructTextArrayFromTemplate',
     ConstructTextFromTemplate       = 'ConstructTextFromTemplate',
+    ConstructObject                 = 'ConstructObject',
     Exit                            = 'Exit',
     Continue                        = 'Continue',
 }
@@ -133,6 +138,7 @@ export enum ActionType {
 export const ActionTypeList: ActionType[] = [
     ActionType.TriggerListeningNode,
     ActionType.TriggerTimerNode,
+    ActionType.TriggerLogicalTimerNode,
     ActionType.TriggerChildWorkflow,
     ActionType.TriggerMultipleChildrenWorkflow,
     ActionType.SendMessage,
@@ -157,6 +163,7 @@ export const ActionTypeList: ActionType[] = [
     ActionType.GetObjectParam,
     ActionType.ConstructTextArrayFromTemplate,
     ActionType.ConstructTextFromTemplate,
+    ActionType.ConstructObject,
     ActionType.Exit,
     ActionType.Continue,
 ];

@@ -18,7 +18,7 @@ headers {
 
 body:json {
   {
-    "Name": "EN4-Get nearby ambulances",
+    "Name": "EN5-Get nearby ambulances",
     "Description": "This execution node holds actions to send message to reporter telling no responder responded. Also get nearby ambulance information.",
     "Type": "ExecutionNode",
     "ParentNodeId": "{{MAIN_TN1_ID}}",
@@ -47,14 +47,14 @@ body:json {
       },
       {
         "Type": "RestApiCall",
-        "Name": "Make REST API call to get nearest CFRs",
+        "Name": "REST API call for nearest ambulances",
         "Sequence": 1,
         "Input": {
           "Params": [
             {
               "Type": "RestApiParams",
               "Value": {
-                "Url": "http://localhost:3000/api/ambulance-contacts",
+                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/nearest-ambulances",
                 "Method": "GET",
                 "QueryParams": [
                   {
@@ -70,12 +70,20 @@ body:json {
                     "Source": "Almanac",
                     "SourceKey": "ContextParams:Location",
                     "SourceValueKey": "Latitude"
+                  },
+                  {
+                    "QueryParamKey": "radiusInKm",
+                    "QueryParamValue": 10
+                  },
+                  {
+                    "QueryParamKey": "itemsPerPage",
+                    "QueryParamValue": 2
                   }
                 ],
                 "Headers": {
                   "ContentType": "application/json"
                 },
-                "ResponseField": "Data",
+                "ResponseField": "Data:Items",
                 "ResponseType": "Array"
               }
             }
@@ -89,33 +97,31 @@ body:json {
               "Value": null,
               "Destination": "Almanac",
               "Key": "ContextParams:Ambulances",
-              "SubElementType": "Object"
+              "SubType": "Object"
             }
           ]
         }
       },
       {
-        "Type": "SendMultipleMessagesToOneUser",
-        "Name": "Send reporter ambulance numbers and locations",
-        "IsPathAction": true,
+        "Type": "ConstructTextArrayFromTemplate",
+        "Name": "Construct Ambulance details messages from ambulance list",
+        "Sequence": 2,
         "Input": {
           "Params": [
             {
-              "Name": "Reporter Phone",
-              "Type": "Phone",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:Reporter:Phone"
+              "Type": "Text",
+              "Name": "Message Template",
+              "Key": "Template",
+              "Value": "Ambulance - {{Name}},\nphone number - {{Phone}},\nAddress: {{Address}}"
             },
             {
               "Name": "Details for nearby ambulances",
               "Type": "Array",
               "Value": null,
-              "Destination": "Almanac",
+              "Source": "Almanac",
               "Key": "ContextParams:Ambulances",
-              "SubElementType": "Object",
-              "Value": null,
-              "ArrayObjectTypes": [
+              "SubType": "Object",
+              "ObjectParamTypes": [
                 {
                   "Name": "Name",
                   "Type": "String",
@@ -135,13 +141,44 @@ body:json {
                   "Name": "Address",
                   "Type": "String",
                   "Value": null
-                },
-                {
-                  "Name": "IsPrimaryContact",
-                  "Type": "Boolean",
-                  "Value": null
                 }
               ]
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "Details for nearby ambulances",
+              "Type": "Array",
+              "Value": null,
+              "Destination": "Almanac",
+              "SubType": "Text",
+              "Key": "NearbyAmbulances:Details:Messages"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "SendMultipleMessagesToOneUser",
+        "Name": "Send reporter ambulance numbers and locations",
+        "Sequence": 3,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "Messages with details for nearby ambulances",
+              "Type": "Array",
+              "Destination": "Almanac",
+              "Key": "NearbyAmbulances:Details:Messages",
+              "SubType": "Text",
+              "Value": null
             }
           ]
         }
@@ -156,7 +193,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("MAIN_EN5_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -165,18 +202,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

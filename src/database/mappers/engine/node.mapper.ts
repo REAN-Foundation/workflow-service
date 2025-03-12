@@ -59,7 +59,6 @@ export class NodeMapper {
             Actions             : actions,
             DelaySeconds        : node.DelaySeconds,
             NumberOfTries       : node.NumberOfTries,
-            TimerSeconds        : node.TimerSeconds,
             RuleId              : node.RuleId,
             YesAction           : yesActionDto,
             NoAction            : noActionDto,

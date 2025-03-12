@@ -47,20 +47,15 @@ script:post-response {
 }
 
 tests {
-  try {
-      var jsonRes = res.getBody();
-      bru.setEnvVar("RULE_ID", jsonRes.Data.id);
-      bru.setEnvVar("ROOT_CONDITION_ID", jsonRes.Data.Condition.id);
-      bru.setEnvVar("RULE_ACTION_ID", jsonRes.Data.Action.id);
-  }
-  catch (error) {
-      console.log(error.message);
-  }
-  
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(201);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Event is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
   });
   
 }

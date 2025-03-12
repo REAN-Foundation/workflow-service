@@ -17,7 +17,7 @@ import {
     NodeSearchResults,
     NodeUpdateModel,
     QuestionNodeCreateModel,
-    ConditionalTimerNodeCreateModel
+    LogicalTimerNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { DatabaseUtilsService } from './database.utils.service';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
@@ -215,7 +215,7 @@ export class NodeService extends BaseService {
 
     };
 
-    public createConditionalTimerNode = async (createModel: ConditionalTimerNodeCreateModel) : Promise<NodeResponseDto> => {
+    public createLogicalTimerNode = async (createModel: LogicalTimerNodeCreateModel) : Promise<NodeResponseDto> => {
 
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
@@ -223,7 +223,7 @@ export class NodeService extends BaseService {
 
         const node = this._nodeRepository.create({
             Code          : StringUtils.generateDisplayCode_RandomChars(12, prefix),
-            Type          : NodeType.ConditionalTimerNode,
+            Type          : NodeType.LogicalTimerNode,
             Schema        : schema,
             ParentNode    : parentNode,
             Name          : createModel.Name,
@@ -233,7 +233,6 @@ export class NodeService extends BaseService {
             RawData       : createModel.RawData,
             Input         : createModel.Input,
             NumberOfTries : createModel.NumberOfTries,
-            TimerSeconds  : createModel.TimerSeconds,
             YesActionId   : null,
             NoActionId    : null,
         });

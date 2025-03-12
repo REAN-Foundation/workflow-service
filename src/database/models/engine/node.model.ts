@@ -80,9 +80,6 @@ export class Node {
     @Column({ type: 'int', nullable: false, default: 0 })
     NumberOfTries: number;
 
-    @Column({ type: 'int', nullable: true })
-    TimerSeconds: number;
-
     @Column({ type: 'uuid', nullable: true })
     NextNodeIdOnSuccess: string;
 

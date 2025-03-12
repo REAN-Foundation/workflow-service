@@ -1,32 +1,24 @@
-import { logger } from "../../logger/logger";
+import { logger } from "../../../logger/logger";
 import * as asyncLib from 'async';
-import { NodeInstanceResponseDto } from "../../domain.types/engine/node.instance.types";
-import { NodeResponseDto } from "../../domain.types/engine/node.types";
-import { uuid } from "../../domain.types/miscellaneous/system.types";
-import { NodeInstanceService } from "../../database/services/engine/node.instance.service";
-import { NodeService } from "../../database/services/engine/node.service";
-import { RuleService } from "../../database/services/engine/rule.service";
-import { ConditionProcessor } from "./condition.processor";
-import { ConditionService } from "../../database/services/engine/condition.service";
-import { SchemaService } from "../../database/services/engine/schema.service";
-import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
-import { Almanac } from "./almanac";
-import { SchemaEngine } from "./schema.engine";
-import { EventResponseDto } from "../../domain.types/engine/event.types";
-import { SchemaResponseDto } from "../../domain.types/engine/schema.domain.types";
-import { SchemaInstanceResponseDto } from "../../domain.types/engine/schema.instance.types";
+import { NodeInstanceResponseDto } from "../../../domain.types/engine/node.instance.types";
+import { NodeResponseDto } from "../../../domain.types/engine/node.types";
+import { uuid } from "../../../domain.types/miscellaneous/system.types";
+import { NodeInstanceService } from "../../../database/services/engine/node.instance.service";
+import { NodeService } from "../../../database/services/engine/node.service";
+import { RuleService } from "../../../database/services/engine/rule.service";
+import { ConditionProcessor } from "../condition.processor";
+import { ConditionService } from "../../../database/services/engine/condition.service";
+import { SchemaService } from "../../../database/services/engine/schema.service";
+import { SchemaInstanceService } from "../../../database/services/engine/schema.instance.service";
+import { Almanac } from "../almanac";
+import { SchemaEngine } from "../schema.engine";
+import { EventResponseDto } from "../../../domain.types/engine/event.types";
+import { SchemaResponseDto } from "../../../domain.types/engine/schema.domain.types";
+import { SchemaInstanceResponseDto } from "../../../domain.types/engine/schema.instance.types";
+import { ExecutionStatus } from "../../../domain.types/engine/engine.enums";
+import { ASYNC_TASK_COUNT, TimerNodeTriggerModel } from "./common.types";
 
 ////////////////////////////////////////////////////////////////
-
-const ASYNC_TASK_COUNT = 4;
-
-////////////////////////////////////////////////////////////////
-
-export interface TimerNodeTriggerModel {
-    NodeInstance: NodeInstanceResponseDto;
-    Node: NodeResponseDto;
-    Event: EventResponseDto;
-}
 
 export default class TimerNodeTriggerHandler {
 
@@ -45,7 +37,6 @@ export default class TimerNodeTriggerHandler {
             }
             else {
                 logger.info(`Event received and enqueued`);
-                // logger.debug(`Enqueued event: ${JSON.stringify(model, null, 2)}`);
             }
         });
     };
@@ -78,16 +69,16 @@ export default class TimerNodeTriggerHandler {
                 logger.error(`Timer node not found`);
                 return;
             }
-            const numberOfTries = node.NumberOfTries;
-            const completedTries = nodeInstance.TimerNumberOfTriesCompleted;
-            if (completedTries >= numberOfTries) {
-                logger.info(`Timer node tries exhausted: ${nodeInstance.id}`);
-                return;
-            }
+            // const numberOfTries = node.NumberOfTries;
+            // const completedTries = nodeInstance.TimerNumberOfTriesCompleted;
+            // if (completedTries >= numberOfTries) {
+            //     logger.info(`Timer node tries exhausted: ${nodeInstance.id}`);
+            //     return;
+            // }
 
-            const timeIntervalMiliSeconds = Math.abs(node.TimerSeconds) * 1000;
+            const timeIntervalMiliSeconds = Math.abs(node.DelaySeconds) * 1000;
             setTimeout(async () => {
-                logger.info(`Starting timer: ${node.TimerSeconds} seconds`);
+                logger.info(`Starting timer: ${node.DelaySeconds} seconds`);
                 const now = new Date();
                 logger.info(`Current time: ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`);
                 await this.executeTimerNode(nodeInstance.id);
@@ -96,7 +87,7 @@ export default class TimerNodeTriggerHandler {
         }
         catch (error) {
             logger.error(`Error: ${error.message}`);
-            logger.error(`Error: ${error.stack}`);
+            logger.debug(`Error: ${error.stack}`);
         }
 
     };
@@ -105,82 +96,44 @@ export default class TimerNodeTriggerHandler {
         try {
             const nodeInstanceService = new NodeInstanceService();
             const nodeService = new NodeService();
-            const ruleService = new RuleService();
-            const conditionService = new ConditionService();
             const schemaService = new SchemaService();
             const schemaInstanceService = new SchemaInstanceService();
 
-            const nodeInstance = await nodeInstanceService.getById(nodeInstanceId);
-            if (!nodeInstance) {
+            const timerNodeInstance = await nodeInstanceService.getById(nodeInstanceId);
+            if (!timerNodeInstance) {
                 logger.error(`Timer node execution: Node instance not found: ${nodeInstanceId}`);
                 return;
             }
-            const nodeId = nodeInstance.Node.id;
-            const node = await nodeService.getById(nodeId);
-            if (!node) {
+            const nodeId = timerNodeInstance.Node.id;
+            const timerNode = await nodeService.getById(nodeId);
+            if (!timerNode) {
                 logger.error(`Timer node execution: Node not found: ${nodeId}`);
                 return;
             }
-            const schemaId = node.Schema.id;
+            const schemaId = timerNode.Schema.id;
             const schema = await schemaService.getById(schemaId);
             if (!schema) {
                 logger.error(`Timer node execution: Schema not found: ${schemaId}`);
                 return;
             }
-            const schemaInstanceId = nodeInstance.SchemaInstance.id;
+            const schemaInstanceId = timerNodeInstance.SchemaInstance.id;
             const schemaInstance = await schemaInstanceService.getById(schemaInstanceId);
             if (!schemaInstance) {
                 logger.error(`Timer node execution: Schema instance not found: ${schemaInstanceId}`);
                 return;
             }
-            var almanac = new Almanac(schemaInstance.id);
-
-            const ruleId = node.RuleId;
-            if (!ruleId) {
-                logger.error(`Rule not found for Node`);
+            logger.info(`Setting next node on timer finished!`);
+            if (!timerNode.NextNodeId) {
+                logger.error(`Timer node has no next node`);
                 return null;
             }
-            var rule = await ruleService.getById(ruleId);
-            if (!rule) {
-                logger.error(`Rule not found for Node`);
-                return null;
-            }
-            var condition = rule.Condition;
-            if (!condition) {
-                condition = await conditionService.getById(rule.ConditionId);
-            }
-            var processor = new ConditionProcessor(almanac, null);
-            var conditionResult = await processor.processCondition(condition, null);
-
-            //If the condition is not fulfilled, then the timer will be reset
-            if (!conditionResult) {
-
-                logger.info(`Condition not met for Timer node: ${node.id}`);
-
-                const totalTries = node.NumberOfTries;
-                const completedTries = nodeInstance.TimerNumberOfTriesCompleted;
-                if (completedTries >= totalTries) {
-                    logger.info(`Timer node tries exhausted: ${nodeInstance.id}`);
-                    logger.info(`Setting next node on timer timeout: ${nodeInstance.id}`);
-                    return await this.setNextNode(schema, schemaInstance, node, node.NextNodeIdOnTimeout);
-                }
-                const tries = completedTries + 1;
-                await nodeInstanceService.updateTimerTries(nodeInstance.id, tries);
-                const timeIntervalMiliSeconds = Math.abs(node.TimerSeconds) * 1000;
-                setTimeout(async () => {
-                    await this.executeTimerNode(nodeInstance.id);
-                }, timeIntervalMiliSeconds);
-                return;
-            }
-            else {
-                logger.info(`Condition met for Timer node: ${node.id}`);
-                logger.info(`Setting next node on timer success: ${nodeInstance.id}`);
-                return await this.setNextNode(schema, schemaInstance, node, node.NextNodeIdOnSuccess);
-            }
+            await nodeInstanceService.setExecutionStatus(timerNodeInstance.id, ExecutionStatus.Executed);
+            return await this.setNextNode(
+                schema, schemaInstance, timerNode, timerNode.NextNodeId);
         }
         catch (error) {
             logger.error(`Error: ${error.message}`);
-            logger.error(`Error: ${error.stack}`);
+            logger.debug(`Error: ${error.stack}`);
         }
     };
 
@@ -222,7 +175,7 @@ export default class TimerNodeTriggerHandler {
         }
         catch (error) {
             logger.error(`Error: ${error.message}`);
-            logger.error(`Error: ${error.stack}`);
+            logger.debug(`Error: ${error.stack}`);
             return null;
         }
     };

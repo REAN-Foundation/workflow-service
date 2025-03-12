@@ -17,7 +17,6 @@ export const register = (app: express.Application): void => {
     router.post('/listening-node', Auth.handle(`${contextBase}.CreateListeningNode`, true, true, true), controller.createListeningNode);
     router.post('/logical-timer-node', Auth.handle(`${contextBase}.CreateLogicalTimerNode`, true, true, true), controller.createLogicalTimerNode);
     router.post('/timer-node', Auth.handle(`${contextBase}.CreateTimerNode`, true, true, true), controller.createLogicalTimerNode);
-    router.post('/delayed-action-node', Auth.handle(`${contextBase}.CreateDelayedActionNode`, true, true, true), controller.createDelayedActionNode);
     router.post('/terminator-node', Auth.handle(`${contextBase}.CreateTerminatorNode`, true, true, true), controller.createTerminatorNode);
 
     router.post('/', Auth.handle(`${contextBase}.Create`, true, true, true), controller.create);

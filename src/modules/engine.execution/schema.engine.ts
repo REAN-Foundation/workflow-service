@@ -316,9 +316,7 @@ export class SchemaEngine {
         else if (currentNodeType === NodeType.YesNoNode) {
             return await this.traverseYesNoNode(currentNodeInstance);
         }
-        else if (currentNodeType === NodeType.ExecutionNode ||
-                 currentNodeType === NodeType.DelayedActionNode
-        ) {
+        else if (currentNodeType === NodeType.ExecutionNode) {
             return await this.traverseExecutionNode(currentNodeInstance);
         }
         else if (currentNodeType === NodeType.LogicalTimerNode ||
@@ -732,7 +730,7 @@ export class SchemaEngine {
     }
 
     private async delayedNodeExecution(nodeInstance: NodeInstanceResponseDto) {
-        if (nodeInstance.Node.Type !== NodeType.DelayedActionNode) {
+        if (nodeInstance.Node.DelaySeconds <= 0) {
             return nodeInstance;
         }
         if (nodeInstance.ExecutionStatus === ExecutionStatus.Executed) {

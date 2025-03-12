@@ -89,7 +89,6 @@ export enum NodeType {
     YesNoNode            = 'YesNoNode',
     TimerNode            = 'TimerNode',
     LogicalTimerNode     = 'LogicalTimerNode',   //Timer node executes some rule-logic once it times out
-    DelayedActionNode    = 'DelayedActionNode',  //Delayed action node executes actions after a delay
     TerminatorNode       = 'TerminatorNode',
 }
 
@@ -100,7 +99,6 @@ export const NodeTypeList: NodeType[] = [
     NodeType.YesNoNode,
     NodeType.TimerNode,
     NodeType.LogicalTimerNode,
-    NodeType.DelayedActionNode,
     NodeType.TerminatorNode,
 ];
 

@@ -1,12 +1,12 @@
 meta {
-  name: Set next node of T1 node - timeout
+  name: 03 - Set CFR response check rule to node
   type: http
-  seq: 2
+  seq: 3
 }
 
 put {
-  url: {{BASE_URL}}/engine/nodes/{{MAIN_LTN1_ID}}/next-node-on-timer-timeout/{{MAIN_EN5_ID}}
-  body: none
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_LTN1_ID}}/base-rule/{{T1_RULE_ID}}
+  body: json
   auth: none
 }
 

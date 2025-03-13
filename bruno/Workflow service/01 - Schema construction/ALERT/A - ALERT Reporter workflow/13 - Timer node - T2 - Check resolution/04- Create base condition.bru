@@ -1,11 +1,11 @@
 meta {
-  name: 02 - Create CFR response check rule
+  name: 04- Create base condition
   type: http
-  seq: 2
+  seq: 4
 }
 
 post {
-  url: {{BASE_URL}}/engine/rules
+  url: {{BASE_URL}}/engine/conditions
   body: json
   auth: none
 }
@@ -18,10 +18,19 @@ headers {
 
 body:json {
   {
-    "Name": "CFR response check rule",
-    "Description": "This is the rule to check if any CFR has responded positively.",
-    "ParentNodeId": "{{MAIN_LTN1_ID}}",
-    "SchemaId": "{{MAIN_SCHEMA_ID}}"
+    "Name": "Base condition for CFR response check",
+    "Description": "This is the base condition for the CFR response check",
+    "ParentRuleId": "{{T1_RULE_ID}}",
+    "ParentConditionId": null,
+    "OperatorType": "Logical",
+    "LogicalOperatorType": "IsNotEmpty",
+    "FirstOperand": {
+      "DataType": "Array",
+      "Name": "Responded CFR list",
+      "Value": null,
+      "Source": "Almanac",
+      "Key": "CFR:Responders"
+    }
   }
 }
 
@@ -29,9 +38,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("T1_RULE_ID", res.body.Data.id);
+    bru.setEnvVar("T1_RULE_BASE_CONDITION_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -40,18 +49,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
-  test("Decision node rule is created", function () {
+  
+  test("Base condition is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

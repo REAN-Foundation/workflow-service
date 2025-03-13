@@ -1,3 +1,25 @@
 # workflow-service
 
-The Workflow Service is a service that provides the ability to create and manage workflows. It is a core service that is used by other services to manage the workflow execution. The Workflow Service is responsible for creating, updating, and deleting workflows. It also provides the ability to execute workflows and manage the workflow execution.
+The Workflow Service provides the ability to create, manage and execute the workflows. The service can interface with multiple channels or interfaces, such as
+
+## Features
+
+- Templated workflow Schema
+- Multiple Ways to Trigger a Workflow Schema
+- Various Types of Nodes
+  - Root Node (Start Node)
+  - Terminator Node (End Node)
+  - Pure Execution Node
+  - Logical Execution Node
+  - Timer Node
+  - Logical Timer Node
+  - Question Node
+  - Event Listener Node
+- Multiple Types of Triggers
+  - User Event Trigger
+  - Timer Trigger
+  - Almanac Or Cache Update Trigger
+  - External Event Trigger
+  - Custom Action Triggers
+- Actions for Nodes
+

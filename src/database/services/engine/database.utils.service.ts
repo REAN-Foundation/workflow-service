@@ -13,12 +13,12 @@ import { NodeActionInstance } from '../../models/engine/node.action.instance.mod
 import { NodeInstance } from '../../models/engine/node.instance.model';
 import { NodeInstanceMapper } from '../../mappers/engine/node.instance.mapper';
 import { logger } from '../../../logger/logger';
-import { NodeActionInstanceResponseDto, NodeInstanceResponseDto } from '../../../domain.types/engine/node.instance.types';
+import { NodeActionInstanceResponseDto } from '../../../domain.types/engine/node.instance.types';
 import { NodeActionMapper } from '../../mappers/engine/node.action.mapper';
 import { ExecutionStatus } from '../../../domain.types/engine/engine.enums';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 import { Question } from '../../models/engine/question.model';
-import { NodeResponseDto, QuestionNodeResponseDto } from '../../../domain.types/engine/node.types';
+import { QuestionNodeResponseDto } from '../../../domain.types/engine/node.types';
 import { NodeMapper } from '../../mappers/engine/node.mapper';
 import { QuestionOption } from '../../models/engine/question.option.model';
 import { QuestionAnswerOption } from '../../../domain.types/engine/user.event.types';
@@ -141,6 +141,24 @@ export class DatabaseUtilsService {
             });
             return actions.map(x => NodeActionMapper.toResponseDto(x));
         } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getNodeActionCount = async (nodeId: uuid, isPathAction = false): Promise<number> => {
+        try {
+            var count = await this._actionRepository.count({
+                where : {
+                    IsPathAction : isPathAction,
+                    ParentNode   : {
+                        id : nodeId
+                    }
+                }
+            });
+            return count;
+        }
+        catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
         }
@@ -302,11 +320,11 @@ export class DatabaseUtilsService {
         }
     };
 
-    public getActiveListeningNodeInstances = async (schemaInstanceId: uuid) => {
+    public getActiveEventListenerNodeInstances = async (schemaInstanceId: uuid) => {
         try {
             var nodeInstances = await this._nodeInstanceRepository.find({
                 where : {
-                    Type           : NodeType.ListeningNode,
+                    Type           : NodeType.EventListenerNode,
                     SchemaInstance : {
                         id : schemaInstanceId
                     },

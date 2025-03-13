@@ -18,12 +18,13 @@ import { RuleService } from '../../database/services/engine/rule.service';
 import { ConditionProcessor } from './condition.processor';
 import { NodeActionService } from '../../database/services/engine/node.action.service';
 import { TimeUtils } from '../../common/utilities/time.utils';
-import { EventType } from '../../domain.types/enums/event.type';
+import { EventType } from '../../domain.types/engine/engine.enums';
 import { StringUtils } from '../../common/utilities/string.utils';
 import { QuestionInstance } from '../../database/models/engine/question.instance.model';
 import { Question } from '../../database/models/engine/question.model';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
-import TimerNodeTriggerHandler from './timer.node.trigger.handler';
+import LogicalTimerNodeTriggerHandler from './handlers/logical.timer.node.trigger.handler';
+import TimerNodeTriggerHandler from './handlers/timer.node.trigger.handler';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -64,7 +65,9 @@ export class SchemaEngine {
         this._tenantId = schema.TenantId;
         this._tenantCode = schema.TenantCode;
         if (schemaInstance) {
-            this._almanac = new Almanac(schemaInstance.id);
+            (async () => {
+                this._almanac = await Almanac.getAlmanac(schemaInstance.id);
+            })();
         }
     }
 
@@ -107,7 +110,7 @@ export class SchemaEngine {
             this._schemaInstance.id, WorkflowActivityType.UserEvent, this._event, summary);
 
         //Set up the almanac
-        this._almanac = new Almanac(this._schemaInstance.id);
+        this._almanac = await Almanac.getAlmanac(this._schemaInstance.id);
 
         //Sync the almanac with the schema instance
         await this.syncWithAlmanac(this._schemaInstance);
@@ -125,13 +128,15 @@ export class SchemaEngine {
         logger.info(`Current Node: ${currentNodeName}`);
 
         //If there are any listening nodes, handle them
-        await this.handleListeningNodes();
+        await this.handleEventListenerNodes();
 
-        if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
+        const executionStatus = await this._nodeInstanceService.getExecutionStatus(currentNodeInstance.id);
+        const actionCount = await this._dbUtilsService.getNodeActionCount(currentNodeInstance.Node.id);
+        if (executionStatus !== ExecutionStatus.Executed && actionCount > 0) {
             currentNodeInstance = await this.delayedNodeExecution(currentNodeInstance);
             const allExecuted = await this.executeNodeActions(currentNodeInstance);
             if (allExecuted) {
-                currentNodeInstance.ExecutionStatus = ExecutionStatus.Executed;
+                await this._nodeInstanceService.setExecutionStatus(currentNodeInstance.id, ExecutionStatus.Executed);
             }
         }
 
@@ -143,19 +148,20 @@ export class SchemaEngine {
         if (newNodeInstance.id !== currentNodeInstance.id) {
             currentNodeInstance = newNodeInstance;
             if (currentNodeInstance.Node.Type === NodeType.ExecutionNode ||
-                currentNodeInstance.Node.Type === NodeType.YesNoNode ||
+                currentNodeInstance.Node.Type === NodeType.LogicalYesNoActionNode ||
                 currentNodeInstance.Node.Type === NodeType.QuestionNode ||
-                currentNodeInstance.Node.Type === NodeType.ConditionalTimerNode
+                currentNodeInstance.Node.Type === NodeType.LogicalTimerNode
             ) {
+                logger.info(`Processing node: ${currentNodeInstance.Node.Name}`);
                 return await this.processCurrentNode(currentNodeInstance);
             }
         }
         return currentNodeInstance;
     }
 
-    private async handleListeningNodes() {
+    private async handleEventListenerNodes() {
 
-        var listeningNodeInstances = await this._dbUtilsService.getActiveListeningNodeInstances(this._schemaInstance.id);
+        var listeningNodeInstances = await this._dbUtilsService.getActiveEventListenerNodeInstances(this._schemaInstance.id);
 
         for (var listeningNodeInstance of listeningNodeInstances) {
             var listeningNode = await this._nodeService.getById(listeningNodeInstance.Node.id);
@@ -307,15 +313,15 @@ export class SchemaEngine {
         if (currentNodeType === NodeType.QuestionNode) {
             return await this.traverseQuestionNode(currentNodeInstance);
         }
-        else if (currentNodeType === NodeType.YesNoNode) {
-            return await this.traverseYesNoNode(currentNodeInstance);
+        else if (currentNodeType === NodeType.LogicalYesNoActionNode) {
+            return await this.traverseLogicalYesNoActionNode(currentNodeInstance);
         }
-        else if (currentNodeType === NodeType.ExecutionNode ||
-                 currentNodeType === NodeType.DelayedActionNode
-        ) {
+        else if (currentNodeType === NodeType.ExecutionNode) {
             return await this.traverseExecutionNode(currentNodeInstance);
         }
-        else if (currentNodeType === NodeType.ConditionalTimerNode) {
+        else if (currentNodeType === NodeType.LogicalTimerNode ||
+                currentNodeType === NodeType.TimerNode
+        ) {
             return await this.traverseTimerNode(currentNodeInstance);
         }
         else if (currentNodeType === NodeType.TerminatorNode) {
@@ -463,6 +469,7 @@ export class SchemaEngine {
                         logger.error(`Error while creating next node instance!`);
                         return currentNodeInstance;
                     }
+                    await this._nodeInstanceService.setExecutionStatus(currentNodeInstance.id, ExecutionStatus.Executed);
                     await this._schemaInstanceService.setCurrentNodeInstance(this._schemaInstance.id, nextNodeInstance.id);
                     return nextNodeInstance;
                 }
@@ -484,7 +491,7 @@ export class SchemaEngine {
         return currentNodeInstance;
     }
 
-    private async traverseYesNoNode(currentNodeInstance: NodeInstanceResponseDto)
+    private async traverseLogicalYesNoActionNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
 
         var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
@@ -519,6 +526,7 @@ export class SchemaEngine {
         const actionToExecute = conditionResult ? yesActionInstance : noActionInstance;
 
         if (actionToExecute.ActionType === ActionType.Continue) {
+            await this._nodeInstanceService.setExecutionStatus(currentNodeInstance.id, ExecutionStatus.Executed);
             var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
             if (!res || !res.currentNode || !res.currentNodeInstance) {
                 logger.error(`Error while setting next node instance!`);
@@ -536,7 +544,9 @@ export class SchemaEngine {
     private async traverseExecutionNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
 
-        if (currentNodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
+        const executionStatus = await this._nodeInstanceService.getExecutionStatus(currentNodeInstance.id);
+
+        if (executionStatus === ExecutionStatus.Executed) {
             var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
             if (!currentNode?.NextNodeId) {
                 logger.error(`Next node not found for Node ${currentNode.Name}`);
@@ -555,21 +565,29 @@ export class SchemaEngine {
     private async traverseTimerNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
 
-        if (currentNodeInstance.ExecutionStatus !== ExecutionStatus.Executed) {
+        const executionStatus = await this._nodeInstanceService.getExecutionStatus(currentNodeInstance.id);
+
+        if (executionStatus !== ExecutionStatus.Executed) {
 
             var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
-            if (!currentNode?.NextNodeId) {
-                logger.error(`Next node not found for Node ${currentNode.Name}`);
-                return currentNodeInstance;
-            }
-
             logger.info(`Traversing Timer Node: ${currentNode.Name}`);
 
-            await TimerNodeTriggerHandler.handle({
-                Node         : currentNode,
-                NodeInstance : currentNodeInstance,
-                Event        : this._event,
-            });
+            var currentNodeType = currentNodeInstance.Node.Type;
+
+            if (currentNodeType === NodeType.TimerNode) {
+                await TimerNodeTriggerHandler.handle({
+                    Node         : currentNode,
+                    NodeInstance : currentNodeInstance,
+                    Event        : this._event,
+                });
+            }
+            else if (currentNodeType === NodeType.LogicalTimerNode) {
+                await LogicalTimerNodeTriggerHandler.handle({
+                    Node         : currentNode,
+                    NodeInstance : currentNodeInstance,
+                    Event        : this._event,
+                });
+            }
         }
 
         // Return the same node instance.
@@ -704,18 +722,21 @@ export class SchemaEngine {
             var exe = await this._dbUtilsService.isActionInstanceExecuted(actionInstance.id);
             executionResults.push(exe);
         }
+        if (executionResults.length === 0) {
+            return false;
+        }
         var allExecuted = executionResults.every(k => k === true);
         return allExecuted;
     }
 
     private async delayedNodeExecution(nodeInstance: NodeInstanceResponseDto) {
-        if (nodeInstance.Node.Type !== NodeType.DelayedActionNode) {
+        if (nodeInstance.Node.DelaySeconds <= 0) {
             return nodeInstance;
         }
         if (nodeInstance.ExecutionStatus === ExecutionStatus.Executed) {
             return nodeInstance;
         }
-        if (!nodeInstance.DelayTimerFinished) {
+        if (!nodeInstance.TimerFinished) {
             var currentNode = await this._nodeService.getById(nodeInstance.Node.id);
             var delaySeconds = currentNode.DelaySeconds;
             if (!delaySeconds) {
@@ -723,8 +744,8 @@ export class SchemaEngine {
                 return nodeInstance;
             }
             await new Promise(r => setTimeout(r, delaySeconds * 1000));
-            nodeInstance.DelayTimerFinished = true;
-            await this._nodeInstanceService.markDelayTimerFinished(nodeInstance.id);
+            nodeInstance.TimerFinished = true;
+            await this._nodeInstanceService.setTimerFinished(nodeInstance.id);
         }
         return nodeInstance;
     }
@@ -742,10 +763,11 @@ export class SchemaEngine {
             Result  : null,
         };
 
-        if (actionInstance.ActionType === ActionType.TriggerListeningNode) {
-            result = await actionExecutioner.triggerListeningNode(actionInstance);
+        if (actionInstance.ActionType === ActionType.TriggerEventListenerNode) {
+            result = await actionExecutioner.triggerEventListenerNode(actionInstance);
         }
-        else if (actionInstance.ActionType === ActionType.TriggerTimerNode) {
+        else if (actionInstance.ActionType === ActionType.TriggerTimerNode ||
+            actionInstance.ActionType === ActionType.TriggerLogicalTimerNode) {
             result = await actionExecutioner.triggerTimerNode(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.SendMessage) {
@@ -792,6 +814,12 @@ export class SchemaEngine {
         }
         else if (actionInstance.ActionType === ActionType.GetObjectParam) {
             result = await actionExecutioner.executeGetObjectParamAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.ConstructTextArrayFromTemplate) {
+            result = await actionExecutioner.executeConstructTextArrayFromTemplateAction(actionInstance);
+        }
+        else if (actionInstance.ActionType === ActionType.ConstructObject) {
+            result = await actionExecutioner.executeConstructObjectAction(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.Continue) {
             return {

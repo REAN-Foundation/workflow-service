@@ -10,14 +10,14 @@ import { NodeMapper } from '../../mappers/engine/node.mapper';
 import { BaseService } from '../base.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import {
-    YesNoNodeCreateModel,
+    LogicalYesNoActionNodeCreateModel,
     NodeCreateModel,
     NodeResponseDto,
     NodeSearchFilters,
     NodeSearchResults,
     NodeUpdateModel,
     QuestionNodeCreateModel,
-    ConditionalTimerNodeCreateModel
+    LogicalTimerNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { DatabaseUtilsService } from './database.utils.service';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
@@ -49,7 +49,7 @@ export class NodeService extends BaseService {
 
     //#endregion
 
-    public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel | YesNoNodeCreateModel)
+    public create = async (createModel: NodeCreateModel | QuestionNodeCreateModel | LogicalYesNoActionNodeCreateModel)
         : Promise<NodeResponseDto> => {
 
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
@@ -154,25 +154,25 @@ export class NodeService extends BaseService {
         return NodeMapper.toResponseDto(record, nodeActions, question, questionOptions, null, null);
     };
 
-    public createYesNoNode = async (createModel: YesNoNodeCreateModel)
+    public createLogicalYesNoActionNode = async (createModel: LogicalYesNoActionNodeCreateModel)
         : Promise<NodeResponseDto> => {
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
         const prefix = 'YN_NODE';
 
-        var yesActionModel = (createModel as YesNoNodeCreateModel).YesAction;
+        var yesActionModel = (createModel as LogicalYesNoActionNodeCreateModel).YesAction;
         yesActionModel.IsPathAction = true;
         var yesAction = await this._commonUtilsService.createAction(yesActionModel);
         var yesActionId = yesAction ? yesAction.id : null;
 
-        var noActionModel = (createModel as YesNoNodeCreateModel).NoAction;
+        var noActionModel = (createModel as LogicalYesNoActionNodeCreateModel).NoAction;
         noActionModel.IsPathAction = true;
         var noAction = await this._commonUtilsService.createAction(noActionModel);
         var noActionId = noAction.id ? noAction.id : null;
 
         const node = this._nodeRepository.create({
             Code         : StringUtils.generateDisplayCode_RandomChars(12, prefix),
-            Type         : NodeType.YesNoNode,
+            Type         : NodeType.LogicalYesNoActionNode,
             Schema       : schema,
             ParentNode   : parentNode,
             Name         : createModel.Name,
@@ -215,7 +215,7 @@ export class NodeService extends BaseService {
 
     };
 
-    public createConditionalTimerNode = async (createModel: ConditionalTimerNodeCreateModel) : Promise<NodeResponseDto> => {
+    public createLogicalTimerNode = async (createModel: LogicalTimerNodeCreateModel) : Promise<NodeResponseDto> => {
 
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);
         const parentNode = await this.getNode(createModel.ParentNodeId);
@@ -223,7 +223,7 @@ export class NodeService extends BaseService {
 
         const node = this._nodeRepository.create({
             Code          : StringUtils.generateDisplayCode_RandomChars(12, prefix),
-            Type          : NodeType.ConditionalTimerNode,
+            Type          : NodeType.LogicalTimerNode,
             Schema        : schema,
             ParentNode    : parentNode,
             Name          : createModel.Name,
@@ -233,7 +233,6 @@ export class NodeService extends BaseService {
             RawData       : createModel.RawData,
             Input         : createModel.Input,
             NumberOfTries : createModel.NumberOfTries,
-            TimerSeconds  : createModel.TimerSeconds,
             YesActionId   : null,
             NoActionId    : null,
         });
@@ -246,7 +245,7 @@ export class NodeService extends BaseService {
         return NodeMapper.toResponseDto(record, null, null, null, null, null);
     };
 
-    public createTerminatorNode = async (createModel: NodeCreateModel | QuestionNodeCreateModel | YesNoNodeCreateModel)
+    public createTerminatorNode = async (createModel: NodeCreateModel | QuestionNodeCreateModel | LogicalYesNoActionNodeCreateModel)
     : Promise<NodeResponseDto> => {
 
         const schema = await this._commonUtilsService.getSchema(createModel.SchemaId);

@@ -1,0 +1,96 @@
+meta {
+  name: 03- Get question node - QN
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BASE_URL}}/engine/nodes/{{CFR_QUESTION_1_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Availability question",
+    "Description": "This question node asks the CFR question with options enquiring whether he/she is available for the emergency incident handling.",
+    "Type": "QuestionNode",
+    "ParentNodeId": "{{CHILD_MAIN_ROOT_NODE_ID}}",
+    "SchemaId": "{{CHILD_SCHEMA_ID}}",
+    "Actions": [],
+    "DelaySeconds": 180,
+    "QuestionText": "Will you be available to attend to the incident?",
+    "ResponseType": "Single Choice Selection",
+    "Input": {
+      "Params": [
+        {
+          "Name": "CFR Phone",
+          "Type": "Phone",
+          "Value": null,
+          "Source": "Almanac",
+          "Key": "ContextParams:CFR:Phone"
+        }
+      ]
+    },
+    "Options": [
+      {
+        "Text": "Available",
+        "Sequence": 1,
+        "Metadata": [
+          {
+            "Key": "ButtonId",
+            "Value": "button-id-1"
+          }
+        ]
+      },
+      {
+        "Text": "Not Available",
+        "Sequence": 2,
+        "Metadata": [
+          {
+            "Key": "ButtonId",
+            "Value": "button-id-2"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+    bru.setEnvVar("CFR_QUESTION_1_ID_OPTION_1", res.body.Data.Question.Options[0].id);
+    bru.setEnvVar("CFR_QUESTION_1_ID_OPTION_2", res.body.Data.Question.Options[1].id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Question node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

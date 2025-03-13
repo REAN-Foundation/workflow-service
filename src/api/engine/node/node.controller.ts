@@ -4,12 +4,13 @@ import { NodeValidator } from './node.validator';
 import { NodeService } from '../../../database/services/engine/node.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import {
-    YesNoNodeCreateModel,
+    LogicalYesNoActionNodeCreateModel,
     NodeCreateModel,
     NodeSearchFilters,
     NodeUpdateModel,
     QuestionNodeCreateModel,
-    ConditionalTimerNodeCreateModel
+    LogicalTimerNodeCreateModel,
+    TimerNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
@@ -57,12 +58,12 @@ export class NodeController {
         }
     };
 
-    createYesNoNode = async (request: express.Request, response: express.Response) => {
+    createLogicalYesNoActionNode = async (request: express.Request, response: express.Response) => {
         try {
-            var model: YesNoNodeCreateModel = await this._validator.validateCreateYesNoNodeRequest(request);
-            model.Type = NodeType.YesNoNode;
+            var model: LogicalYesNoActionNodeCreateModel = await this._validator.validateCreateLogicalYesNoActionNodeRequest(request);
+            model.Type = NodeType.LogicalYesNoActionNode;
 
-            const record = await this._service.createYesNoNode(model);
+            const record = await this._service.createLogicalYesNoActionNode(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');
             }
@@ -73,10 +74,10 @@ export class NodeController {
         }
     };
 
-    createListeningNode = async (request: express.Request, response: express.Response) => {
+    createEventListenerNode = async (request: express.Request, response: express.Response) => {
         try {
             var model: NodeCreateModel = await this._validator.validateCreateRequest(request);
-            model.Type = NodeType.ListeningNode;
+            model.Type = NodeType.EventListenerNode;
 
             const record = await this._service.create(model);
             if (record === null) {
@@ -89,12 +90,12 @@ export class NodeController {
         }
     };
 
-    createConditionalTimerNode = async (request: express.Request, response: express.Response) => {
+    createLogicalTimerNode = async (request: express.Request, response: express.Response) => {
         try {
-            var model: ConditionalTimerNodeCreateModel = await this._validator.validateCreateTimerNodeRequest(request);
-            model.Type = NodeType.ConditionalTimerNode;
+            var model: LogicalTimerNodeCreateModel = await this._validator.validateCreateLogicalTimerNodeRequest(request);
+            model.Type = NodeType.LogicalTimerNode;
 
-            const record = await this._service.createConditionalTimerNode(model);
+            const record = await this._service.createLogicalTimerNode(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');
             }
@@ -105,12 +106,11 @@ export class NodeController {
         }
     };
 
-    createDelayedActionNode = async (request: express.Request, response: express.Response) => {
+    createTimerNode = async (request: express.Request, response: express.Response) => {
         try {
-            var model: NodeCreateModel = await this._validator.validateCreateRequest(request);
-            model.Type = NodeType.DelayedActionNode;
+            var model: TimerNodeCreateModel = await this._validator.validateCreateRequest(request, true);
+            model.Type = NodeType.TimerNode;
 
-            //Please note that the delayed action node is just an execution node with some time delay
             const record = await this._service.create(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');

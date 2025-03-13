@@ -58,7 +58,7 @@ export class NodeInstance {
     TimerNumberOfTriesCompleted: number;
 
     @Column({ type: 'boolean', nullable: false, default: false })
-    DelayTimerFinished: boolean;
+    TimerFinished: boolean;
 
     @OneToOne(() => Rule, { nullable: true })
     ChosenNodePath: NodePath;

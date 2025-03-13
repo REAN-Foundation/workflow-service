@@ -25,7 +25,7 @@ export interface NodeCreateModel {
     Input                ?: ActionInputParams;
 }
 
-export interface YesNoNodeCreateModel extends NodeCreateModel {
+export interface LogicalYesNoActionNodeCreateModel extends NodeCreateModel {
     YesAction : NodeActionCreateModel,
     NoAction  : NodeActionCreateModel,
 }
@@ -36,16 +36,13 @@ export interface QuestionNodeCreateModel extends NodeCreateModel {
     Options      : QuestionAnswerOption[];
 }
 
-export interface ConditionalTimerNodeCreateModel extends NodeCreateModel {
+export interface LogicalTimerNodeCreateModel extends NodeCreateModel {
     NumberOfTries: number;
-    TimerSeconds: number;
     NextNodeIdOnSuccess: uuid | null;
     NextNodeIdOnTimeout: uuid | null;
 }
 
-export interface DelayedActionNodeCreateModel extends NodeCreateModel {
-    TimerSeconds: number;
-}
+export type TimerNodeCreateModel = NodeCreateModel;
 
 export interface NodeUpdateModel {
     Type        ?: NodeType;
@@ -90,7 +87,6 @@ export interface NodeResponseDto {
     NoAction    ?: NodeActionResponseDto;
     DelaySeconds?: number;
     NumberOfTries: number;
-    TimerSeconds?: number;
     RuleId?      : uuid;
     RawData?     : any;
     Input?       : ActionInputParams;

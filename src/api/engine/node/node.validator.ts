@@ -5,8 +5,8 @@ import {
     NodeUpdateModel,
     NodeSearchFilters,
     QuestionNodeCreateModel,
-    YesNoNodeCreateModel,
-    ConditionalTimerNodeCreateModel
+    LogicalYesNoActionNodeCreateModel,
+    LogicalTimerNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
@@ -16,7 +16,7 @@ import { NodeType, ActionType, QuestionResponseType, ParamType, InputSourceType 
 
 export class NodeValidator extends BaseValidator {
 
-    public validateCreateRequest = async (request: express.Request)
+    public validateCreateRequest = async (request: express.Request, isTimerNode: boolean = false)
         : Promise<NodeCreateModel> => {
         try {
             const node = joi.object({
@@ -36,7 +36,7 @@ export class NodeValidator extends BaseValidator {
                     Output       : joi.object().optional(),
                 })).optional(),
                 RuleId       : joi.string().uuid().optional(),
-                DelaySeconds : joi.number().integer().optional(),
+                DelaySeconds : isTimerNode ? joi.number().integer().required() : joi.number().integer().optional(),
                 RawData      : joi.object().allow(null).optional(),
                 Input        : joi.object({
                     Params : joi.array().items(joi.object({
@@ -52,6 +52,9 @@ export class NodeValidator extends BaseValidator {
                 }).optional(),
             });
             await node.validateAsync(request.body);
+            const DEFAULT_DELAY_SECS = 10;
+            var delaySeconds = request.body.DelaySeconds ?? null;
+            delaySeconds = isTimerNode && delaySeconds === null  ? DEFAULT_DELAY_SECS : delaySeconds;
             return {
                 Type         : request.body.Type,
                 Name         : request.body.Name,
@@ -59,7 +62,7 @@ export class NodeValidator extends BaseValidator {
                 ParentNodeId : request.body.ParentNodeId,
                 SchemaId     : request.body.SchemaId,
                 Actions      : request.body.Actions ?? null,
-                DelaySeconds : request.body.DelaySeconds ?? null,
+                DelaySeconds : delaySeconds,
                 RuleId       : request.body.RuleId ?? null,
                 RawData      : request.body.RawData ?? null,
                 Input        : request.body.Input ?? null,
@@ -69,8 +72,8 @@ export class NodeValidator extends BaseValidator {
         }
     };
 
-    public validateCreateYesNoNodeRequest = async (request: express.Request)
-    : Promise<YesNoNodeCreateModel> => {
+    public validateCreateLogicalYesNoActionNodeRequest = async (request: express.Request)
+    : Promise<LogicalYesNoActionNodeCreateModel> => {
         try {
             const node = joi.object({
                 Type         : joi.string().valid(...Object.values(NodeType)).required(),
@@ -139,8 +142,8 @@ export class NodeValidator extends BaseValidator {
         }
     };
 
-    public validateCreateTimerNodeRequest = async (request: express.Request)
-    : Promise<ConditionalTimerNodeCreateModel> => {
+    public validateCreateLogicalTimerNodeRequest = async (request: express.Request)
+    : Promise<LogicalTimerNodeCreateModel> => {
         try {
             const node = joi.object({
                 Type                : joi.string().valid(...Object.values(NodeType)).required(),
@@ -149,9 +152,8 @@ export class NodeValidator extends BaseValidator {
                 ParentNodeId        : joi.string().uuid().required(),
                 SchemaId            : joi.string().uuid().required(),
                 RuleId              : joi.string().uuid().optional(),
-                DelaySeconds        : joi.number().integer().optional(),
+                DelaySeconds        : joi.number().integer().required(),
                 NumberOfTries       : joi.number().integer().required(),
-                TimerSeconds        : joi.number().integer().required(),
                 RawData             : joi.object().allow(null).optional(),
                 NextNodeIdOnSuccess : joi.string().allow(null).uuid().optional(),
                 NextNodeIdOnTimeout : joi.string().allow(null).uuid().optional(),
@@ -169,7 +171,6 @@ export class NodeValidator extends BaseValidator {
                 RawData             : request.body.RawData ?? null,
                 Input               : request.body.Input ?? null,
                 NumberOfTries       : request.body.NumberOfTries,
-                TimerSeconds        : request.body.TimerSeconds,
                 NextNodeIdOnSuccess : request.body.NextNodeIdOnSuccess ?? null,
                 NextNodeIdOnTimeout : request.body.NextNodeIdOnTimeout ?? null,
             };

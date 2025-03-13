@@ -74,10 +74,10 @@ export class NodeController {
         }
     };
 
-    createListeningNode = async (request: express.Request, response: express.Response) => {
+    createEventListenerNode = async (request: express.Request, response: express.Response) => {
         try {
             var model: NodeCreateModel = await this._validator.validateCreateRequest(request);
-            model.Type = NodeType.ListeningNode;
+            model.Type = NodeType.EventListenerNode;
 
             const record = await this._service.create(model);
             if (record === null) {

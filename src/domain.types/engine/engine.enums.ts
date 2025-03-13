@@ -11,6 +11,22 @@ export enum WorkflowActivityType {
     TerminateWorkflow = 'TerminateWorkflow',
 }
 
+export enum EventType {
+    UserMessage            = 'UserMessage',
+    WorkflowSystemMessage  = 'WorkflowSystemMessage',
+    TerminateWorkflowEvent = 'TerminateWorkflowEvent',
+    WorkflowSystemEvent    = 'WorkflowSystemEvent',
+    TriggerChildWorkflow   = 'TriggerChildWorkflow',
+}
+
+export const EventTypeList: EventType[] = [
+    EventType.UserMessage,
+    EventType.WorkflowSystemMessage,
+    EventType.WorkflowSystemEvent,
+    EventType.TerminateWorkflowEvent,
+    EventType.TriggerChildWorkflow
+];
+
 export enum ParamType {
     Phone            = "Phone",
     Email            = "Email",
@@ -85,7 +101,7 @@ export const MessageChannelList: MessageChannelType[] = [
 export enum NodeType {
     ExecutionNode        = 'ExecutionNode',
     QuestionNode         = 'QuestionNode',
-    ListeningNode        = 'ListeningNode',
+    EventListenerNode    = 'EventListenerNode',
     YesNoNode            = 'YesNoNode',
     TimerNode            = 'TimerNode',
     LogicalTimerNode     = 'LogicalTimerNode',   //Timer node executes some rule-logic once it times out
@@ -95,7 +111,7 @@ export enum NodeType {
 export const NodeTypeList: NodeType[] = [
     NodeType.ExecutionNode,
     NodeType.QuestionNode,
-    NodeType.ListeningNode,
+    NodeType.EventListenerNode,
     NodeType.YesNoNode,
     NodeType.TimerNode,
     NodeType.LogicalTimerNode,
@@ -103,7 +119,7 @@ export const NodeTypeList: NodeType[] = [
 ];
 
 export enum ActionType {
-    TriggerListeningNode            = 'TriggerListeningNode',
+    TriggerEventListenerNode            = 'TriggerEventListenerNode',
     TriggerTimerNode                = 'TriggerTimerNode',
     TriggerLogicalTimerNode         = 'TriggerLogicalTimerNode',
     TriggerChildWorkflow            = 'TriggerChildWorkflow',
@@ -136,7 +152,7 @@ export enum ActionType {
 }
 
 export const ActionTypeList: ActionType[] = [
-    ActionType.TriggerListeningNode,
+    ActionType.TriggerEventListenerNode,
     ActionType.TriggerTimerNode,
     ActionType.TriggerLogicalTimerNode,
     ActionType.TriggerChildWorkflow,

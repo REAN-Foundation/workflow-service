@@ -1,7 +1,7 @@
 import { logger } from "../../../logger/logger";
 import { EventCreateModel, EventResponseDto } from "../../../domain.types/engine/event.types";
 import * as asyncLib from 'async';
-import { EventType } from '../../../domain.types/enums/event.type';
+import { EventType } from '../../../domain.types/engine/engine.enums';
 import { SchemaInstanceResponseDto } from "../../../domain.types/engine/schema.instance.types";
 import { SchemaService } from "../../../database/services/engine/schema.service";
 import { EventService } from "../../../database/services/engine/event.service";

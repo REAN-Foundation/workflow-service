@@ -1,7 +1,7 @@
 import { logger } from "../../../logger/logger";
 import { EventResponseDto } from "../../../domain.types/engine/event.types";
 import * as asyncLib from 'async';
-import { EventType } from "../../../domain.types/enums/event.type";
+import { EventType } from "../../../domain.types/engine/engine.enums";
 import { UserMessageEventHandler } from './user.message.event.handler';
 import { ASYNC_TASK_COUNT } from "./common.types";
 

@@ -18,7 +18,7 @@ import { RuleService } from '../../database/services/engine/rule.service';
 import { ConditionProcessor } from './condition.processor';
 import { NodeActionService } from '../../database/services/engine/node.action.service';
 import { TimeUtils } from '../../common/utilities/time.utils';
-import { EventType } from '../../domain.types/enums/event.type';
+import { EventType } from '../../domain.types/engine/engine.enums';
 import { StringUtils } from '../../common/utilities/string.utils';
 import { QuestionInstance } from '../../database/models/engine/question.instance.model';
 import { Question } from '../../database/models/engine/question.model';
@@ -128,7 +128,7 @@ export class SchemaEngine {
         logger.info(`Current Node: ${currentNodeName}`);
 
         //If there are any listening nodes, handle them
-        await this.handleListeningNodes();
+        await this.handleEventListenerNodes();
 
         const executionStatus = await this._nodeInstanceService.getExecutionStatus(currentNodeInstance.id);
         const actionCount = await this._dbUtilsService.getNodeActionCount(currentNodeInstance.Node.id);
@@ -159,9 +159,9 @@ export class SchemaEngine {
         return currentNodeInstance;
     }
 
-    private async handleListeningNodes() {
+    private async handleEventListenerNodes() {
 
-        var listeningNodeInstances = await this._dbUtilsService.getActiveListeningNodeInstances(this._schemaInstance.id);
+        var listeningNodeInstances = await this._dbUtilsService.getActiveEventListenerNodeInstances(this._schemaInstance.id);
 
         for (var listeningNodeInstance of listeningNodeInstances) {
             var listeningNode = await this._nodeService.getById(listeningNodeInstance.Node.id);
@@ -763,8 +763,8 @@ export class SchemaEngine {
             Result  : null,
         };
 
-        if (actionInstance.ActionType === ActionType.TriggerListeningNode) {
-            result = await actionExecutioner.triggerListeningNode(actionInstance);
+        if (actionInstance.ActionType === ActionType.TriggerEventListenerNode) {
+            result = await actionExecutioner.triggerEventListenerNode(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.TriggerTimerNode ||
             actionInstance.ActionType === ActionType.TriggerLogicalTimerNode) {

@@ -19,7 +19,7 @@ headers {
 body:json {
   {
     "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
-    "Type": "TriggerListeningNode",
+    "Type": "TriggerEventListenerNode",
     "Name": "Trigger location listener node",
     "Sequence": 2,
     "Description": "This action triggers a location listener node, which starts listening to location-user message events",
@@ -28,10 +28,10 @@ body:json {
         {
           "Name": "Listening Node to trigger",
           "Description": "Node Id of the listening node which should be triggered",
-          "ActionType": "TriggerListeningNode",
+          "ActionType": "TriggerEventListenerNode",
           "Type": "NodeId",
           "Value": "{{MAIN_LN1_ID}}",
-          "Key": "LocationListeningNode",
+          "Key": "LocationEventListenerNode",
           "Required": true
         }
       ]

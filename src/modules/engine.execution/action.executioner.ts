@@ -19,7 +19,7 @@ import { TimeUtils } from "../../common/utilities/time.utils";
 import { WorkflowMessage } from '../../domain.types/engine/user.event.types';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
 import ChildSchemaTriggerHandler from './handlers/child.schema.trigger.handler';
-import { EventType } from '../../domain.types/enums/event.type';
+import { EventType } from '../../domain.types/engine/engine.enums';
 import LogicalTimerNodeTriggerHandler from './handlers/logical.timer.node.trigger.handler';
 import { Agent as HttpAgent } from 'http'; // For HTTP
 import { Agent as HttpsAgent } from 'https'; // For HTTPS
@@ -71,7 +71,7 @@ export class ActionExecutioner {
 
     //#region Publics
 
-    public triggerListeningNode = async (
+    public triggerEventListenerNode = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
         const input = action.Input as ActionInputParams;

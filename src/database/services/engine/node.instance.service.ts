@@ -373,7 +373,7 @@ export class NodeInstanceService extends BaseService {
     }
 
     private async updateYesNoActionInstances(node: Node, nodeInstance: NodeInstance) {
-        if (node.Type === NodeType.YesNoNode) {
+        if (node.Type === NodeType.LogicalYesNoActionNode) {
             const yesAction = await this._nodeActionRepository.findOne({
                 where : {
                     id : node.YesActionId

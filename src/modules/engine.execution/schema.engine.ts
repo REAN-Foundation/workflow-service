@@ -148,7 +148,7 @@ export class SchemaEngine {
         if (newNodeInstance.id !== currentNodeInstance.id) {
             currentNodeInstance = newNodeInstance;
             if (currentNodeInstance.Node.Type === NodeType.ExecutionNode ||
-                currentNodeInstance.Node.Type === NodeType.YesNoNode ||
+                currentNodeInstance.Node.Type === NodeType.LogicalYesNoActionNode ||
                 currentNodeInstance.Node.Type === NodeType.QuestionNode ||
                 currentNodeInstance.Node.Type === NodeType.LogicalTimerNode
             ) {
@@ -313,8 +313,8 @@ export class SchemaEngine {
         if (currentNodeType === NodeType.QuestionNode) {
             return await this.traverseQuestionNode(currentNodeInstance);
         }
-        else if (currentNodeType === NodeType.YesNoNode) {
-            return await this.traverseYesNoNode(currentNodeInstance);
+        else if (currentNodeType === NodeType.LogicalYesNoActionNode) {
+            return await this.traverseLogicalYesNoActionNode(currentNodeInstance);
         }
         else if (currentNodeType === NodeType.ExecutionNode) {
             return await this.traverseExecutionNode(currentNodeInstance);
@@ -491,7 +491,7 @@ export class SchemaEngine {
         return currentNodeInstance;
     }
 
-    private async traverseYesNoNode(currentNodeInstance: NodeInstanceResponseDto)
+    private async traverseLogicalYesNoActionNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
 
         var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);

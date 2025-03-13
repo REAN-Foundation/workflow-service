@@ -5,7 +5,7 @@ import {
     NodeUpdateModel,
     NodeSearchFilters,
     QuestionNodeCreateModel,
-    YesNoNodeCreateModel,
+    LogicalYesNoActionNodeCreateModel,
     LogicalTimerNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
@@ -72,8 +72,8 @@ export class NodeValidator extends BaseValidator {
         }
     };
 
-    public validateCreateYesNoNodeRequest = async (request: express.Request)
-    : Promise<YesNoNodeCreateModel> => {
+    public validateCreateLogicalYesNoActionNodeRequest = async (request: express.Request)
+    : Promise<LogicalYesNoActionNodeCreateModel> => {
         try {
             const node = joi.object({
                 Type         : joi.string().valid(...Object.values(NodeType)).required(),

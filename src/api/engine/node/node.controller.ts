@@ -4,7 +4,7 @@ import { NodeValidator } from './node.validator';
 import { NodeService } from '../../../database/services/engine/node.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import {
-    YesNoNodeCreateModel,
+    LogicalYesNoActionNodeCreateModel,
     NodeCreateModel,
     NodeSearchFilters,
     NodeUpdateModel,
@@ -58,12 +58,12 @@ export class NodeController {
         }
     };
 
-    createYesNoNode = async (request: express.Request, response: express.Response) => {
+    createLogicalYesNoActionNode = async (request: express.Request, response: express.Response) => {
         try {
-            var model: YesNoNodeCreateModel = await this._validator.validateCreateYesNoNodeRequest(request);
-            model.Type = NodeType.YesNoNode;
+            var model: LogicalYesNoActionNodeCreateModel = await this._validator.validateCreateLogicalYesNoActionNodeRequest(request);
+            model.Type = NodeType.LogicalYesNoActionNode;
 
-            const record = await this._service.createYesNoNode(model);
+            const record = await this._service.createLogicalYesNoActionNode(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');
             }

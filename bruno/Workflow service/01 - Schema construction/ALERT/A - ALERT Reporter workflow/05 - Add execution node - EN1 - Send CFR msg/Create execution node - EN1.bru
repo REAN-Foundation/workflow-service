@@ -25,6 +25,27 @@ body:json {
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
+        "Type": "TriggerTimerNode",
+        "Name": "Trigger timer node to ask incident resolution question",
+        "Sequence": 0,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "Thanks for the location",
+              "Type": "Text",
+              "Value": "Thanks for sharing location!"
+            }
+          ]
+        }
+      },
+      {
         "Type": "SendMessage",
         "Name": "Send message - Thanks for location",
         "Sequence": 1,

@@ -1,7 +1,7 @@
 meta {
-  name: 04- Create base condition
+  name: 03 - Create condition - for path rule 1
   type: http
-  seq: 4
+  seq: 3
 }
 
 post {
@@ -18,18 +18,23 @@ headers {
 
 body:json {
   {
-    "Name": "Base condition for CFR response check",
-    "Description": "This is the base condition for the CFR response check",
-    "ParentRuleId": "{{T1_RULE_ID}}",
+    "Name": "Base rule condition for option 1",
+    "Description": "This is the base rule condition for the first option. Mark the incident as handled.",
+    "ParentRuleId": "{{QN_NODE_PATH_1_RULE_ID}}",
     "ParentConditionId": null,
     "OperatorType": "Logical",
-    "LogicalOperatorType": "IsNotEmpty",
+    "LogicalOperatorType": "Equal",
     "FirstOperand": {
-      "DataType": "Array",
-      "Name": "Responded CFR list",
+      "DataType": "Integer",
+      "Name": "Expected option sequence",
+      "Value": 1
+    },
+    "SecondOperand": {
+      "DataType": "Integer",
+      "Name": "Chosen option sequence",
       "Value": null,
-      "Source": "Almanac",
-      "Key": "CFR:Responders"
+      "Source": "UserEvent",
+      "Key": "QuestionResponse:ChosenOptionSequence"
     }
   }
 }
@@ -38,7 +43,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("T1_RULE_BASE_CONDITION_ID", res.body.Data.id);
+    bru.setEnvVar("QN_NODE_PATH_1_RULE_CONDITION_ID", res.body.Data.id);
   }
   
 }
@@ -50,7 +55,7 @@ tests {
       expect(jsonRes.Status).to.eql('success');
   });
   
-  test("Base condition is created", function () {
+  test("Question node first path condition is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');

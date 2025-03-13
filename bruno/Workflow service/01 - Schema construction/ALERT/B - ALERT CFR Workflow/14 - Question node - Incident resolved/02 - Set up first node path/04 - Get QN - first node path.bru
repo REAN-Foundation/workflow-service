@@ -1,12 +1,12 @@
 meta {
-  name: 05 - Set condition to rule
+  name: 04 - Get QN - first node path
   type: http
-  seq: 5
+  seq: 4
 }
 
-put {
-  url: {{BASE_URL}}/engine/rules/{{T1_RULE_ID}}/base-condition/{{T1_RULE_BASE_CONDITION_ID}}
-  body: json
+get {
+  url: {{BASE_URL}}/engine/node-paths/{{QN_NODE_PATH_1_ID}}
+  body: none
   auth: none
 }
 

@@ -1,12 +1,12 @@
 meta {
-  name: 03 - Set CFR response check rule to node
+  name: 05 - Get QN path rule - second option
   type: http
-  seq: 3
+  seq: 5
 }
 
-put {
-  url: {{BASE_URL}}/engine/nodes/{{MAIN_LTN1_ID}}/base-rule/{{T1_RULE_ID}}
-  body: json
+get {
+  url: {{BASE_URL}}/engine/rules/{{QN_NODE_PATH_2_RULE_ID}}
+  body: none
   auth: none
 }
 

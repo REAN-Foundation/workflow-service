@@ -1,5 +1,5 @@
 meta {
-  name: 02 - Create CFR response check rule
+  name: 02 - Create QN path rule - first option
   type: http
   seq: 2
 }
@@ -18,10 +18,11 @@ headers {
 
 body:json {
   {
-    "Name": "CFR response check rule",
-    "Description": "This is the rule to check if any CFR has responded positively.",
-    "ParentNodeId": "{{MAIN_LTN1_ID}}",
-    "SchemaId": "{{MAIN_SCHEMA_ID}}"
+    "Name": "Close incident option check rule",
+    "Description": "This is rule to check if the user has chosen option to mark the incident handled and closed.",
+    "ParentNodeId": "{{CFR_QUESTION_1_ID}}",
+    "NodePathId": "{{QN_NODE_PATH_1_ID}}",
+    "SchemaId": "{{CHILD_SCHEMA_ID}}"
   }
 }
 
@@ -29,7 +30,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("T1_RULE_ID", res.body.Data.id);
+    bru.setEnvVar("QN_NODE_PATH_1_RULE_ID", res.body.Data.id);
   }
   
 }
@@ -39,13 +40,6 @@ tests {
       expect(res.getStatus()).to.equal(201);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
-  });
-  
-  test("Decision node rule is created", function () {
-      var jsonRes = res.getBody();
-      expect(jsonRes.Data).to.have.property('id');
-      expect(jsonRes.Data).to.have.property('Name');
-      expect(jsonRes.Data).to.have.property('Description');
   });
   
 }

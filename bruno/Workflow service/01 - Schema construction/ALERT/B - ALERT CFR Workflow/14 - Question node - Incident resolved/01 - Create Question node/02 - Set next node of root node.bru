@@ -1,12 +1,12 @@
 meta {
-  name: Set timer node as next node of EN2 node
+  name: 02 - Set next node of root node
   type: http
-  seq: 6
+  seq: 2
 }
 
 put {
-  url: {{BASE_URL}}/engine/nodes/{{MAIN_EN2_ID}}/next-node/{{MAIN_LTN1_ID}}
-  body: none
+  url: {{BASE_URL}}/engine/nodes/{{CHILD_MAIN_ROOT_NODE_ID}}/next-node/{{CFR_QUESTION_1_ID}}
+  body: json
   auth: none
 }
 

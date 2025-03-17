@@ -1,4 +1,4 @@
-import { ActionType, ExecutionStatus, InputSourceType, NodeType, ParamType, QuestionResponseType, UserMessageType, WorkflowActivityType } from '../../domain.types/engine/engine.enums';
+import { ActionType, ExecutionStatus, InputSourceType, MessageChannelType, NodeType, ParamType, QuestionResponseType, UserMessageType, WorkflowActivityType } from '../../domain.types/engine/engine.enums';
 import { SchemaInstanceResponseDto } from '../../domain.types/engine/schema.instance.types';
 import { EventResponseDto } from '../../domain.types/engine/event.types';
 import { SchemaResponseDto } from '../../domain.types/engine/schema.domain.types';
@@ -25,6 +25,8 @@ import { Question } from '../../database/models/engine/question.model';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
 import LogicalTimerNodeTriggerHandler from './handlers/logical.timer.node.trigger.handler';
 import TimerNodeTriggerHandler from './handlers/timer.node.trigger.handler';
+import { WorkflowMessage } from '../../domain.types/engine/user.event.types';
+import { Location } from '../../domain.types/engine/common.types';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -660,10 +662,10 @@ export class SchemaEngine {
         };
 
         const summary = {
-            CurrentSchema: this._schema.Name,
-            CurrentNode  : currentNode.Name,
-            Type         : WorkflowActivityType.Broadcasting,
-            Timestamp    : new Date(),
+            CurrentSchema : this._schema.Name,
+            CurrentNode   : currentNode.Name,
+            Type          : WorkflowActivityType.Broadcasting,
+            Timestamp     : new Date(),
         };
 
         logger.info(`Broadcasting message!`);
@@ -678,7 +680,7 @@ export class SchemaEngine {
             return currentNodeInstance;
         }
 
-        const message = userMessageType == UserMessageType.Text ? 
+        const message = userMessageType === UserMessageType.Text ?
             userMessage.TextMessage : userMessage.Location;
         if (!message) {
             logger.error(`Currently only text and location messages are supported in the broadcast!`);
@@ -716,19 +718,46 @@ export class SchemaEngine {
         // Send the broadcast message
         const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
         for await (var phoneNumber of phonenumebrs) {
-            var workflowMessage = {
-                MessageType : userMessageType,
-                TextMessage : userMessageType === UserMessageType.Text ? message : null,
-                Location    : userMessageType === UserMessageType.Location ? message : null,
-                Phone       : phoneNumber,
+            var workflowMessage: WorkflowMessage = {
+                MessageType    : userMessageType,
+                TextMessage    : userMessageType === UserMessageType.Text ? message as string : null,
+                Location       : userMessageType === UserMessageType.Location ? message as Location : null,
+                Phone          : phoneNumber,
+                Placeholders   : [],
+                EventTimestamp : new Date(),
+                MessageChannel : this.getMessageChannel(),
+                Payload        : {
+                    MessageType        : userMessageType,
+                    ProcessingEventId  : this._event?.id,
+                    ChannelType        : this.getMessageChannel(),
+                    ChannelMessageId   : null,
+                    BotMessageId       : null,
+                    SchemaId           : this._schema.id,
+                    SchemaInstanceId   : this._schemaInstance.id,
+                    SchemaInstanceCode : this._schemaInstance.Code,
+                    SchemaName         : this._schema.Name,
+                    NodeInstanceId     : currentNodeInstance.id,
+                    NodeId             : currentNode.id,
+                }
             };
-            // await actionExecutioner.sendBotMessage(phoneNumber, message);
+            await actionExecutioner.sendBotMessage(workflowMessage);
         }
 
         await this._schemaInstanceService.recordActivity(
             this._schemaInstance.id, WorkflowActivityType.Broadcasting, activityPayload, summary);
 
         return currentNodeInstance;
+    }
+
+    private getMessageChannel() {
+        var p = this._schemaInstance.ContextParams.Params.find(x => x.Key === 'ContextParams:MessageChannel');
+        if (!p) {
+            p = this._schemaInstance.ContextParams.Params.find(x => x.Key === 'MessageChannel' || x.Type === ParamType.MessageChannel);
+        }
+        if (p && p.Value) {
+            return p.Value as MessageChannelType;
+        }
+        return MessageChannelType.WhatsApp;
     }
 
     private async traverseIdleNode(currentNodeInstance: NodeInstanceResponseDto)
@@ -743,10 +772,10 @@ export class SchemaEngine {
         };
 
         const summary = {
-            CurrentSchema: this._schema.Name,
-            CurrentNode  : currentNode.Name,
-            Type         : WorkflowActivityType.Idle,
-            Timestamp    : new Date(),
+            CurrentSchema : this._schema.Name,
+            CurrentNode   : currentNode.Name,
+            Type          : WorkflowActivityType.Idle,
+            Timestamp     : new Date(),
         };
 
         logger.info(`Idle node!`);

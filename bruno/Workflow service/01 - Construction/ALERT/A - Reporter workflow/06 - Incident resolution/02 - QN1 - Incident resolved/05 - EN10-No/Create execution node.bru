@@ -1,7 +1,7 @@
 meta {
-  name: Create execution node - EN2
+  name: Create execution node
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
@@ -18,48 +18,35 @@ headers {
 
 body:json {
   {
-    "Name": "EN2-Send message to reporter assuring help",
-    "Description": "This execution node holds actions to send message to reporter reassuring that help is on the way and reponsers have been notified.",
+    "Name": "Send message to reporter",
+    "Description": "This execution node holds actions to send message to reporter on continuing the incident handling.",
     "Type": "ExecutionNode",
-    "ParentNodeId": "{{MAIN_EN1_ID}}",
+    "ParentNodeId": "{{MAIN_QN1_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
         "Type": "SendMessage",
-        "Name": "Send message - Assuring reporter - first message",
+        "Name": "Send message - To reporter",
+        "Description": "Sending incident handling continued message",
         "Sequence": 0,
         "Input": {
           "Params": [
             {
-              "Name": "Reporter Phone",
               "Type": "Phone",
               "Value": null,
               "Source": "Almanac",
               "Key": "ContextParams:Reporter:Phone"
             },
             {
-              "Name": "CFR notified message",
               "Type": "Text",
-              "Value": "We have notified nearby responders. We will let you know once there is positive response."
-            }
-          ]
-        }
-      },
-      {
-        "Type": "TriggerTimerNode",
-        "Name": "Trigger timer node - Incident Resolution",
-        "Sequence": 1,
-        "Description": "This action triggers a timer node which handles incident resolution workflow.",
-        "Input": {
-          "Params": [
+              "Name": "Message",
+              "Value": "Ok. We will continue to track incident {{ContextParams:IncidenceCode}}. Please keep us updated."
+            },
             {
-              "Name": "Timer Node to trigger",
-              "Description": "Node Id of the timer node which should be triggered",
-              "ActionType": "TriggerTimerNode",
-              "Type": "NodeId",
-              "Value": "{{MAIN_TN1_ID}}",
-              "Key": "IncidentResolutionTimerNode",
-              "Required": true
+              "Name": "Incident code",
+              "Type": "Placeholder",
+              "Key": "ContextParams:IncidenceCode",
+              "Source": "Almanac"
             }
           ]
         }
@@ -72,7 +59,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_EN2_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_EN10_ID", res.body.Data.id);
   }
   
 }

@@ -18,10 +18,10 @@ headers {
 
 body:json {
   {
-    "Name": "QN - Second node path - Keep giving additional information",
-    "Description": "This is node path if the user has chosen option to continue giving the information.",
-    "ParentNodeId": "{{CFR_QUESTION_1_ID}}",
-    "SchemaId": "{{CHILD_SCHEMA_ID}}"
+    "Name": "Second Path - Issue Resolved? - No",
+    "Description": "This is node path if the user has chosen option to say the issue is not successfully resolved.",
+    "ParentNodeId": "{{MAIN_QN1_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}"
   }
 }
 
@@ -29,7 +29,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("QN_NODE_PATH_2_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_QN1_PATH_2_ID", res.body.Data.id);
   }
   
 }

@@ -1,11 +1,11 @@
 meta {
-  name: 03- Get question node - QN
+  name: 03- Get question node - QN1
   type: http
   seq: 3
 }
 
 get {
-  url: {{BASE_URL}}/engine/nodes/{{CFR_QUESTION_1_ID}}
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_QN1_ID}}
   body: json
   auth: none
 }
@@ -67,8 +67,8 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 200) {
-    bru.setEnvVar("CFR_QUESTION_1_ID_OPTION_1", res.body.Data.Question.Options[0].id);
-    bru.setEnvVar("CFR_QUESTION_1_ID_OPTION_2", res.body.Data.Question.Options[1].id);
+    bru.setEnvVar("MAIN_QN1_OPTION_1_ID", res.body.Data.Question.Options[0].id);
+    bru.setEnvVar("MAIN_QN1_OPTION_2_ID", res.body.Data.Question.Options[1].id);
   }
   
 }

@@ -1,12 +1,12 @@
 meta {
-  name: 04 - Get QN - first node path
+  name: Set next node of EN10
   type: http
-  seq: 4
+  seq: 3
 }
 
-get {
-  url: {{BASE_URL}}/engine/node-paths/{{MAIN_QN1_PATH_1_ID}}
-  body: none
+put {
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_EN10_ID}}/next-node/{{MAIN_TERMINATOR_2_ID}}
+  body: json
   auth: none
 }
 

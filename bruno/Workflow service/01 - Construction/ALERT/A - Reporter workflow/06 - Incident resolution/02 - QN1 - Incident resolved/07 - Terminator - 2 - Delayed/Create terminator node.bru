@@ -1,11 +1,11 @@
 meta {
-  name: 01 - Create QN - first node path
+  name: Create terminator node
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
-  url: {{BASE_URL}}/engine/node-paths
+  url: {{BASE_URL}}/engine/nodes
   body: json
   auth: none
 }
@@ -18,10 +18,12 @@ headers {
 
 body:json {
   {
-    "Name": "First Node Path - Issue Resolved? - Yes",
-    "Description": "This is node path if the user is available.",
-    "ParentNodeId": "{{MAIN_QN1_ID}}",
-    "SchemaId": "{{MAIN_SCHEMA_ID}}"
+    "Name": "Terminator Node",
+    "Description": "This is the terminator node.",
+    "Type": "TerminatorNode",
+    "ParentNodeId": "{{MAIN_EN9_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "DelaySeconds": 600
   }
 }
 
@@ -29,7 +31,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_QN1_PATH_1_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_TERMINATOR_2_ID", res.body.Data.id);
   }
   
 }
@@ -39,6 +41,13 @@ tests {
       expect(res.getStatus()).to.equal(201);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
   });
   
 }

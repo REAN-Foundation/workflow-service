@@ -43,7 +43,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("QN_NODE_PATH_1_RULE_CONDITION_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_QN1_PATH_1_RULE_CONDITION_ID", res.body.Data.id);
   }
   
 }

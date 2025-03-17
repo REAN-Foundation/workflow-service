@@ -1,5 +1,5 @@
 meta {
-  name: 01 - Create question node - QN
+  name: 01 - Create question node
   type: http
   seq: 1
 }
@@ -24,23 +24,23 @@ body:json {
     "ParentNodeId": "{{MAIN_TN1_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [],
-    "DelaySeconds": 600,
-    "QuestionText": "Will you be available to attend to the incident?",
+    "DelaySeconds": 0,
+    "QuestionText": "Has the incident been successfully resolved??",
     "ResponseType": "Single Choice Selection",
     "Input": {
       "Params": [
         {
-          "Name": "CFR Phone",
+          "Name": "Reporter Phone",
           "Type": "Phone",
           "Value": null,
           "Source": "Almanac",
-          "Key": "ContextParams:CFR:Phone"
+          "Key": "ContextParams:Reporter:Phone"
         }
       ]
     },
     "Options": [
       { 
-        "Text": "Available",
+        "Text": "Yes",
         "Sequence": 1,
         "Metadata": [
           {
@@ -50,7 +50,7 @@ body:json {
         ]
       },
       {
-        "Text": "Not Available",
+        "Text": "No",
         "Sequence": 2,
         "Metadata": [
           {

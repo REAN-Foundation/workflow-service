@@ -18,7 +18,7 @@ headers {
 
 body:json {
   {
-    "Name": "T2-Check Incident Resolution Timer node",
+    "Name": "T1-Check Incident Resolution Timer node",
     "Description": "This node is triggered - once the timer expires - asks question to the reporter whether the incident is successfully resolved.",
     "Type": "TimerNode",
     "ParentNodeId": null,
@@ -34,7 +34,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("MAIN_TN1_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -43,10 +43,10 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
   });
-
+  
 }

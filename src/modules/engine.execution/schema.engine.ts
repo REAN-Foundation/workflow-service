@@ -599,6 +599,8 @@ export class SchemaEngine {
     private async traverseTerminatorNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
 
+        await this.delayedNodeExecution(currentNodeInstance);
+
         // Record the activity
         const activityPayload = {
             CurrentNodeInstance : currentNodeInstance,

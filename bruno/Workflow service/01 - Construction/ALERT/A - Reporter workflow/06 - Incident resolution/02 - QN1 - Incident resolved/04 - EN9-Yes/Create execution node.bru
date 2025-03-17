@@ -1,7 +1,7 @@
 meta {
-  name: Create execution node - EN2
+  name: Create execution node
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
@@ -18,48 +18,62 @@ headers {
 
 body:json {
   {
-    "Name": "EN2-Send message to reporter assuring help",
-    "Description": "This execution node holds actions to send message to reporter reassuring that help is on the way and reponsers have been notified.",
+    "Name": "Send closing message to reporter",
+    "Description": "This execution node holds actions to send closing message to the reporter.",
     "Type": "ExecutionNode",
-    "ParentNodeId": "{{MAIN_EN1_ID}}",
+    "ParentNodeId": "{{MAIN_QN1_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
         "Type": "SendMessage",
-        "Name": "Send message - Assuring reporter - first message",
+        "Name": "Send message - To reporter",
+        "Description": "Sending closing message.",
         "Sequence": 0,
         "Input": {
           "Params": [
             {
-              "Name": "Reporter Phone",
               "Type": "Phone",
               "Value": null,
               "Source": "Almanac",
               "Key": "ContextParams:Reporter:Phone"
             },
             {
-              "Name": "CFR notified message",
               "Type": "Text",
-              "Value": "We have notified nearby responders. We will let you know once there is positive response."
+              "Name": "Message",
+              "Value": "Glad to hear that the incident {{ContextParams:IncidenceCode}} is successfully handled and resolved. We appreciate your involvement in handling the situation. Thank You!"
+            },
+            {
+              "Name": "Incident code",
+              "Type": "Placeholder",
+              "Key": "ContextParams:IncidenceCode",
+              "Source": "Almanac"
             }
           ]
         }
       },
       {
-        "Type": "TriggerTimerNode",
-        "Name": "Trigger timer node - Incident Resolution",
+        "Type": "SendMessage",
+        "Name": "Send message - To primary responder",
+        "Description": "Sending closing message.",
         "Sequence": 1,
-        "Description": "This action triggers a timer node which handles incident resolution workflow.",
         "Input": {
           "Params": [
             {
-              "Name": "Timer Node to trigger",
-              "Description": "Node Id of the timer node which should be triggered",
-              "ActionType": "TriggerTimerNode",
-              "Type": "NodeId",
-              "Value": "{{MAIN_TN1_ID}}",
-              "Key": "IncidentResolutionTimerNode",
-              "Required": true
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "CFR:PrimaryCFR:Phone"
+            },
+            {
+              "Type": "Text",
+              "Name": "Message",
+              "Value": "The incident reporter for incident {{ContextParams:IncidenceCode}} has marked the incident as handled and resolved. We appreciate your involvement in handling the situation. Thank You!"
+            },
+            {
+              "Name": "Incident code",
+              "Type": "Placeholder",
+              "Key": "ContextParams:IncidenceCode",
+              "Source": "Almanac"
             }
           ]
         }
@@ -72,7 +86,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_EN2_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_EN9_ID", res.body.Data.id);
   }
   
 }

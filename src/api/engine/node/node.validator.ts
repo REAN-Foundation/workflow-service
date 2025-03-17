@@ -16,7 +16,7 @@ import { NodeType, ActionType, QuestionResponseType, ParamType, InputSourceType 
 
 export class NodeValidator extends BaseValidator {
 
-    public validateCreateRequest = async (request: express.Request, isTimerNode: boolean = false)
+    public validateCreateRequest = async (request: express.Request, isTimerNode = false)
         : Promise<NodeCreateModel> => {
         try {
             const node = joi.object({

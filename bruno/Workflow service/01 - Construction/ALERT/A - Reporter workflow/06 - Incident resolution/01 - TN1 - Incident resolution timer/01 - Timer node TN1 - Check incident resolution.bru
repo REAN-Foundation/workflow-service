@@ -1,5 +1,5 @@
 meta {
-  name: 01 - Timer node T2 - Check incident resolution
+  name: 01 - Timer node TN1 - Check incident resolution
   type: http
   seq: 1
 }
@@ -32,9 +32,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_TN2_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_TN1_ID", res.body.Data.id);
   }
-  
+
 }
 
 tests {
@@ -43,16 +43,10 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
+
   test("Node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
   });
-  
-}
 
-docs {
-  User login with username/phone/email and password.
-  
-  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

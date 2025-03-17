@@ -18,13 +18,13 @@ headers {
 
 body:json {
   {
-    "Name": "Availability question",
-    "Description": "This question node asks the CFR question with options enquiring whether he/she is available for the emergency incident handling.",
+    "Name": "Incident Resolution Question",
+    "Description": "This question asks the reporter if the incident has been resolved successfully.",
     "Type": "QuestionNode",
-    "ParentNodeId": "{{CHILD_MAIN_ROOT_NODE_ID}}",
-    "SchemaId": "{{CHILD_SCHEMA_ID}}",
+    "ParentNodeId": "{{MAIN_TN1_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [],
-    "DelaySeconds": 180,
+    "DelaySeconds": 600,
     "QuestionText": "Will you be available to attend to the incident?",
     "ResponseType": "Single Choice Selection",
     "Input": {
@@ -39,7 +39,7 @@ body:json {
       ]
     },
     "Options": [
-      {
+      { 
         "Text": "Available",
         "Sequence": 1,
         "Metadata": [
@@ -67,9 +67,9 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("CFR_QUESTION_1_ID", res.body.Data.id);
-    bru.setEnvVar("CFR_QUESTION_1_ID_OPTION_1", res.body.Data.Question.Options[0].id);
-    bru.setEnvVar("CFR_QUESTION_1_ID_OPTION_2", res.body.Data.Question.Options[1].id);
+    bru.setEnvVar("MAIN_QN1_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_QN1_OPTION_1_ID", res.body.Data.Question.Options[0].id);
+    bru.setEnvVar("MAIN_QN1_OPTION_2_ID", res.body.Data.Question.Options[1].id);
   }
   
 }

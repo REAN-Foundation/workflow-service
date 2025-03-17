@@ -1,11 +1,11 @@
 meta {
-  name: 02 - Create CFR response check rule
+  name: 01 - Create CFR resp timer node
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
-  url: {{BASE_URL}}/engine/rules
+  url: {{BASE_URL}}/engine/nodes/logical-timer-node
   body: json
   auth: none
 }
@@ -18,10 +18,15 @@ headers {
 
 body:json {
   {
-    "Name": "CFR response check rule",
-    "Description": "This is the rule to check if any CFR has responded positively.",
-    "ParentNodeId": "{{MAIN_LTN1_ID}}",
-    "SchemaId": "{{MAIN_SCHEMA_ID}}"
+    "Name": "T1-CFR Yes Response Checking Timer node",
+    "Description": "This node when triggered checks in almanac whether any CFR has responded YES. This is checked at certain intervals for finite number of times.",
+    "Type": "LogicalTimerNode",
+    "ParentNodeId": "{{MAIN_EN2_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "NumberOfTries": 1,
+    "DelaySeconds": 300,
+    "NextNodeIdOnSuccess": null,
+    "NextNodeIdOnTimeout": null
   }
 }
 
@@ -29,7 +34,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("T1_RULE_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_LTN2_ID", res.body.Data.id);
   }
 
 }
@@ -41,11 +46,9 @@ tests {
       expect(jsonRes.Status).to.eql('success');
   });
 
-  test("Decision node rule is created", function () {
+  test("Schema is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
-      expect(jsonRes.Data).to.have.property('Name');
-      expect(jsonRes.Data).to.have.property('Description');
   });
 
 }

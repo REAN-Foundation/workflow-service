@@ -1,11 +1,11 @@
 meta {
-  name: Set timer node as next node of EN2 node
+  name: Set next node of T1 node - timeout
   type: http
-  seq: 6
+  seq: 2
 }
 
 put {
-  url: {{BASE_URL}}/engine/nodes/{{MAIN_EN2_ID}}/next-node/{{MAIN_LTN1_ID}}
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_LTN2_ID}}/next-node-on-timer-timeout/{{MAIN_EN5_ID}}
   body: none
   auth: none
 }

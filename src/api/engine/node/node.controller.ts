@@ -108,7 +108,7 @@ export class NodeController {
 
     createTimerNode = async (request: express.Request, response: express.Response) => {
         try {
-            var model: TimerNodeCreateModel = await this._validator.validateCreateRequest(request, true);
+            var model: TimerNodeCreateModel = await this._validator.validateCreateTimerNodeRequest(request);
             model.Type = NodeType.TimerNode;
 
             const record = await this._service.create(model);

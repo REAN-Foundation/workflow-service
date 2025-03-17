@@ -601,16 +601,16 @@ export class ActionExecutioner {
         if (!p) {
             logger.error('Input parameters not found');
             return {
-                Success : false,
-                Result  : null
+                Success: false,
+                Result: null
             };
         }
         var key = p.Key;
         if (!key) {
             logger.error('Key not found in input parameters');
             return {
-                Success : false,
-                Result  : null
+                Success: false,
+                Result: null
             };
         }
         var inValue = p.Value;
@@ -625,53 +625,37 @@ export class ActionExecutioner {
         if (!inValue) {
             logger.error('Value not found in input parameters');
             return {
-                Success : false,
-                Result  : null
+                Success: false,
+                Result: null
             };
         }
 
         const op = output && output.Params && output.Params.length > 0 ? output.Params[0] : null;
-        if (op && op.Destination === OutputDestinationType.ParentSchemaInstanceAlmanac) {
+        if (op) {
             const currentSchemaInstance = this._schemaInstance;
-            const parentSchemaInstanceId = currentSchemaInstance.ParentSchemaInstanceId;
-            if (!parentSchemaInstanceId) {
-                logger.error('Parent Schema Instance Id not found');
-                return {
-                    Success : false,
-                    Result  : null
-                };
-            }
-            const parentAlmanac = await Almanac.getAlmanac(parentSchemaInstanceId);
-            const outputKey = op.Key;
-            if (!outputKey) {
-                logger.error('Output Key not found');
-                return {
-                    Success : false,
-                    Result  : null
-                };
-            }
-            var value = inValue;
-            if (op.Type === ParamType.Array) {
-                var existingValue = await parentAlmanac.getFact(outputKey);
-                if (existingValue) {
-                    if (Array.isArray(existingValue)) {
-                        if (Array.isArray(inValue)) {
-                            existingValue = existingValue.concat(inValue);
-                        }
-                        else {
-                            existingValue.push(inValue);
-                        }
-                    }
-                    else {
-                        existingValue = [existingValue, inValue];
-                    }
-                    value = existingValue;
-                }
-                else {
-                    value = [inValue];
+            if (op.Destination === OutputDestinationType.ParentSchemaAlmanac) {
+                const targetSchemaInstanceId = currentSchemaInstance.ParentSchemaInstanceId;
+                const success = await this.saveToTargetAlmanac(op, targetSchemaInstanceId, inValue);
+                if (!success) {
+                    return {
+                        Success: false,
+                        Result: null
+                    };
                 }
             }
-            await parentAlmanac.addFact(outputKey, value);
+            else if (op.Destination === OutputDestinationType.ChildSchemaAlmanac) {
+                var childrenSchemaInstances = await this._schemaInstanceService.getByParentSchemaInstanceId(currentSchemaInstance.id);
+                if (childrenSchemaInstances.length > 0) {
+                    for await (var childSchemaInstance of childrenSchemaInstances) {
+                        logger.info(`Saving to children almanacs: ${childSchemaInstance.id}`);
+                        const targetSchemaInstanceId = childSchemaInstance.id;
+                        const success = await this.saveToTargetAlmanac(op, targetSchemaInstanceId, inValue);
+                        if (!success) {
+                            logger.error(`Failed to save to child schema instance: ${childSchemaInstance.id}`);
+                        }
+                    }
+                }
+            }
         }
         else {
             await this._almanac.addFact(key, inValue);
@@ -681,10 +665,42 @@ export class ActionExecutioner {
         await this.recordActionActivity(action, { Key: key, Value: inValue });
 
         return {
-            Success : true,
-            Result  : true
+            Success: true,
+            Result: true
         };
     };
+
+    private async saveToTargetAlmanac(op: Params, targetSchemaInstanceId: uuid, inValue: any): Promise<boolean> {
+        const targetAlmanac = await Almanac.getAlmanac(targetSchemaInstanceId);
+        const outputKey = op.Key;
+        if (!outputKey) {
+            logger.error('Output Key not found');
+            return false;
+        }
+        var value = inValue;
+        if (op.Type === ParamType.Array) {
+            var existingValue = await targetAlmanac.getFact(outputKey);
+            if (existingValue) {
+                if (Array.isArray(existingValue)) {
+                    if (Array.isArray(inValue)) {
+                        existingValue = existingValue.concat(inValue);
+                    }
+                    else {
+                        existingValue.push(inValue);
+                    }
+                }
+                else {
+                    existingValue = [existingValue, inValue];
+                }
+                value = existingValue;
+            }
+            else {
+                value = [inValue];
+            }
+        }
+        await targetAlmanac.addFact(outputKey, value);
+        return true;
+    }
 
     public executeUpdateContextParamsAction = async (
         actionInstance: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {

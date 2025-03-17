@@ -392,16 +392,19 @@ export const InputSourceTypeList: InputSourceType[] = [
 ];
 
 export enum OutputDestinationType {
-    Database                    = "Database",
-    Almanac                     = "Almanac",
-    ParentSchemaInstanceAlmanac = "ParentSchemaInstanceAlmanac",
-    ApiEndpoint                 = "ApiEndpoint",
-    None                        = "None",
+    Database            = "Database",
+    Almanac             = "Almanac",
+    ParentSchemaAlmanac = "ParentSchemaAlmanac",
+    ChildSchemaAlmanac  = "ChildSchemaAlmanac",
+    ApiEndpoint         = "ApiEndpoint",
+    None                = "None",
 }
 
 export const OutputSourceTypeList: OutputDestinationType[] = [
     OutputDestinationType.Database,
     OutputDestinationType.Almanac,
+    OutputDestinationType.ParentSchemaAlmanac,
+    OutputDestinationType.ChildSchemaAlmanac,
     OutputDestinationType.ApiEndpoint,
     OutputDestinationType.None,
 ];

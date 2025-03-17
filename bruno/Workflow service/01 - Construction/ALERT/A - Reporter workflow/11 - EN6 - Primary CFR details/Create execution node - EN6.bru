@@ -178,6 +178,37 @@ body:json {
             }
           ]
         }
+      },
+          {
+        "Type": "StoreToAlmanac",
+        "Name": "Store input data to almanac of the children schema instance",
+        "Description": "Store the primary phone number in each of the children schema instance almanacs",
+        "Sequence": 4,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Primary CFR phone number",
+              "Type": "Phone",
+              "Key": "CFR:PrimaryCFR:Phone",
+              "Source": "Almanac"
+            },
+            {
+              "Type": "SchemaInstanceId",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ChildrenSchemaInstanceIds"
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Destination": "ChildSchemaAlmanac",
+              "Key": "CFR:PrimaryCFR:Phone",
+              "Type": "Phone"
+            }
+          ]
+        }
       }
     ]
   }

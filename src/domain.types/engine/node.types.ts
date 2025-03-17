@@ -42,7 +42,9 @@ export interface LogicalTimerNodeCreateModel extends NodeCreateModel {
     NextNodeIdOnTimeout: uuid | null;
 }
 
-export type TimerNodeCreateModel = NodeCreateModel;
+export interface TimerNodeCreateModel extends NodeCreateModel {
+    NumberOfTries: number;
+}
 
 export interface NodeUpdateModel {
     Type        ?: NodeType;

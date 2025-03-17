@@ -125,7 +125,7 @@ export class SchemaEngine {
     public async processCurrentNode(currentNodeInstance: NodeInstanceResponseDto) {
 
         const currentNodeName = currentNodeInstance.Node.Name;
-        logger.info(`Current Node: ${currentNodeName}`);
+        logger.info(`Schema engine: Processing Current Node: ${currentNodeName}`);
 
         //If there are any listening nodes, handle them
         await this.handleEventListenerNodes();
@@ -461,7 +461,7 @@ export class SchemaEngine {
                     var nextNodeId = path.NextNode.id;
                     var nextNode = await this._nodeService.getById(nextNodeId);
                     if (!nextNode) {
-                        logger.error(`Next node not found for path ${path.Name}`);
+                        logger.error(`Next node not found for path '${path.Name}'`);
                         continue;
                     }
                     var nextNodeInstance = await this._nodeInstanceService.getOrCreate(nextNodeId, this._schemaInstance.id);
@@ -549,7 +549,7 @@ export class SchemaEngine {
         if (executionStatus === ExecutionStatus.Executed) {
             var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
             if (!currentNode?.NextNodeId) {
-                logger.error(`Next node not found for Node ${currentNode.Name}`);
+                logger.error(`Next node not found for Node '${currentNode.Name}'`);
                 return currentNodeInstance;
             }
             var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
@@ -680,12 +680,12 @@ export class SchemaEngine {
         nextNodeId: uuid) => {
 
         if (!nextNodeId) {
-            logger.error(`Next node not found for Node ${currentNode.Name}`);
+            logger.error(`Next node not found for Node '${currentNode.Name}'`);
             return { currentNode, currentNodeInstance };
         }
         var nextNode = await this._nodeService.getById(nextNodeId);
         if (!nextNode) {
-            logger.error(`Next node not found for Node ${currentNode.Name}`);
+            logger.error(`Next node not found for Node '${currentNode.Name}'`);
             return { currentNode, currentNodeInstance };
         }
         var schemaInstanceId = currentNodeInstance.SchemaInstance.id;

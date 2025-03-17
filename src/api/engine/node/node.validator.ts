@@ -6,7 +6,8 @@ import {
     NodeSearchFilters,
     QuestionNodeCreateModel,
     LogicalYesNoActionNodeCreateModel,
-    LogicalTimerNodeCreateModel
+    LogicalTimerNodeCreateModel,
+    TimerNodeCreateModel
 } from '../../../domain.types/engine/node.types';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import BaseValidator from '../../base.validator';
@@ -16,7 +17,7 @@ import { NodeType, ActionType, QuestionResponseType, ParamType, InputSourceType 
 
 export class NodeValidator extends BaseValidator {
 
-    public validateCreateRequest = async (request: express.Request, isTimerNode = false)
+    public validateCreateRequest = async (request: express.Request)
         : Promise<NodeCreateModel> => {
         try {
             const node = joi.object({
@@ -36,7 +37,7 @@ export class NodeValidator extends BaseValidator {
                     Output       : joi.object().optional(),
                 })).optional(),
                 RuleId       : joi.string().uuid().optional(),
-                DelaySeconds : isTimerNode ? joi.number().integer().required() : joi.number().integer().optional(),
+                DelaySeconds : joi.number().integer().optional(),
                 RawData      : joi.object().allow(null).optional(),
                 Input        : joi.object({
                     Params : joi.array().items(joi.object({
@@ -52,9 +53,6 @@ export class NodeValidator extends BaseValidator {
                 }).optional(),
             });
             await node.validateAsync(request.body);
-            const DEFAULT_DELAY_SECS = 10;
-            var delaySeconds = request.body.DelaySeconds ?? null;
-            delaySeconds = isTimerNode && delaySeconds === null  ? DEFAULT_DELAY_SECS : delaySeconds;
             return {
                 Type         : request.body.Type,
                 Name         : request.body.Name,
@@ -62,7 +60,7 @@ export class NodeValidator extends BaseValidator {
                 ParentNodeId : request.body.ParentNodeId,
                 SchemaId     : request.body.SchemaId,
                 Actions      : request.body.Actions ?? null,
-                DelaySeconds : delaySeconds,
+                DelaySeconds : request.body.DelaySeconds ?? null,
                 RuleId       : request.body.RuleId ?? null,
                 RawData      : request.body.RawData ?? null,
                 Input        : request.body.Input ?? null,
@@ -173,6 +171,64 @@ export class NodeValidator extends BaseValidator {
                 NumberOfTries       : request.body.NumberOfTries,
                 NextNodeIdOnSuccess : request.body.NextNodeIdOnSuccess ?? null,
                 NextNodeIdOnTimeout : request.body.NextNodeIdOnTimeout ?? null,
+            };
+        } catch (error) {
+            ErrorHandler.handleValidationError(error);
+        }
+    };
+
+    public validateCreateTimerNodeRequest = async (request: express.Request)
+        : Promise<TimerNodeCreateModel> => {
+        try {
+            const node = joi.object({
+                Type         : joi.string().valid(...Object.values(NodeType)).required(),
+                Name         : joi.string().max(64).required(),
+                Description  : joi.string().max(512).optional(),
+                ParentNodeId : joi.string().allow(null).uuid().required(),
+                SchemaId     : joi.string().uuid().required(),
+                Actions      : joi.array().items(joi.object({
+                    Type         : joi.string().valid(...Object.values(ActionType)).required(),
+                    Sequence     : joi.number().integer().optional(),
+                    IsPathAction : joi.boolean().optional(),
+                    Name         : joi.string().max(64).required(),
+                    Description  : joi.string().max(512).optional(),
+                    RawInput     : joi.any().optional(),
+                    Input        : joi.object().optional(),
+                    Output       : joi.object().optional(),
+                })).optional(),
+                RuleId       : joi.string().uuid().optional(),
+                DelaySeconds : joi.number().integer().required(),
+                NumberOfTries: joi.number().integer().required(),
+                RawData      : joi.object().allow(null).optional(),
+                Input        : joi.object({
+                    Params : joi.array().items(joi.object({
+                        Name        : joi.string().max(128).required(),
+                        Description : joi.string().max(512).optional(),
+                        ActionType  : joi.string().valid(...Object.values(ActionType)).optional(),
+                        Type        : joi.string().valid(...Object.values(ParamType)).required(),
+                        Value       : joi.any().allow(null).required(),
+                        Source      : joi.string().valid(...Object.values(InputSourceType)).optional(),
+                        Key         : joi.string().max(256).optional(),
+                        Required    : joi.boolean().optional(),
+                    })).required(),
+                }).optional(),
+            });
+            await node.validateAsync(request.body);
+            const DEFAULT_DELAY_SECS = 10;
+            var delaySeconds = request.body.DelaySeconds ?? null;
+            delaySeconds = delaySeconds ?? DEFAULT_DELAY_SECS;
+            return {
+                Type         : NodeType.TimerNode,
+                Name         : request.body.Name,
+                Description  : request.body.Description ?? null,
+                ParentNodeId : request.body.ParentNodeId,
+                SchemaId     : request.body.SchemaId,
+                Actions      : request.body.Actions ?? null,
+                DelaySeconds : delaySeconds,
+                NumberOfTries: request.body.NumberOfTries,
+                RuleId       : request.body.RuleId ?? null,
+                RawData      : request.body.RawData ?? null,
+                Input        : request.body.Input ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

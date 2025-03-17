@@ -84,7 +84,7 @@ export default class ChildSchemaTriggerHandler {
 
             var engine = new SchemaEngine(schema, schemaInstance, eventRecord);
             var currentNodeInstance = await engine.execute();
-            logger.info(`Current Node: ${currentNodeInstance.Node.Name}`);
+            logger.info(`Child schema trigger handler: Current Node: ${currentNodeInstance.Node.Name}`);
 
         }
         catch (error) {

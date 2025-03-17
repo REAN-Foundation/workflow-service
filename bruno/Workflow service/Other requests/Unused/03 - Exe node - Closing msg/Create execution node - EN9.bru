@@ -1,5 +1,5 @@
 meta {
-  name: Create terminator node
+  name: Create execution node - EN9
   type: http
   seq: 1
 }
@@ -18,11 +18,33 @@ headers {
 
 body:json {
   {
-    "Name": "Terminator Node",
-    "Description": "This is the terminator node.",
-    "Type": "TerminatorNode",
-    "ParentNodeId": "{{MAIN_EN9_ID}}",
-    "SchemaId": "{{MAIN_SCHEMA_ID}}"
+    "Name": "EN9-Send closing message to reporter",
+    "Description": "This execution node holds actions to send message to reporter reassuring that help is on the way and reponsers have been notified.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{MAIN_EN7_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - Thanks for your prompt action",
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "Thanks to the reporter",
+              "Type": "Text",
+              "Value": "Thanks for your prompt action!"
+            }
+          ]
+        }
+      }
+    ]
   }
 }
 
@@ -30,7 +52,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_TERMINATOR_1_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_EN9_ID", res.body.Data.id);
   }
   
 }

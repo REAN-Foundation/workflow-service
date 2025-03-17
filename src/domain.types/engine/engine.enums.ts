@@ -9,6 +9,8 @@ export enum WorkflowActivityType {
     SystemEvent       = 'SystemEvent',
     SwitchCurrentNode = 'SwitchCurrentNode',
     TerminateWorkflow = 'TerminateWorkflow',
+    Broadcasting      = 'Broadcasting',
+    Idle              = 'Idle',
 }
 
 export enum EventType {
@@ -106,6 +108,8 @@ export enum NodeType {
     TimerNode              = 'TimerNode',
     LogicalTimerNode       = 'LogicalTimerNode',    //Timer node executes some rule-logic once it times out
     TerminatorNode         = 'TerminatorNode',
+    BroadcastNode          = 'BroadcastNode',
+    IdleNode               = 'IdleNode',
 }
 
 export const NodeTypeList: NodeType[] = [
@@ -116,10 +120,12 @@ export const NodeTypeList: NodeType[] = [
     NodeType.TimerNode,
     NodeType.LogicalTimerNode,
     NodeType.TerminatorNode,
+    NodeType.BroadcastNode,
+    NodeType.IdleNode,
 ];
 
 export enum ActionType {
-    TriggerEventListenerNode            = 'TriggerEventListenerNode',
+    TriggerEventListenerNode        = 'TriggerEventListenerNode',
     TriggerTimerNode                = 'TriggerTimerNode',
     TriggerLogicalTimerNode         = 'TriggerLogicalTimerNode',
     TriggerChildWorkflow            = 'TriggerChildWorkflow',

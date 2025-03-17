@@ -150,8 +150,11 @@ export class SchemaEngine {
             if (currentNodeInstance.Node.Type === NodeType.ExecutionNode ||
                 currentNodeInstance.Node.Type === NodeType.LogicalYesNoActionNode ||
                 currentNodeInstance.Node.Type === NodeType.QuestionNode ||
-                currentNodeInstance.Node.Type === NodeType.LogicalTimerNode
-            ) {
+                currentNodeInstance.Node.Type === NodeType.LogicalTimerNode ||
+                currentNodeInstance.Node.Type === NodeType.TimerNode ||
+                currentNodeInstance.Node.Type === NodeType.TerminatorNode ||
+                currentNodeInstance.Node.Type === NodeType.BroadcastNode ||
+                currentNodeInstance.Node.Type === NodeType.IdleNode) {
                 logger.info(`Processing node: ${currentNodeInstance.Node.Name}`);
                 return await this.processCurrentNode(currentNodeInstance);
             }
@@ -326,6 +329,12 @@ export class SchemaEngine {
         }
         else if (currentNodeType === NodeType.TerminatorNode) {
             return await this.traverseTerminatorNode(currentNodeInstance);
+        }
+        else if (currentNodeType === NodeType.BroadcastNode) {
+            return await this.traverseBroadcastNode(currentNodeInstance);
+        }
+        else if (currentNodeType === NodeType.IdleNode) {
+            return await this.traverseIdleNode(currentNodeInstance);
         }
         return currentNodeInstance;
     }
@@ -635,6 +644,115 @@ export class SchemaEngine {
 
         await this._schemaInstanceService.recordActivity(
             this._schemaInstance.id, WorkflowActivityType.TerminateWorkflow, activityPayload, summary);
+
+        return currentNodeInstance;
+    }
+
+    private async traverseBroadcastNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
+
+        await this.delayedNodeExecution(currentNodeInstance);
+        var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+
+        // Record the activity
+        const activityPayload = {
+            CurrentNodeInstance : currentNodeInstance,
+        };
+
+        const summary = {
+            CurrentSchema: this._schema.Name,
+            CurrentNode  : currentNode.Name,
+            Type         : WorkflowActivityType.Broadcasting,
+            Timestamp    : new Date(),
+        };
+
+        logger.info(`Broadcasting message!`);
+        const userMessage = this._event?.UserMessage;
+        if (!userMessage) {
+            logger.error(`User message not found!`);
+            return currentNodeInstance;
+        }
+        const userMessageType = userMessage.MessageType;
+        if (userMessageType === UserMessageType.QuestionResponse) {
+            logger.error(`User message is a question response. Not supported for broadcasting!`);
+            return currentNodeInstance;
+        }
+
+        const message = userMessageType == UserMessageType.Text ? 
+            userMessage.TextMessage : userMessage.Location;
+        if (!message) {
+            logger.error(`Currently only text and location messages are supported in the broadcast!`);
+            return currentNodeInstance;
+        }
+
+        const input = currentNode.Input;
+        if (!input) {
+            logger.error(`Input not found for Node ${currentNode.Name}`);
+            return currentNodeInstance;
+        }
+
+        const params = input.Params;
+        if (!params || params.length === 0) {
+            logger.error(`Params not found for Node ${currentNode.Name}`);
+            return currentNodeInstance;
+        }
+
+        var param = params[0];
+        if (!param) {
+            logger.error(`Param not found for Node ${currentNode.Name}`);
+            return currentNodeInstance;
+        }
+
+        if (param.Type !== ParamType.Array && param.SubType !== ParamType.Phone) {
+            logger.error(`Currently only text messages are supported in the broadcast!`);
+            return currentNodeInstance;
+        }
+        var phonenumebrs = await this._almanac.getFact(param.Key);
+        if (!phonenumebrs || phonenumebrs.length === 0) {
+            logger.error(`Phone numbers not found in the almanac!`);
+            return currentNodeInstance;
+        }
+
+        // Send the broadcast message
+        const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
+        for await (var phoneNumber of phonenumebrs) {
+            var workflowMessage = {
+                MessageType : userMessageType,
+                TextMessage : userMessageType === UserMessageType.Text ? message : null,
+                Location    : userMessageType === UserMessageType.Location ? message : null,
+                Phone       : phoneNumber,
+            };
+            // await actionExecutioner.sendBotMessage(phoneNumber, message);
+        }
+
+        await this._schemaInstanceService.recordActivity(
+            this._schemaInstance.id, WorkflowActivityType.Broadcasting, activityPayload, summary);
+
+        return currentNodeInstance;
+    }
+
+    private async traverseIdleNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
+
+        await this.delayedNodeExecution(currentNodeInstance);
+        var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+
+        // Record the activity
+        const activityPayload = {
+            CurrentNodeInstance : currentNodeInstance,
+        };
+
+        const summary = {
+            CurrentSchema: this._schema.Name,
+            CurrentNode  : currentNode.Name,
+            Type         : WorkflowActivityType.Idle,
+            Timestamp    : new Date(),
+        };
+
+        logger.info(`Idle node!`);
+
+        await this._schemaInstanceService.recordActivity(
+            this._schemaInstance.id, WorkflowActivityType.Idle, activityPayload, summary);
 
         return currentNodeInstance;
     }

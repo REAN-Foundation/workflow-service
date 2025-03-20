@@ -1,4 +1,4 @@
-import { ActionType, ExecutionStatus, InputSourceType, NodeType, ParamType, QuestionResponseType, UserMessageType, WorkflowActivityType } from '../../domain.types/engine/engine.enums';
+import { ActionType, ExecutionStatus, InputSourceType, MessageChannelType, NodeType, ParamType, QuestionResponseType, UserMessageType, WorkflowActivityType } from '../../domain.types/engine/engine.enums';
 import { SchemaInstanceResponseDto } from '../../domain.types/engine/schema.instance.types';
 import { EventResponseDto } from '../../domain.types/engine/event.types';
 import { SchemaResponseDto } from '../../domain.types/engine/schema.domain.types';
@@ -18,13 +18,15 @@ import { RuleService } from '../../database/services/engine/rule.service';
 import { ConditionProcessor } from './condition.processor';
 import { NodeActionService } from '../../database/services/engine/node.action.service';
 import { TimeUtils } from '../../common/utilities/time.utils';
-import { EventType } from '../../domain.types/enums/event.type';
+import { EventType } from '../../domain.types/engine/engine.enums';
 import { StringUtils } from '../../common/utilities/string.utils';
 import { QuestionInstance } from '../../database/models/engine/question.instance.model';
 import { Question } from '../../database/models/engine/question.model';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
 import LogicalTimerNodeTriggerHandler from './handlers/logical.timer.node.trigger.handler';
 import TimerNodeTriggerHandler from './handlers/timer.node.trigger.handler';
+import { WorkflowMessage } from '../../domain.types/engine/user.event.types';
+import { Location } from '../../domain.types/engine/common.types';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -125,10 +127,10 @@ export class SchemaEngine {
     public async processCurrentNode(currentNodeInstance: NodeInstanceResponseDto) {
 
         const currentNodeName = currentNodeInstance.Node.Name;
-        logger.info(`Current Node: ${currentNodeName}`);
+        logger.info(`Schema engine: Processing Current Node: ${currentNodeName}`);
 
         //If there are any listening nodes, handle them
-        await this.handleListeningNodes();
+        await this.handleEventListenerNodes();
 
         const executionStatus = await this._nodeInstanceService.getExecutionStatus(currentNodeInstance.id);
         const actionCount = await this._dbUtilsService.getNodeActionCount(currentNodeInstance.Node.id);
@@ -148,10 +150,13 @@ export class SchemaEngine {
         if (newNodeInstance.id !== currentNodeInstance.id) {
             currentNodeInstance = newNodeInstance;
             if (currentNodeInstance.Node.Type === NodeType.ExecutionNode ||
-                currentNodeInstance.Node.Type === NodeType.YesNoNode ||
+                currentNodeInstance.Node.Type === NodeType.LogicalYesNoActionNode ||
                 currentNodeInstance.Node.Type === NodeType.QuestionNode ||
-                currentNodeInstance.Node.Type === NodeType.LogicalTimerNode
-            ) {
+                currentNodeInstance.Node.Type === NodeType.LogicalTimerNode ||
+                currentNodeInstance.Node.Type === NodeType.TimerNode ||
+                currentNodeInstance.Node.Type === NodeType.TerminatorNode ||
+                currentNodeInstance.Node.Type === NodeType.BroadcastNode ||
+                currentNodeInstance.Node.Type === NodeType.IdleNode) {
                 logger.info(`Processing node: ${currentNodeInstance.Node.Name}`);
                 return await this.processCurrentNode(currentNodeInstance);
             }
@@ -159,9 +164,9 @@ export class SchemaEngine {
         return currentNodeInstance;
     }
 
-    private async handleListeningNodes() {
+    private async handleEventListenerNodes() {
 
-        var listeningNodeInstances = await this._dbUtilsService.getActiveListeningNodeInstances(this._schemaInstance.id);
+        var listeningNodeInstances = await this._dbUtilsService.getActiveEventListenerNodeInstances(this._schemaInstance.id);
 
         for (var listeningNodeInstance of listeningNodeInstances) {
             var listeningNode = await this._nodeService.getById(listeningNodeInstance.Node.id);
@@ -313,8 +318,8 @@ export class SchemaEngine {
         if (currentNodeType === NodeType.QuestionNode) {
             return await this.traverseQuestionNode(currentNodeInstance);
         }
-        else if (currentNodeType === NodeType.YesNoNode) {
-            return await this.traverseYesNoNode(currentNodeInstance);
+        else if (currentNodeType === NodeType.LogicalYesNoActionNode) {
+            return await this.traverseLogicalYesNoActionNode(currentNodeInstance);
         }
         else if (currentNodeType === NodeType.ExecutionNode) {
             return await this.traverseExecutionNode(currentNodeInstance);
@@ -326,6 +331,12 @@ export class SchemaEngine {
         }
         else if (currentNodeType === NodeType.TerminatorNode) {
             return await this.traverseTerminatorNode(currentNodeInstance);
+        }
+        else if (currentNodeType === NodeType.BroadcastNode) {
+            return await this.traverseBroadcastNode(currentNodeInstance);
+        }
+        else if (currentNodeType === NodeType.IdleNode) {
+            return await this.traverseIdleNode(currentNodeInstance);
         }
         return currentNodeInstance;
     }
@@ -461,7 +472,7 @@ export class SchemaEngine {
                     var nextNodeId = path.NextNode.id;
                     var nextNode = await this._nodeService.getById(nextNodeId);
                     if (!nextNode) {
-                        logger.error(`Next node not found for path ${path.Name}`);
+                        logger.error(`Next node not found for path '${path.Name}'`);
                         continue;
                     }
                     var nextNodeInstance = await this._nodeInstanceService.getOrCreate(nextNodeId, this._schemaInstance.id);
@@ -491,7 +502,7 @@ export class SchemaEngine {
         return currentNodeInstance;
     }
 
-    private async traverseYesNoNode(currentNodeInstance: NodeInstanceResponseDto)
+    private async traverseLogicalYesNoActionNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
 
         var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
@@ -549,7 +560,7 @@ export class SchemaEngine {
         if (executionStatus === ExecutionStatus.Executed) {
             var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
             if (!currentNode?.NextNodeId) {
-                logger.error(`Next node not found for Node ${currentNode.Name}`);
+                logger.error(`Next node not found for Node '${currentNode.Name}'`);
                 return currentNodeInstance;
             }
             var res = await this.setNextNodeInstance(currentNode, currentNodeInstance);
@@ -599,6 +610,8 @@ export class SchemaEngine {
     private async traverseTerminatorNode(currentNodeInstance: NodeInstanceResponseDto)
         : Promise<NodeInstanceResponseDto> {
 
+        await this.delayedNodeExecution(currentNodeInstance);
+
         // Record the activity
         const activityPayload = {
             CurrentNodeInstance : currentNodeInstance,
@@ -633,6 +646,142 @@ export class SchemaEngine {
 
         await this._schemaInstanceService.recordActivity(
             this._schemaInstance.id, WorkflowActivityType.TerminateWorkflow, activityPayload, summary);
+
+        return currentNodeInstance;
+    }
+
+    private async traverseBroadcastNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
+
+        await this.delayedNodeExecution(currentNodeInstance);
+        var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+
+        // Record the activity
+        const activityPayload = {
+            CurrentNodeInstance : currentNodeInstance,
+        };
+
+        const summary = {
+            CurrentSchema : this._schema.Name,
+            CurrentNode   : currentNode.Name,
+            Type          : WorkflowActivityType.Broadcasting,
+            Timestamp     : new Date(),
+        };
+
+        logger.info(`Broadcasting message!`);
+        const userMessage = this._event?.UserMessage;
+        if (!userMessage) {
+            logger.error(`User message not found!`);
+            return currentNodeInstance;
+        }
+        const userMessageType = userMessage.MessageType;
+        if (userMessageType === UserMessageType.QuestionResponse) {
+            logger.error(`User message is a question response. Not supported for broadcasting!`);
+            return currentNodeInstance;
+        }
+
+        const message = userMessageType === UserMessageType.Text ?
+            userMessage.TextMessage : userMessage.Location;
+        if (!message) {
+            logger.error(`Currently only text and location messages are supported in the broadcast!`);
+            return currentNodeInstance;
+        }
+
+        const input = currentNode.Input;
+        if (!input) {
+            logger.error(`Input not found for Node ${currentNode.Name}`);
+            return currentNodeInstance;
+        }
+
+        const params = input.Params;
+        if (!params || params.length === 0) {
+            logger.error(`Params not found for Node ${currentNode.Name}`);
+            return currentNodeInstance;
+        }
+
+        var param = params[0];
+        if (!param) {
+            logger.error(`Param not found for Node ${currentNode.Name}`);
+            return currentNodeInstance;
+        }
+
+        if (param.Type !== ParamType.Array && param.SubType !== ParamType.Phone) {
+            logger.error(`Currently only text messages are supported in the broadcast!`);
+            return currentNodeInstance;
+        }
+        var phonenumebrs = await this._almanac.getFact(param.Key);
+        if (!phonenumebrs || phonenumebrs.length === 0) {
+            logger.error(`Phone numbers not found in the almanac!`);
+            return currentNodeInstance;
+        }
+
+        // Send the broadcast message
+        const actionExecutioner = new ActionExecutioner(this._schema, this._schemaInstance, this._event, this._almanac);
+        for await (var phoneNumber of phonenumebrs) {
+            var workflowMessage: WorkflowMessage = {
+                MessageType    : userMessageType,
+                TextMessage    : userMessageType === UserMessageType.Text ? message as string : null,
+                Location       : userMessageType === UserMessageType.Location ? message as Location : null,
+                Phone          : phoneNumber,
+                Placeholders   : [],
+                EventTimestamp : new Date(),
+                MessageChannel : this.getMessageChannel(),
+                Payload        : {
+                    MessageType        : userMessageType,
+                    ProcessingEventId  : this._event?.id,
+                    ChannelType        : this.getMessageChannel(),
+                    ChannelMessageId   : null,
+                    BotMessageId       : null,
+                    SchemaId           : this._schema.id,
+                    SchemaInstanceId   : this._schemaInstance.id,
+                    SchemaInstanceCode : this._schemaInstance.Code,
+                    SchemaName         : this._schema.Name,
+                    NodeInstanceId     : currentNodeInstance.id,
+                    NodeId             : currentNode.id,
+                }
+            };
+            await actionExecutioner.sendBotMessage(workflowMessage);
+        }
+
+        await this._schemaInstanceService.recordActivity(
+            this._schemaInstance.id, WorkflowActivityType.Broadcasting, activityPayload, summary);
+
+        return currentNodeInstance;
+    }
+
+    private getMessageChannel() {
+        var p = this._schemaInstance.ContextParams.Params.find(x => x.Key === 'ContextParams:MessageChannel');
+        if (!p) {
+            p = this._schemaInstance.ContextParams.Params.find(x => x.Key === 'MessageChannel' || x.Type === ParamType.MessageChannel);
+        }
+        if (p && p.Value) {
+            return p.Value as MessageChannelType;
+        }
+        return MessageChannelType.WhatsApp;
+    }
+
+    private async traverseIdleNode(currentNodeInstance: NodeInstanceResponseDto)
+        : Promise<NodeInstanceResponseDto> {
+
+        await this.delayedNodeExecution(currentNodeInstance);
+        var currentNode = await this._nodeService.getById(currentNodeInstance.Node.id);
+
+        // Record the activity
+        const activityPayload = {
+            CurrentNodeInstance : currentNodeInstance,
+        };
+
+        const summary = {
+            CurrentSchema : this._schema.Name,
+            CurrentNode   : currentNode.Name,
+            Type          : WorkflowActivityType.Idle,
+            Timestamp     : new Date(),
+        };
+
+        logger.info(`Idle node!`);
+
+        await this._schemaInstanceService.recordActivity(
+            this._schemaInstance.id, WorkflowActivityType.Idle, activityPayload, summary);
 
         return currentNodeInstance;
     }
@@ -678,12 +827,12 @@ export class SchemaEngine {
         nextNodeId: uuid) => {
 
         if (!nextNodeId) {
-            logger.error(`Next node not found for Node ${currentNode.Name}`);
+            logger.error(`Next node not found for Node '${currentNode.Name}'`);
             return { currentNode, currentNodeInstance };
         }
         var nextNode = await this._nodeService.getById(nextNodeId);
         if (!nextNode) {
-            logger.error(`Next node not found for Node ${currentNode.Name}`);
+            logger.error(`Next node not found for Node '${currentNode.Name}'`);
             return { currentNode, currentNodeInstance };
         }
         var schemaInstanceId = currentNodeInstance.SchemaInstance.id;
@@ -763,8 +912,8 @@ export class SchemaEngine {
             Result  : null,
         };
 
-        if (actionInstance.ActionType === ActionType.TriggerListeningNode) {
-            result = await actionExecutioner.triggerListeningNode(actionInstance);
+        if (actionInstance.ActionType === ActionType.TriggerEventListenerNode) {
+            result = await actionExecutioner.triggerEventListenerNode(actionInstance);
         }
         else if (actionInstance.ActionType === ActionType.TriggerTimerNode ||
             actionInstance.ActionType === ActionType.TriggerLogicalTimerNode) {

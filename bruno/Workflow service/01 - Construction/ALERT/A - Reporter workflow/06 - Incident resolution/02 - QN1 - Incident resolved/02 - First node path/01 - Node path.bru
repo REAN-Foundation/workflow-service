@@ -1,0 +1,50 @@
+meta {
+  name: 01 - Create QN - first node path
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/node-paths
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "First Node Path - Issue Resolved? - Yes",
+    "Description": "This is node path if the user is available.",
+    "ParentNodeId": "{{MAIN_QN1_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}"
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_QN1_PATH_1_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

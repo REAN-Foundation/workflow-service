@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{BASE_URL}}/engine/nodes/yes-no-node
+  url: {{BASE_URL}}/engine/nodes/logical-yes-no-action-node
   body: json
   auth: none
 }
@@ -20,7 +20,7 @@ body:json {
   {
     "Name": "Yes-No node to check keywords for workflow termination",
     "Description": "This decision (Yes/No) node basically checks whether the reporter has sent message contianing words - stop, done, thank you, thanks,... etc. If message contains these words, it triggers 'Yes' action which is to proceed ahead to terminate the workflow, else keep storing the information sent by user in the almanac.",
-    "Type": "YesNoNode",
+    "Type": "LogicalYesNoActionNode",
     "ParentNodeId": "{{QUESTION_NODE_1_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "NoAction": {

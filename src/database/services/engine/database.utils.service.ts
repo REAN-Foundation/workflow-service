@@ -320,11 +320,11 @@ export class DatabaseUtilsService {
         }
     };
 
-    public getActiveListeningNodeInstances = async (schemaInstanceId: uuid) => {
+    public getActiveEventListenerNodeInstances = async (schemaInstanceId: uuid) => {
         try {
             var nodeInstances = await this._nodeInstanceRepository.find({
                 where : {
-                    Type           : NodeType.ListeningNode,
+                    Type           : NodeType.EventListenerNode,
                     SchemaInstance : {
                         id : schemaInstanceId
                     },

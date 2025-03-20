@@ -12,6 +12,7 @@ import { register as registerEventRoutes } from '../api/engine/event/event.route
 import { register as registerSchemaInstanceRoutes } from '../api/engine/schema.instance/schema.instance.routes';
 import { register as registerTypesRoutes } from '../api/types/types.routes';
 import { register as registerFileResourceRoutes } from '../api/general/file.resource/file.resource.routes';
+import path from "path";
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +30,11 @@ export class RouteHandler {
                 });
                 expressApp.get('/health-check', (_request, response) => {
                     response.send('ok');
+                });
+
+                // Serve the Docsify index.html
+                expressApp.get("/api/docs", (req, res) => {
+                    res.sendFile(path.join(__dirname, "docs/index.html"));
                 });
 
                 registerUserRoutes(expressApp);

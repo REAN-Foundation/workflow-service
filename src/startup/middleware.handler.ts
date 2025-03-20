@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { HttpLogger } from "../logger/http.logger";
 import { logger } from "../logger/logger";
+import path from "path";
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -12,11 +13,14 @@ export class MiddlewareHandler {
     public static setup = async (expressApp: express.Application): Promise<boolean> => {
         return new Promise((resolve, reject) => {
             try {
+                // Serve Docsify static files
+                expressApp.use("/api/docs", express.static(path.join("docs")));
+
                 expressApp.use(express.urlencoded({ extended: true }));
                 expressApp.use(express.json());
                 expressApp.use(helmet());
                 expressApp.use(cors({
-                    origin: '*', //Allow all origins, change this to restrict access to specific origins
+                    origin : '*', //Allow all origins, change this to restrict access to specific origins
                 }));
                 if (process.env.HTTP_LOGGING === 'true') {
                     HttpLogger.use(expressApp);

@@ -1,0 +1,100 @@
+meta {
+  name: Create execution node - EN2
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN2-Send message to reporter assuring help",
+    "Description": "This execution node holds actions to send message to reporter reassuring that help is on the way and reponsers have been notified.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{MAIN_EN1_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - Assuring reporter - first message",
+        "Sequence": 0,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "CFR notified message",
+              "Type": "Text",
+              "Value": "We have notified nearby responders. We will let you know once there is positive response."
+            }
+          ]
+        }
+      },
+      {
+        "Type": "TriggerTimerNode",
+        "Name": "Trigger timer node - Incident Resolution",
+        "Sequence": 1,
+        "Description": "This action triggers a timer node which handles incident resolution workflow.",
+        "Input": {
+          "Params": [
+            {
+              "Name": "Timer Node to trigger",
+              "Description": "Node Id of the timer node which should be triggered",
+              "ActionType": "TriggerTimerNode",
+              "Type": "NodeId",
+              "Value": "{{MAIN_TN1_ID}}",
+              "Key": "IncidentResolutionTimerNode",
+              "Required": true
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_EN2_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

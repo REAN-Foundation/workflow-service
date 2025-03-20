@@ -1,0 +1,219 @@
+meta {
+  name: Create execution node - EN5
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN5-Get nearby ambulances",
+    "Description": "This execution node holds actions to send message to reporter telling no responder responded. Also get nearby ambulance information.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{MAIN_LTN2_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message to reporter - Responders are not available",
+        "Sequence": 0,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "Send message - No responders available.",
+              "Type": "Text",
+              "Value": "It seems no responder nearby is available to attend the incident! We are sending you nearby ambulance details."
+            }
+          ]
+        }
+      },
+      {
+        "Type": "RestApiCall",
+        "Name": "REST API call for nearest ambulances",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Type": "RestApiParams",
+              "Value": {
+                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/nearest-ambulances",
+                "Method": "GET",
+                "QueryParams": [
+                  {
+                    "QueryParamKey": "longitude",
+                    "QueryParamValue": null,
+                    "Source": "Almanac",
+                    "SourceKey": "ContextParams:Location",
+                    "SourceValueKey": "Longitude"
+                  },
+                  {
+                    "QueryParamKey": "latitude",
+                    "QueryParamValue": null,
+                    "Source": "Almanac",
+                    "SourceKey": "ContextParams:Location",
+                    "SourceValueKey": "Latitude"
+                  },
+                  {
+                    "QueryParamKey": "radiusInKm",
+                    "QueryParamValue": 10
+                  },
+                  {
+                    "QueryParamKey": "itemsPerPage",
+                    "QueryParamValue": 2
+                  }
+                ],
+                "Headers": {
+                  "ContentType": "application/json"
+                },
+                "ResponseField": "Data:Items",
+                "ResponseType": "Array"
+              }
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "Details for nearby ambulances",
+              "Type": "Array",
+              "Value": null,
+              "Destination": "Almanac",
+              "Key": "ContextParams:Ambulances",
+              "SubType": "Object"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "ConstructTextArrayFromTemplate",
+        "Name": "Construct Ambulance details messages from ambulance list",
+        "Sequence": 2,
+        "Input": {
+          "Params": [
+            {
+              "Type": "Text",
+              "Name": "Message Template",
+              "Key": "Template",
+              "Value": "Ambulance - {{Name}},\nphone number - {{Phone}},\nAddress: {{Address}}"
+            },
+            {
+              "Name": "Details for nearby ambulances",
+              "Type": "Array",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Ambulances",
+              "SubType": "Object",
+              "ObjectParamTypes": [
+                {
+                  "Name": "Name",
+                  "Type": "String",
+                  "Value": null
+                },
+                {
+                  "Name": "Phone",
+                  "Type": "Phone",
+                  "Value": null
+                },
+                {
+                  "Name": "Location",
+                  "Type": "Location",
+                  "Value": null
+                },
+                {
+                  "Name": "Address",
+                  "Type": "String",
+                  "Value": null
+                }
+              ]
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "Details for nearby ambulances",
+              "Type": "Array",
+              "Value": null,
+              "Destination": "Almanac",
+              "SubType": "Text",
+              "Key": "NearbyAmbulances:Details:Messages"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "SendMultipleMessagesToOneUser",
+        "Name": "Send reporter ambulance numbers and locations",
+        "Sequence": 3,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "Messages with details for nearby ambulances",
+              "Type": "Array",
+              "Destination": "Almanac",
+              "Key": "NearbyAmbulances:Details:Messages",
+              "SubType": "Text",
+              "Value": null
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_EN5_ID", res.body.Data.id);
+  }
+
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+
+}
+
+docs {
+  User login with username/phone/email and password.
+
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

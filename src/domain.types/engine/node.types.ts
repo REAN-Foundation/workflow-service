@@ -25,7 +25,7 @@ export interface NodeCreateModel {
     Input                ?: ActionInputParams;
 }
 
-export interface YesNoNodeCreateModel extends NodeCreateModel {
+export interface LogicalYesNoActionNodeCreateModel extends NodeCreateModel {
     YesAction : NodeActionCreateModel,
     NoAction  : NodeActionCreateModel,
 }
@@ -42,7 +42,9 @@ export interface LogicalTimerNodeCreateModel extends NodeCreateModel {
     NextNodeIdOnTimeout: uuid | null;
 }
 
-export type TimerNodeCreateModel = NodeCreateModel;
+export interface TimerNodeCreateModel extends NodeCreateModel {
+    NumberOfTries: number;
+}
 
 export interface NodeUpdateModel {
     Type        ?: NodeType;

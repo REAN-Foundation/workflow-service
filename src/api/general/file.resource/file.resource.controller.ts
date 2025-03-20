@@ -138,7 +138,7 @@ export class FileResourceController {
             }
             const message = 'File resource deleted successfully!';
             ResponseHandler.success(request, response, message, 200, {
-                Deleted: success
+                Deleted : success
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

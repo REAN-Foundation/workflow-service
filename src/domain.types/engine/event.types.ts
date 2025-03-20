@@ -1,4 +1,4 @@
-import { EventType } from "../enums/event.type";
+import { EventType } from "./engine.enums";
 import {
     BaseSearchFilters,
     BaseSearchResults

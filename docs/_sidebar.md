@@ -6,18 +6,23 @@
 
 - Workflow Concepts
 
-  - [Schema](schema.md)
-    - [Children Schema](children-schema.md)
-    - [Schema Instance](schema-instance.md)
-  - [Nodes](nodes/readme.md)
-    - [Types of Nodes](nodes.md#types-of-nodes)
-    - [Node Members](nodes.md#node-members)
-    - [Node Instance](node-instance.md)
-  - [Node Actions](node-actions.md)
-    - [Types of Actions](node-actions.md#types-of-actions)
+  - [Schema](schema/schema.md)
+    - [Schema Execution](schema/schema.md#schema-execution)
+      - [Schema Instantiation](schema/schema.md#schema-instantiation)
+      - [Execution Process](schema/schema.md#execution-process)
+      - [State Management](schema/schema.md#state-management)
+    - [Schema Instance Context](schema/schema.md#schema-instance-context)
+    - [Children Schema](schema/children-schema.md)
+
+  - [Nodes](nodes/node.md)
+    - [Types of Nodes](nodes/node.md#types-of-nodes)
+    - [Node Members](nodes/node.md#node-members)
+    - [Node Instance](nodes/node-instance.md)
+    - [Node Actions](node-actions.md)
+    - [Types of Node Actions](node-actions.md#types-of-actions)
     - [Action Instance](action-instance.md)
-  - [Events](events.md)
-    - [Types of Events](events.md#types-of-events)
+  - [Events](events/events.md)
+    - [Types of Events](events/events.md#types-of-events)
 
 - Example workflows
 
@@ -27,4 +32,3 @@
 - Miscellaneous
 
   - [Roadmap](roadmap.md)
-

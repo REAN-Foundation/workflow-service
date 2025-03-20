@@ -1,31 +1,46 @@
-# Workflow Nodes
+# Nodes
+
+Nodes are the building blocks of the workflow. Each node represents a step in the workflow. The node can be a simple step or a complex step with multiple actions. The node can be a logical step (a decision point) or a task step. The nodes can be connected nodes or free nodes. Free nodes generally listen to events or timers and are not part of the main or secondary workflow graphs. Connected nodes are part of the main or secondary workflow graphs or node chains. 
+
+Here is the simple example.
+
+```mermaid
+graph TD;
+    Start([Start]) --> A[ExecutionNode]
+    A -->|Decision| B{"❓ QuestionNode"}
+    B -- Yes --> C[ExecutionNode]
+    B -- No --> D[IdleNode]
+    C --> E[BroadcastNode]
+    D -->|Waits for Event| F[EventListenerNode]
+    E --> G["⏰ TimerNode"]
+    F --> H[LogicalYesNoActionNode]
+    G --> Terminator([TerminatorNode])
+    H -- True --> Terminator
+    H -- False --> A
+```
 
 ## Types of Nodes
 
-There are two types of nodes in the workflow- Free nodes and Graph nodes.
+Currently following types of the nodes are supported:
 
-**Free Nodes**: These nodes are not part of the workflow graph and can be executed independently. They are also called as floating node. They are not connected to main graph of the workflow as they are supposed to act asynchrounously. Eventhough they are not connected to main graph node, they can have their own node chain with these nodes as starting nodes.
-
-Examples of free nodes include `EventListenerNode`, `TimerNode`.
-
-- [Event Listener Node](event-listener-node.md)
-- [Timer Node](timer-node.md)
-
-**Graph Nodes**: These nodes are part of the either main workflow graph or are connected to free-node chains. They are also called as workflow graph nodes.
-Following are the examples of graph nodes:
-
-- [Execution Node](execution-node.md)
-- [Logical Event Node](logical-event-node.md)
-- [Logical Timer Node](logical-timer-node.md)
-- [Timer Node](timer-node.md)
-- [Question Node](question-node.md)
-- [Terminator Node](terminator-node.md)
+- [Execution Node](nodes/node.md#execution-node)
+- [Question Node](nodes/node.md#question-node)
+- [Event Listener Node](nodes/node.md#event-listener-node)
+- [Logical Yes-No Action Node](nodes/node.md#logical-yes-no-action-node)
+- [Logical Event Node](nodes/node.md#logical-event-node)
+- [Logical Timer Node](nodes/node.md#logical-timer-node)
+- [Timer Node](nodes/node.md#timer-node)
+- [Terminator Node](nodes/node.md#terminator-node)
+- [Broadcaster Node](nodes/node.md#broadcaster-node)
+- [Idle Node](nodes/node.md#idle-node)
 
 ## Node Members
 
-1. [Node Actions](node-actions.md)
-2. [Node Rule](node-rule.md) - *Optional rule associated with the node.*
-3. [Node Execution Delay](node-execution-delay.md) - *Optional delay before the node actions are executed.*
-4. [Node Input](node-input.md) - *Optional input data expected for the node.*
+Every node has some common properties. These are:
 
-In addition to these, there are some node specific properties.
+1. [Node Actions](nodes/node-actions.md) - *Node actions or tasks are the actions associated with the node. These actions are executed when the node is triggered. Node execution does not move to the next node until all the actions are executed successfully.*
+2. [Node Rule](nodes/node-rule.md) - *(Optional) A decision rule associated with the node. A rule may have hierarchical set of conditions within them.*
+3. [Node Execution Delay](nodes/node-execution-delay.md) - *(Optional) This is the delay before the node actions are executed. This is defined in seconds*
+4. [Node Input](nodes/node-input.md) - *(Optional) This is input data expected for a particular type of the node.*
+
+In addition to these, there are some specific properties which change according to the node type.

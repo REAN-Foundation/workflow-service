@@ -6,7 +6,7 @@
 
 - Workflow Concepts
 
-  - [Schema](schema/schema.md)
+  - [Schema](schema/schema.md#schema)
     - [Schema Execution](schema/schema.md#schema-execution)
       - [Schema Instantiation](schema/schema.md#schema-instantiation)
       - [Execution Process](schema/schema.md#execution-process)
@@ -14,13 +14,27 @@
     - [Schema Instance Context](schema/schema.md#schema-instance-context)
     - [Children Schema](schema/children-schema.md)
 
-  - [Nodes](nodes/node.md)
-    - [Types of Nodes](nodes/node.md#types-of-nodes)
+  - [Nodes](nodes/node.md#nodes)
+    - [Types of Nodes](nodes/node-types.md)
+      - [Execution Node](nodes/node-types.md#execution-node)
+      - [Question Node](nodes/node-types.md#question-node)
+      - [Event Listener Node](nodes/node-types.md#event-listener-node)
+      - [Logical Yes-No Action Node](nodes/node-types.md#logical-yes-no-action-node)
+      - [Logical Event Node](nodes/node-types.md#logical-event-node)
+      - [Logical Timer Node](nodes/node-types.md#logical-timer-node)
+      - [Timer Node](nodes/node-types.md#timer-node)
+      - [Terminator Node](nodes/node-types.md#terminator-node)
+      - [Broadcaster Node](nodes/node-types.md#broadcaster-node)
+      - [Idle Node](nodes/node-types.md#idle-node)
     - [Node Members](nodes/node.md#node-members)
-    - [Node Instance](nodes/node-instance.md)
-    - [Node Actions](node-actions.md)
-    - [Types of Node Actions](node-actions.md#types-of-actions)
-    - [Action Instance](action-instance.md)
+      - [Node Actions](nodes/node-actions.md)
+        - [Types of Actions](nodes/node-actions.md#types-of-actions)
+      - [Node Rule](nodes/node-rule.md)
+        - [Condition](nodes/node-rule.md#condition)
+      - [Node Execution Delay](nodes/node-execution-delay.md)
+      - [Node Input](nodes/node-input.md)
+    
+    - [Action Instance](nodes/node.md#action-instance)
   - [Events](events/events.md)
     - [Types of Events](events/events.md#types-of-events)
 

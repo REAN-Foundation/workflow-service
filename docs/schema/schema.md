@@ -9,7 +9,7 @@ It has nodes and connections between them. There are several types of nodes each
 Following is the typical example of a workflow. 
 ```mermaid
 graph TD;
-    Event1((Event)) -->|Triggers| A(Start)
+    Event1([Event]) -->|Triggers| A(Start)
     A(Start Root Node) --> B[Node 1 Execution Node]
     B --> C[Node 2 Logical Event Node]
     C --> D[Node 3 Logical Timer Node]
@@ -54,8 +54,8 @@ Here is a diagram that illustrates the relationship between the schema, nodes, a
 
 ```mermaid
 graph TD;
-    SchemaExecutionEngine((Execution Engine)) -->|Executes Schema Instance| SchemaInstance[Schema Instance]
-    SchemaExecutionEngine((Execution Engine)) -->|Instantiates Schema| Schema[Schema Instance]
+    SchemaExecutionEngine([Execution Engine]) -->|Executes Schema Instance| SchemaInstance[Schema Instance]
+    SchemaExecutionEngine([Execution Engine]) -->|Instantiates Schema| Schema[Schema Instance]
     
     %% Parallel relationships
     Schema[Schema] -->|Defines| Node[Nodes]

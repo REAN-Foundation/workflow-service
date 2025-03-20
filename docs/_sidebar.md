@@ -38,8 +38,8 @@
 
 - Example workflows
 
-  - [Emergency Incident Handling](emergency-incident-handling.md)
-  - [Vitals Triggered Assessment](vitals-triggered-assessment.md)
+  - [Emergency Incident Handling](examples/emergency-incident-handling.md)
+  - [Vitals Triggered Assessment](examples/vitals-triggered-assessment.md)
 
 - Miscellaneous
 

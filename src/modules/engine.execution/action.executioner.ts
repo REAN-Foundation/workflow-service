@@ -151,16 +151,16 @@ export class ActionExecutioner {
 
         if (actionType === ActionType.TriggerLogicalTimerNode) {
             await LogicalTimerNodeTriggerHandler.handle({
-                Node: node,
-                NodeInstance: nodeInstance,
-                Event: this._event,
+                Node         : node,
+                NodeInstance : nodeInstance,
+                Event        : this._event,
             });
         }
         else {
             await TimerNodeTriggerHandler.handle({
-                Node: node,
-                NodeInstance: nodeInstance,
-                Event: this._event,
+                Node         : node,
+                NodeInstance : nodeInstance,
+                Event        : this._event,
             });
         }
 
@@ -601,16 +601,16 @@ export class ActionExecutioner {
         if (!p) {
             logger.error('Input parameters not found');
             return {
-                Success: false,
-                Result: null
+                Success : false,
+                Result  : null
             };
         }
         var key = p.Key;
         if (!key) {
             logger.error('Key not found in input parameters');
             return {
-                Success: false,
-                Result: null
+                Success : false,
+                Result  : null
             };
         }
         var inValue = p.Value;
@@ -625,8 +625,8 @@ export class ActionExecutioner {
         if (!inValue) {
             logger.error('Value not found in input parameters');
             return {
-                Success: false,
-                Result: null
+                Success : false,
+                Result  : null
             };
         }
 
@@ -638,8 +638,8 @@ export class ActionExecutioner {
                 const success = await this.saveToTargetAlmanac(op, targetSchemaInstanceId, inValue);
                 if (!success) {
                     return {
-                        Success: false,
-                        Result: null
+                        Success : false,
+                        Result  : null
                     };
                 }
             }
@@ -665,8 +665,8 @@ export class ActionExecutioner {
         await this.recordActionActivity(action, { Key: key, Value: inValue });
 
         return {
-            Success: true,
-            Result: true
+            Success : true,
+            Result  : true
         };
     };
 

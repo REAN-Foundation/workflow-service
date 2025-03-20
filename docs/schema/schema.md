@@ -10,11 +10,11 @@ Following is the typical example of a workflow.
 ```mermaid
 graph TD;
     Event1((Event)) -->|Triggers| A(Start)
-    A(Start __Root Node__) --> B[Node 1 **Execution Node**]
-    B --> C[Node 2 ___Logical Event Node___]
-    C --> D[Node 3 ___Logical Timer Node___]
-    D --> E[Node 4 ___Execution Node___]
-    E --> F[Node 5 ___Terminator___]
+    A(Start Root Node) --> B[Node 1 Execution Node]
+    B --> C[Node 2 Logical Event Node]
+    C --> D[Node 3 Logical Timer Node]
+    D --> E[Node 4 Execution Node]
+    E --> F[Node 5 Terminator]
     F --> G[End]
 
     %% Local cyclic graph (looping between Nodes)

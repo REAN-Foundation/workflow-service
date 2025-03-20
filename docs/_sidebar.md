@@ -1,8 +1,8 @@
 - About the service
 
-  - [Quick start](quickstart.md)
-  - [REST API](rest-api.md)
-  - [SDK](sdk.md)
+  - [Quick start](about/quickstart.md)
+  - [REST API](about/rest-api.md)
+  - [SDK](about/sdk.md)
 
 - Workflow Concepts
 
@@ -15,7 +15,7 @@
     - [Children Schema](schema/children-schema.md)
 
   - [Nodes](nodes/node.md#nodes)
-    - [Types of Nodes](nodes/node-types.md)
+    - [Types of Nodes](nodes/node-types.md#node-types)
       - [Execution Node](nodes/node-types.md#execution-node)
       - [Question Node](nodes/node-types.md#question-node)
       - [Event Listener Node](nodes/node-types.md#event-listener-node)
@@ -26,15 +26,13 @@
       - [Terminator Node](nodes/node-types.md#terminator-node)
       - [Broadcaster Node](nodes/node-types.md#broadcaster-node)
       - [Idle Node](nodes/node-types.md#idle-node)
-    - [Node Members](nodes/node.md#node-members)
-      - [Node Actions](nodes/node-actions.md)
+    - [Node Actions](nodes/node-actions.md#node-actions)
+        - [Action Instance](nodes/node-actions.md#action-instance)
         - [Types of Actions](nodes/node-actions.md#types-of-actions)
-      - [Node Rule](nodes/node-rule.md)
+    - [Node Rule](nodes/node-rule.md#node-rule)
         - [Condition](nodes/node-rule.md#condition)
-      - [Node Execution Delay](nodes/node-execution-delay.md)
-      - [Node Input](nodes/node-input.md)
+        - [Condition Operands](nodes/node-rule.md#condition-operands)
 
-    - [Action Instance](nodes/node.md#action-instance)
   - [Events](events/events.md)
     - [Types of Events](events/events.md#types-of-events)
 
@@ -45,4 +43,4 @@
 
 - Miscellaneous
 
-  - [Roadmap](roadmap.md)
+  - [Roadmap](other/roadmap.md)

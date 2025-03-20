@@ -1716,7 +1716,7 @@ export class ActionExecutioner {
         const phonenumber = message.Phone;
 
         const workflowEvent: WorkflowEvent = {
-            EventType        : EventType.WorkflowSystemMessage,
+            EventType        : EventType.SystemMessage,
             TenantId         : this._event?.TenantId ?? this._schema.TenantId,
             SchemaId         : this._schema.id,
             SchemaInstanceId : this._schemaInstance.id,
@@ -1782,7 +1782,7 @@ export class ActionExecutioner {
         var messageService = new ChatbotMessageService();
 
         const workflowEvent: WorkflowEvent = {
-            EventType        : EventType.WorkflowSystemMessage,
+            EventType        : EventType.SystemMessage,
             TenantId         : this._event?.TenantId ?? this._schema.TenantId,
             SchemaId         : this._schema.id,
             SchemaInstanceId : this._schemaInstance.id,

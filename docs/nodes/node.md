@@ -34,13 +34,13 @@ Currently following types of the nodes are supported:
 - [Broadcaster Node](nodes/node.md#broadcaster-node)
 - [Idle Node](nodes/node.md#idle-node)
 
-## Node Members
+## Node Properties
 
 Every node has some common properties. These are:
 
-1. [Node Actions](nodes/node-actions.md) - *Node actions or tasks are the actions associated with the node. These actions are executed when the node is triggered. Node execution does not move to the next node until all the actions are executed successfully.*
-2. [Node Rule](nodes/node-rule.md) - *(Optional) A decision rule associated with the node. A rule may have hierarchical set of conditions within them.*
-3. [Node Execution Delay](nodes/node-execution-delay.md) - *(Optional) This is the delay before the node actions are executed. This is defined in seconds*
-4. [Node Input](nodes/node-input.md) - *(Optional) This is input data expected for a particular type of the node.*
+1. [Node Actions](nodes/node-actions.md#node-actions) - *Node actions or tasks are the actions associated with the node. These actions are executed when the node is triggered. Node execution does not move to the next node until all the actions are executed successfully.*
+2. [Node Rule](nodes/node-rule.md#node-rule) - *(Optional) A decision rule associated with the node. A rule may have hierarchical set of conditions within them.*
+3. **Node Input** - *(Optional) This is input data expected for a particular type of the node. This is a set of Params defined when a node is expecting certain kind of input. The input may be an event or the state of the schema instance. Once this input is fulfilled, it proceeds to the execution. Only applicable for certain kind of nodes, such as "Event Listener Node'.*
+4. **Node Execution Delay** - *(Optional) This is the delay before the node actions are executed. This is defined in seconds*
 
 In addition to these, there are some specific properties which change according to the node type.

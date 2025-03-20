@@ -14,18 +14,16 @@ export enum WorkflowActivityType {
 }
 
 export enum EventType {
-    UserMessage            = 'UserMessage',
-    WorkflowSystemMessage  = 'WorkflowSystemMessage',
-    TerminateWorkflowEvent = 'TerminateWorkflowEvent',
-    WorkflowSystemEvent    = 'WorkflowSystemEvent',
-    TriggerChildWorkflow   = 'TriggerChildWorkflow',
+    UserMessage          = 'UserMessage',
+    SystemMessage        = 'SystemMessage',
+    TerminateWorkflow    = 'TerminateWorkflow',
+    TriggerChildWorkflow = 'TriggerChildWorkflow',
 }
 
 export const EventTypeList: EventType[] = [
     EventType.UserMessage,
-    EventType.WorkflowSystemMessage,
-    EventType.WorkflowSystemEvent,
-    EventType.TerminateWorkflowEvent,
+    EventType.SystemMessage,
+    EventType.TerminateWorkflow,
     EventType.TriggerChildWorkflow
 ];
 

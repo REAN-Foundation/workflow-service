@@ -12,7 +12,7 @@
       - [Execution Process](schema/schema.md#execution-process)
       - [State Management](schema/schema.md#state-management)
     - [Schema Instance Context](schema/schema.md#schema-instance-context)
-    - [Children Schema](schema/children-schema.md)
+    - [Children Schema](schema/schema.md#children-schema)
 
   - [Nodes](nodes/node.md#nodes)
     - [Types of Nodes](nodes/node-types.md#node-types)
@@ -20,7 +20,7 @@
       - [Question Node](nodes/node-types.md#question-node)
       - [Event Listener Node](nodes/node-types.md#event-listener-node)
       - [Logical Yes-No Action Node](nodes/node-types.md#logical-yes-no-action-node)
-      <!-- - [Logical Node](nodes/node-types.md#logical-node) -->
+      - [Logical Node](nodes/node-types.md#logical-node)
       - [Logical Timer Node](nodes/node-types.md#logical-timer-node)
       - [Timer Node](nodes/node-types.md#timer-node)
       - [Terminator Node](nodes/node-types.md#terminator-node)

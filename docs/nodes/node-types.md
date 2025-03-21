@@ -115,7 +115,7 @@ These node types collectively define the structure and behavior of workflows, al
 
 ---
 
-<!-- ### Logical Node
+### Logical Node
 **Node Features**
 - Similar to 'Logical Yes-No Action Node' but without the predefined Yes-Action and No-Action.
 - Evaluates a condition against available facts.
@@ -134,9 +134,9 @@ These node types collectively define the structure and behavior of workflows, al
 - **Node Paths**: The list of paths to take based on the condition evaluation.
 - **Node Path Rules**: Each rule is associated with a path and is evaluated to determine the path to take.
 - **Rule Conditions**: The conditions to evaluate for each path.
-- **Actions**: (Optional) The actions to execute traversing to the next node along the path. -->
+- **Actions**: (Optional) The actions to execute traversing to the next node along the path.
 
-<!-- --- -->
+---
 
 ### Logical Timer Node
 **Node Features**

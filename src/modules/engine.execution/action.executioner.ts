@@ -19,7 +19,7 @@ import { TimeUtils } from "../../common/utilities/time.utils";
 import { WorkflowMessage } from '../../domain.types/engine/user.event.types';
 import { NodeResponseDto } from '../../domain.types/engine/node.types';
 import ChildSchemaTriggerHandler from './handlers/child.schema.trigger.handler';
-import { EventType } from '../../domain.types/enums/event.type';
+import { EventType } from '../../domain.types/engine/engine.enums';
 import LogicalTimerNodeTriggerHandler from './handlers/logical.timer.node.trigger.handler';
 import { Agent as HttpAgent } from 'http'; // For HTTP
 import { Agent as HttpsAgent } from 'https'; // For HTTPS
@@ -71,7 +71,7 @@ export class ActionExecutioner {
 
     //#region Publics
 
-    public triggerListeningNode = async (
+    public triggerEventListenerNode = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 
         const input = action.Input as ActionInputParams;
@@ -151,16 +151,16 @@ export class ActionExecutioner {
 
         if (actionType === ActionType.TriggerLogicalTimerNode) {
             await LogicalTimerNodeTriggerHandler.handle({
-                Node: node,
-                NodeInstance: nodeInstance,
-                Event: this._event,
+                Node         : node,
+                NodeInstance : nodeInstance,
+                Event        : this._event,
             });
         }
         else {
             await TimerNodeTriggerHandler.handle({
-                Node: node,
-                NodeInstance: nodeInstance,
-                Event: this._event,
+                Node         : node,
+                NodeInstance : nodeInstance,
+                Event        : this._event,
             });
         }
 
@@ -631,47 +631,31 @@ export class ActionExecutioner {
         }
 
         const op = output && output.Params && output.Params.length > 0 ? output.Params[0] : null;
-        if (op && op.Destination === OutputDestinationType.ParentSchemaInstanceAlmanac) {
+        if (op) {
             const currentSchemaInstance = this._schemaInstance;
-            const parentSchemaInstanceId = currentSchemaInstance.ParentSchemaInstanceId;
-            if (!parentSchemaInstanceId) {
-                logger.error('Parent Schema Instance Id not found');
-                return {
-                    Success : false,
-                    Result  : null
-                };
-            }
-            const parentAlmanac = await Almanac.getAlmanac(parentSchemaInstanceId);
-            const outputKey = op.Key;
-            if (!outputKey) {
-                logger.error('Output Key not found');
-                return {
-                    Success : false,
-                    Result  : null
-                };
-            }
-            var value = inValue;
-            if (op.Type === ParamType.Array) {
-                var existingValue = await parentAlmanac.getFact(outputKey);
-                if (existingValue) {
-                    if (Array.isArray(existingValue)) {
-                        if (Array.isArray(inValue)) {
-                            existingValue = existingValue.concat(inValue);
-                        }
-                        else {
-                            existingValue.push(inValue);
-                        }
-                    }
-                    else {
-                        existingValue = [existingValue, inValue];
-                    }
-                    value = existingValue;
-                }
-                else {
-                    value = [inValue];
+            if (op.Destination === OutputDestinationType.ParentSchemaAlmanac) {
+                const targetSchemaInstanceId = currentSchemaInstance.ParentSchemaInstanceId;
+                const success = await this.saveToTargetAlmanac(op, targetSchemaInstanceId, inValue);
+                if (!success) {
+                    return {
+                        Success : false,
+                        Result  : null
+                    };
                 }
             }
-            await parentAlmanac.addFact(outputKey, value);
+            else if (op.Destination === OutputDestinationType.ChildSchemaAlmanac) {
+                var childrenSchemaInstances = await this._schemaInstanceService.getByParentSchemaInstanceId(currentSchemaInstance.id);
+                if (childrenSchemaInstances.length > 0) {
+                    for await (var childSchemaInstance of childrenSchemaInstances) {
+                        logger.info(`Saving to children almanacs: ${childSchemaInstance.id}`);
+                        const targetSchemaInstanceId = childSchemaInstance.id;
+                        const success = await this.saveToTargetAlmanac(op, targetSchemaInstanceId, inValue);
+                        if (!success) {
+                            logger.error(`Failed to save to child schema instance: ${childSchemaInstance.id}`);
+                        }
+                    }
+                }
+            }
         }
         else {
             await this._almanac.addFact(key, inValue);
@@ -685,6 +669,38 @@ export class ActionExecutioner {
             Result  : true
         };
     };
+
+    private async saveToTargetAlmanac(op: Params, targetSchemaInstanceId: uuid, inValue: any): Promise<boolean> {
+        const targetAlmanac = await Almanac.getAlmanac(targetSchemaInstanceId);
+        const outputKey = op.Key;
+        if (!outputKey) {
+            logger.error('Output Key not found');
+            return false;
+        }
+        var value = inValue;
+        if (op.Type === ParamType.Array) {
+            var existingValue = await targetAlmanac.getFact(outputKey);
+            if (existingValue) {
+                if (Array.isArray(existingValue)) {
+                    if (Array.isArray(inValue)) {
+                        existingValue = existingValue.concat(inValue);
+                    }
+                    else {
+                        existingValue.push(inValue);
+                    }
+                }
+                else {
+                    existingValue = [existingValue, inValue];
+                }
+                value = existingValue;
+            }
+            else {
+                value = [inValue];
+            }
+        }
+        await targetAlmanac.addFact(outputKey, value);
+        return true;
+    }
 
     public executeUpdateContextParamsAction = async (
         actionInstance: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
@@ -1700,7 +1716,7 @@ export class ActionExecutioner {
         const phonenumber = message.Phone;
 
         const workflowEvent: WorkflowEvent = {
-            EventType        : EventType.WorkflowSystemMessage,
+            EventType        : EventType.SystemMessage,
             TenantId         : this._event?.TenantId ?? this._schema.TenantId,
             SchemaId         : this._schema.id,
             SchemaInstanceId : this._schemaInstance.id,
@@ -1766,7 +1782,7 @@ export class ActionExecutioner {
         var messageService = new ChatbotMessageService();
 
         const workflowEvent: WorkflowEvent = {
-            EventType        : EventType.WorkflowSystemMessage,
+            EventType        : EventType.SystemMessage,
             TenantId         : this._event?.TenantId ?? this._schema.TenantId,
             SchemaId         : this._schema.id,
             SchemaInstanceId : this._schemaInstance.id,

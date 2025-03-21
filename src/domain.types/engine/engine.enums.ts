@@ -9,7 +9,23 @@ export enum WorkflowActivityType {
     SystemEvent       = 'SystemEvent',
     SwitchCurrentNode = 'SwitchCurrentNode',
     TerminateWorkflow = 'TerminateWorkflow',
+    Broadcasting      = 'Broadcasting',
+    Idle              = 'Idle',
 }
+
+export enum EventType {
+    UserMessage          = 'UserMessage',
+    SystemMessage        = 'SystemMessage',
+    TerminateWorkflow    = 'TerminateWorkflow',
+    TriggerChildWorkflow = 'TriggerChildWorkflow',
+}
+
+export const EventTypeList: EventType[] = [
+    EventType.UserMessage,
+    EventType.SystemMessage,
+    EventType.TerminateWorkflow,
+    EventType.TriggerChildWorkflow
+];
 
 export enum ParamType {
     Phone            = "Phone",
@@ -83,27 +99,31 @@ export const MessageChannelList: MessageChannelType[] = [
 ];
 
 export enum NodeType {
-    ExecutionNode        = 'ExecutionNode',
-    QuestionNode         = 'QuestionNode',
-    ListeningNode        = 'ListeningNode',
-    YesNoNode            = 'YesNoNode',
-    TimerNode            = 'TimerNode',
-    LogicalTimerNode     = 'LogicalTimerNode',   //Timer node executes some rule-logic once it times out
-    TerminatorNode       = 'TerminatorNode',
+    ExecutionNode          = 'ExecutionNode',
+    QuestionNode           = 'QuestionNode',
+    EventListenerNode      = 'EventListenerNode',
+    LogicalYesNoActionNode = 'LogicalYesNoActionNode',
+    TimerNode              = 'TimerNode',
+    LogicalTimerNode       = 'LogicalTimerNode',    //Timer node executes some rule-logic once it times out
+    TerminatorNode         = 'TerminatorNode',
+    BroadcastNode          = 'BroadcastNode',
+    IdleNode               = 'IdleNode',
 }
 
 export const NodeTypeList: NodeType[] = [
     NodeType.ExecutionNode,
     NodeType.QuestionNode,
-    NodeType.ListeningNode,
-    NodeType.YesNoNode,
+    NodeType.EventListenerNode,
+    NodeType.LogicalYesNoActionNode,
     NodeType.TimerNode,
     NodeType.LogicalTimerNode,
     NodeType.TerminatorNode,
+    NodeType.BroadcastNode,
+    NodeType.IdleNode,
 ];
 
 export enum ActionType {
-    TriggerListeningNode            = 'TriggerListeningNode',
+    TriggerEventListenerNode        = 'TriggerEventListenerNode',
     TriggerTimerNode                = 'TriggerTimerNode',
     TriggerLogicalTimerNode         = 'TriggerLogicalTimerNode',
     TriggerChildWorkflow            = 'TriggerChildWorkflow',
@@ -136,7 +156,7 @@ export enum ActionType {
 }
 
 export const ActionTypeList: ActionType[] = [
-    ActionType.TriggerListeningNode,
+    ActionType.TriggerEventListenerNode,
     ActionType.TriggerTimerNode,
     ActionType.TriggerLogicalTimerNode,
     ActionType.TriggerChildWorkflow,
@@ -376,16 +396,19 @@ export const InputSourceTypeList: InputSourceType[] = [
 ];
 
 export enum OutputDestinationType {
-    Database                    = "Database",
-    Almanac                     = "Almanac",
-    ParentSchemaInstanceAlmanac = "ParentSchemaInstanceAlmanac",
-    ApiEndpoint                 = "ApiEndpoint",
-    None                        = "None",
+    Database            = "Database",
+    Almanac             = "Almanac",
+    ParentSchemaAlmanac = "ParentSchemaAlmanac",
+    ChildSchemaAlmanac  = "ChildSchemaAlmanac",
+    ApiEndpoint         = "ApiEndpoint",
+    None                = "None",
 }
 
 export const OutputSourceTypeList: OutputDestinationType[] = [
     OutputDestinationType.Database,
     OutputDestinationType.Almanac,
+    OutputDestinationType.ParentSchemaAlmanac,
+    OutputDestinationType.ChildSchemaAlmanac,
     OutputDestinationType.ApiEndpoint,
     OutputDestinationType.None,
 ];

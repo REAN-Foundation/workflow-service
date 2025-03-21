@@ -4,7 +4,7 @@ import { NodeValidator } from './node.validator';
 import { NodeService } from '../../../database/services/engine/node.service';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import {
-    YesNoNodeCreateModel,
+    LogicalYesNoActionNodeCreateModel,
     NodeCreateModel,
     NodeSearchFilters,
     NodeUpdateModel,
@@ -58,12 +58,12 @@ export class NodeController {
         }
     };
 
-    createYesNoNode = async (request: express.Request, response: express.Response) => {
+    createLogicalYesNoActionNode = async (request: express.Request, response: express.Response) => {
         try {
-            var model: YesNoNodeCreateModel = await this._validator.validateCreateYesNoNodeRequest(request);
-            model.Type = NodeType.YesNoNode;
+            var model: LogicalYesNoActionNodeCreateModel = await this._validator.validateCreateLogicalYesNoActionNodeRequest(request);
+            model.Type = NodeType.LogicalYesNoActionNode;
 
-            const record = await this._service.createYesNoNode(model);
+            const record = await this._service.createLogicalYesNoActionNode(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add node!');
             }
@@ -74,10 +74,10 @@ export class NodeController {
         }
     };
 
-    createListeningNode = async (request: express.Request, response: express.Response) => {
+    createEventListenerNode = async (request: express.Request, response: express.Response) => {
         try {
             var model: NodeCreateModel = await this._validator.validateCreateRequest(request);
-            model.Type = NodeType.ListeningNode;
+            model.Type = NodeType.EventListenerNode;
 
             const record = await this._service.create(model);
             if (record === null) {
@@ -108,7 +108,7 @@ export class NodeController {
 
     createTimerNode = async (request: express.Request, response: express.Response) => {
         try {
-            var model: TimerNodeCreateModel = await this._validator.validateCreateRequest(request, true);
+            var model: TimerNodeCreateModel = await this._validator.validateCreateTimerNodeRequest(request);
             model.Type = NodeType.TimerNode;
 
             const record = await this._service.create(model);

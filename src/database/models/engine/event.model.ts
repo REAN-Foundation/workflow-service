@@ -8,7 +8,7 @@ import {
     DeleteDateColumn,
 } from 'typeorm';
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
-import { EventType } from "../../../domain.types/enums/event.type";
+import { EventType } from "../../../domain.types/engine/engine.enums";
 import { WorkflowMessage } from "../../../domain.types/engine/user.event.types";
 
 ////////////////////////////////////////////////////////////////////////

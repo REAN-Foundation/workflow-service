@@ -1,0 +1,96 @@
+meta {
+  name: 09 - Reporter answers resolution question
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/engine/events/user-message
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "SchemaInstanceId": "{{REPORTER_SCHEMA_INSTANCE_ID}}",
+    "UserMessage": {
+      "Phone": "{{REPORTER_PHONE}}",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "QuestionResponse",
+      "MessageChannel": "WhatsApp",
+      "QuestionResponse": {
+        "QuestionId": "{{MAIN_QN1_ID}}",
+        "ResponseContent": "Yes",
+        "QuestionResponseType": "Single Choice Selection",
+        "SingleChoiceChosenOptionSequence": 1,
+        "SingleChoiceChosenOption": "Yes",
+        "QuestionOptions": [
+          {
+            "id": "{{MAIN_QN1_OPTION_1_ID}}",
+            "Text": "Yes",
+            "ImageUrl": null,
+            "Sequence": 1,
+            "Metadata": [
+              {
+                "Key": "ButtonId",
+                "Value": "button-id-1"
+              }
+            ]
+          },
+          {
+            "id": "{{MAIN_QN1_OPTION_2_ID}}",
+            "Text": "No",
+            "ImageUrl": null,
+            "Sequence": 2,
+            "Metadata": [
+              {
+                "Key": "ButtonId",
+                "Value": "button-id-2"
+              }
+            ]
+          }
+        ]
+      },
+      "Payload": {}
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("USER_MESSAGE_EVENT_3_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

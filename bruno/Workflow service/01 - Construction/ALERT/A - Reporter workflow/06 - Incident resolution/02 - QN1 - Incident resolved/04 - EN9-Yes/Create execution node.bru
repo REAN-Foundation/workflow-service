@@ -1,0 +1,114 @@
+meta {
+  name: Create execution node
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Send closing message to reporter",
+    "Description": "This execution node holds actions to send closing message to the reporter.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{MAIN_QN1_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - To reporter",
+        "Description": "Sending closing message.",
+        "Sequence": 0,
+        "Input": {
+          "Params": [
+            {
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Type": "Text",
+              "Name": "Message",
+              "Value": "Glad to hear that the incident {{ContextParams:IncidenceCode}} is successfully handled and resolved. We appreciate your involvement in handling the situation. Thank You!"
+            },
+            {
+              "Name": "Incident code",
+              "Type": "Placeholder",
+              "Key": "ContextParams:IncidenceCode",
+              "Source": "Almanac"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - To primary responder",
+        "Description": "Sending closing message.",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "CFR:PrimaryCFR:Phone"
+            },
+            {
+              "Type": "Text",
+              "Name": "Message",
+              "Value": "The incident reporter for incident {{ContextParams:IncidenceCode}} has marked the incident as handled and resolved. We appreciate your involvement in handling the situation. Thank You!"
+            },
+            {
+              "Name": "Incident code",
+              "Type": "Placeholder",
+              "Key": "ContextParams:IncidenceCode",
+              "Source": "Almanac"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_EN9_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

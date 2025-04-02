@@ -75,7 +75,7 @@ body:json {
           "Name": "Message Channel",
           "Description": "Default messaging channel for the workflow",
           "Type": "MessageChannel",
-          "Value": "Telegram",
+          "Value": "WhatsApp",
           "Key": "ContextParams:MessageChannel"
         }
       ]
@@ -91,7 +91,7 @@ script:post-response {
     bru.setEnvVar("BASE_SCHEMA_ID", res.body.Data.id);
     bru.setEnvVar("MAIN_ROOT_NODE_ID", res.body.Data.RootNode.id);
   }
-
+  
 }
 
 tests {
@@ -99,7 +99,7 @@ tests {
       expect(res.getStatus()).to.equal(201);
       expect(res.body.Status).to.eql('success');
   });
-
+  
   test("Schema is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
@@ -108,11 +108,11 @@ tests {
       expect(jsonRes.Data).to.have.property('Description');
       expect(jsonRes.Data).to.have.property('RootNode');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

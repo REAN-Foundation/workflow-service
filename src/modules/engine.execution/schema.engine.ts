@@ -364,8 +364,9 @@ export class SchemaEngine {
 
         if (questionInstance.QuestionPosed === false) {
 
-            //Wait for a 2 seconds before posing the question
-            await new Promise(r => setTimeout(r, 2000));
+            //Wait for a 5 seconds before posing the question, if delay is not set
+            const delaySeconds = (currentNode.DelaySeconds && currentNode.DelaySeconds > 0) ? currentNode.DelaySeconds : 5;
+            await new Promise(r => setTimeout(r, Math.abs(delaySeconds) * 1000));
 
             // Pose the question
             questionInstance.QuestionPosed = true;

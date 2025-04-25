@@ -1,5 +1,5 @@
 meta {
-  name: 02 - Add message action - send first message
+  name: Combine_location_alert_message
   type: http
   seq: 2
 }
@@ -7,7 +7,7 @@ meta {
 post {
   url: {{BASE_URL}}/engine/node-actions
   body: json
-  auth: none
+  auth: inherit
 }
 
 headers {
@@ -19,7 +19,8 @@ headers {
 body:json {
   {
     "Type": "SendMessage",
-    "Name": "Send message - Notify CFR of the incident.",
+    "Name": "Notify CFR of the incident and send location",
+    "Description": "Sending incident notification and location to the CFR",
     "Sequence": 1,
     "ParentNodeId": "{{CHILD_MAIN_ROOT_NODE_ID}}",
     "Input": {
@@ -41,29 +42,33 @@ body:json {
           "Type": "Placeholder",
           "Key": "ContextParams:Timestamp",
           "Source": "Almanac"
+        },
+        {
+          "Type": "Location",
+          "Name": "Incident Location",
+          "Source": "Almanac",
+          "Key": "ContextParams:Location",
+          "Value": {
+            "Latitude": null,
+            "Longitude": null
+          }
         }
       ]
     }
   }
+  
 }
 
 tests {
-  test("Request is successfull", function () {
-      expect(res.getStatus()).to.equal(201);
-      var jsonRes = res.getBody();
-      expect(jsonRes.Status).to.eql('success');
-  });
-
-  test("Action is added", function () {
-      var jsonRes = res.getBody();
-      expect(jsonRes.Data).to.have.property('id');
-      expect(jsonRes.Data).to.have.property('Name');
-  });
-
-}
-
-docs {
-  User login with username/phone/email and password.
-
-  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+    test("Request is successfull", function () {
+        expect(res.getStatus()).to.equal(201);
+        var jsonRes = res.getBody();
+        expect(jsonRes.Status).to.eql('success');
+    });
+  
+    test("Action is added", function () {
+        var jsonRes = res.getBody();
+        expect(jsonRes.Data).to.have.property('id');
+        expect(jsonRes.Data).to.have.property('Name');
+    });
 }

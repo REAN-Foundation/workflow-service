@@ -52,17 +52,19 @@ body:json {
         }
       },
       {
-        "Type": "SendMessage",
-        "Name": "Send message - To primary responder",
+        "Type": "SendOneMessageToMultipleUsers",
+        "Name": "Send message - CFR Phone",
         "Description": "Sending closing message.",
         "Sequence": 1,
         "Input": {
           "Params": [
             {
-              "Type": "Phone",
+              "Name": "List of CFR phonenumbers",
+              "Type": "Array",
               "Value": null,
               "Source": "Almanac",
-              "Key": "CFR:PrimaryCFR:Phone"
+              "Key": "ContextParams:CFR:Phonenumbers",
+              "SubType": "Phone"
             },
             {
               "Type": "Text",

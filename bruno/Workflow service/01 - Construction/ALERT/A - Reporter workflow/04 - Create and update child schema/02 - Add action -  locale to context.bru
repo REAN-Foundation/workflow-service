@@ -1,7 +1,7 @@
 meta {
-  name: 04 - Add action - Incident code to context
+  name: 02 - Add action -  locale to context 
   type: http
-  seq: 4
+  seq: 3
 }
 
 post {
@@ -18,22 +18,22 @@ headers {
 
 body:json {
   {
-    "Type": "UpdateContextParams",
-    "Name": "Update context params with the incident code data",
-    "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+    "Type": "StoreToAlmanac",
+    "Name": "Store to almanac Locale data",
+    "ParentNodeId": "{{CHILD_MAIN_ROOT_NODE_ID}}",
     "Sequence": 1,
     "Input": {
       "Params": [
-        {
-          "Name": "Incidence Code",
-          "Type": "Text",
-          "Value": null,
-          "Source": "Almanac",
-          "Key": "ContextParams:IncidenceCode"
-        }
+               {
+              "Type": "Locale",
+              "Value": "en-IN",
+              "Source": "Almanac",
+              "Key": "ContextParams:Locale"
+            }
       ]
     }
   }
+     
 }
 
 tests {

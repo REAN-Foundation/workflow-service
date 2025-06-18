@@ -36,6 +36,8 @@ export enum ParamType {
     Date             = "Date",
     DateTime         = "DateTime",
     Timestamp        = "Timestamp",
+    Timezone         = "Timezone",
+    Locale           = "Locale",
     Float            = 'Float',
     Integer          = 'Integer',
     Boolean          = 'Boolean',
@@ -53,6 +55,7 @@ export enum ParamType {
     QuestionId       = 'QuestionId',
     ChannelMessageId = 'ChannelMessageId',
     Unknown          = 'Unknown',
+
 }
 
 export const SchemaTypeList: SchemaType[] = [

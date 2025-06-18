@@ -72,11 +72,18 @@ body:json {
           "Key": "ContextParams:IncidenceCode"
         },
         {
-          "Name": "Message Channel",
-          "Description": "Default messaging channel for the workflow",
-          "Type": "MessageChannel",
-          "Value": "WhatsApp",
-          "Key": "ContextParams:MessageChannel"
+          "Name": "Time Zone",
+          "Description": "Time Zone for the workflow",
+          "Type": "Timezone",
+          "Value": "Asia/Kolkata",
+          "Key": "ContextParams:Timezone"
+        },
+        {
+          "Name": "Locale",
+          "Description": "Locale for the workflow",
+          "Type": "Locale",
+          "Value": "en-IN",
+          "Key": "ContextParams:Locale"
         }
       ]
     }
@@ -91,7 +98,7 @@ script:post-response {
     bru.setEnvVar("BASE_SCHEMA_ID", res.body.Data.id);
     bru.setEnvVar("MAIN_ROOT_NODE_ID", res.body.Data.RootNode.id);
   }
-
+  
 }
 
 tests {
@@ -99,7 +106,7 @@ tests {
       expect(res.getStatus()).to.equal(201);
       expect(res.body.Status).to.eql('success');
   });
-
+  
   test("Schema is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
@@ -108,11 +115,11 @@ tests {
       expect(jsonRes.Data).to.have.property('Description');
       expect(jsonRes.Data).to.have.property('RootNode');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

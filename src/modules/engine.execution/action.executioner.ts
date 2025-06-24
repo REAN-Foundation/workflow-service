@@ -239,16 +239,20 @@ export class ActionExecutioner {
         for await (var placeholder of messagePlaceholders) {
             var placeholderKey = placeholder.Key;
             var placeholderValue = placeholder.Value;
+            const timezone = await this._almanac.getFact('ContextParams:Timezone');
+            const locale = await this._almanac.getFact('ContextParams:Locale');
             var source = placeholder.Source || InputSourceType.Almanac;
             if (source === InputSourceType.Almanac) {
                 placeholderValue = await this._almanac.getFact(placeholderKey);
                 if (placeholderKey === 'Timestamp' || placeholderKey === 'ContextParams:Timestamp') {
-                    placeholderValue = new Date(placeholderValue).toLocaleTimeString();
+                    placeholderValue = new Date(placeholderValue).toLocaleTimeString(locale, {
+                        timeZone : timezone,});
                 }
             }
             else if (!placeholderValue &&
                      (placeholderKey === 'Timestamp' || placeholderKey === 'ContextParams:Timestamp')) {
-                placeholderValue = new Date().toLocaleTimeString();
+                placeholderValue = new Date().toLocaleTimeString(locale, {
+                    timeZone : timezone,});
             }
             if (placeholderValue) {
                 placeholders.push({ Key: placeholderKey, Value: placeholderValue });

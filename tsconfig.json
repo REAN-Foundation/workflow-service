@@ -6,8 +6,9 @@
         "emitDecoratorMetadata": true,
         "module": "nodenext",
         "esModuleInterop": true,
+        "resolveJsonModule": true,
         "target": "ES2022",
-        "listFiles":true,
+        // "listFiles":true,
         "noImplicitAny": false,
         "moduleResolution": "nodenext",
         "sourceMap": true,
@@ -31,6 +32,9 @@
         "docs/**/*",
     ],
     "exclude":[
-        "node_modules"
+        "node_modules",
+        "dist",
+        "**/*.test.ts",
+        "**/*.spec.ts"
     ],
 }

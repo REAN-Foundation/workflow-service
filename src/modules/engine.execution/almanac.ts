@@ -1,5 +1,6 @@
 import { uuid } from "../../domain.types/miscellaneous/system.types";
 import { SchemaInstanceService } from "../../database/services/engine/schema.instance.service";
+import { logger } from "../../logger/logger";
 
 ////////////////////////////////////////////////////////////////
 
@@ -58,6 +59,7 @@ export class Almanac {
         var fact = this.Facts.find(x => x.Name === name);
         if (fact) {
             return fact.Data;
+            logger.debug(`Almanac: ${JSON.stringify(fact, null, 2)}`);
         }
         return undefined;
     }

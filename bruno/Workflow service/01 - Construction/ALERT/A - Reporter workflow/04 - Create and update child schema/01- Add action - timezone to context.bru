@@ -1,7 +1,7 @@
 meta {
-  name: 03 - Add message action - send location
+  name: 01- Add action - timezone to context
   type: http
-  seq: 3
+  seq: 2
 }
 
 post {
@@ -18,32 +18,22 @@ headers {
 
 body:json {
   {
-    "Type": "SendMessage",
-    "Name": "Send location message - To CFR",
-    "Description": "Sending location to the CFR",
-    "Sequence": 2,
+    "Type": "StoreToAlmanac",
+    "Name": "Store to almanac Timezone data",
     "ParentNodeId": "{{CHILD_MAIN_ROOT_NODE_ID}}",
+    "Sequence": 1,
     "Input": {
       "Params": [
-        {
-          "Type": "Phone",
-          "Value": null,
-          "Source": "Almanac",
-          "Key": "ContextParams:CFR:Phone"
-        },
-        {
-          "Type": "Location",
-          "Name": "Incident Location",
-          "Source": "Almanac",
-          "Key": "ContextParams:Location",
-          "Value": {
-            "Latitude": null,
-            "Longitude": null
-          }
+              {
+              "Type": "Timezone",
+              "Value": "Asia/Kolkata",
+              "Source": "Almanac",
+              "Key": "ContextParams:Timezone"
         }
       ]
     }
   }
+    
 }
 
 tests {
@@ -52,17 +42,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
-  test("Action is added", function () {
+  
+  test("Action is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

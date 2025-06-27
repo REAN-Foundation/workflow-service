@@ -40,30 +40,11 @@ body:json {
             {
               "Name": "CFR notified message",
               "Type": "Text",
-              "Value": "We have notified nearby responders. We will let you know once there is positive response."
+              "Value": "Nearby responders have been notified. We will comeback to you once we get a response. In the mean time call 108 for ambulance assistance "
             }
           ]
         }
-      },
-      {
-        "Type": "TriggerTimerNode",
-        "Name": "Trigger timer node - Incident Resolution",
-        "Sequence": 1,
-        "Description": "This action triggers a timer node which handles incident resolution workflow.",
-        "Input": {
-          "Params": [
-            {
-              "Name": "Timer Node to trigger",
-              "Description": "Node Id of the timer node which should be triggered",
-              "ActionType": "TriggerTimerNode",
-              "Type": "NodeId",
-              "Value": "{{MAIN_TN1_ID}}",
-              "Key": "IncidentResolutionTimerNode",
-              "Required": true
-            }
-          ]
-        }
-      }
+      }   
     ]
   }
 }

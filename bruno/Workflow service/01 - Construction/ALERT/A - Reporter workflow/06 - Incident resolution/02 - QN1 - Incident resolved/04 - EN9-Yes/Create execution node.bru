@@ -40,36 +40,7 @@ body:json {
             {
               "Type": "Text",
               "Name": "Message",
-              "Value": "Glad to hear that the incident {{ContextParams:IncidenceCode}} is successfully handled and resolved. We appreciate your involvement in handling the situation. Thank You!"
-            },
-            {
-              "Name": "Incident code",
-              "Type": "Placeholder",
-              "Key": "ContextParams:IncidenceCode",
-              "Source": "Almanac"
-            }
-          ]
-        }
-      },
-      {
-        "Type": "SendOneMessageToMultipleUsers",
-        "Name": "Send message - CFR Phone",
-        "Description": "Sending closing message.",
-        "Sequence": 1,
-        "Input": {
-          "Params": [
-            {
-              "Name": "List of CFR phonenumbers",
-              "Type": "Array",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:CFR:Phonenumbers",
-              "SubType": "Phone"
-            },
-            {
-              "Type": "Text",
-              "Name": "Message",
-              "Value": "The incident reporter for incident {{ContextParams:IncidenceCode}} has marked the incident as handled and resolved. We appreciate your involvement in handling the situation. Thank You!"
+              "Value": "Thank you for being a Good Samaritan in trying your best to help a victim in an emergency.ALERT VoICE is a Voluntary Community First Responders Network that extends support on a best effort basis."
             },
             {
               "Name": "Incident code",
@@ -80,6 +51,7 @@ body:json {
           ]
         }
       }
+    
     ]
   }
 }

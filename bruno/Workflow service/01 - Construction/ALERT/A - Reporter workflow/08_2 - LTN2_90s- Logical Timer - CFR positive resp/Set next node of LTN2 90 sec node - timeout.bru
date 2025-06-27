@@ -1,11 +1,11 @@
 meta {
-  name: Set timer node as next node of EN2 node
+  name: Set next node of LTN2 90 sec node - timeout
   type: http
-  seq: 6
+  seq: 7
 }
 
 put {
-  url: {{BASE_URL}}/engine/nodes/{{MAIN_EN2_ID}}/next-node/{{MAIN_LTN2_ID}}
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_LTN2_ID_P2}}/next-node-on-timer-timeout/{{MAIN_EN2_ID_P3}}
   body: none
   auth: none
 }
@@ -22,11 +22,11 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

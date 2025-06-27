@@ -43,6 +43,25 @@ body:json {
             }
           ]
         }
+      },
+        {
+        "Type": "TriggerTimerNode",
+        "Name": "Trigger timer node - Incident Resolution",
+        "Sequence": 1,
+        "Description": "This action triggers a timer node which handles incident resolution workflow.",
+        "Input": {
+          "Params": [
+            {
+              "Name": "Timer Node to trigger",
+              "Description": "Node Id of the timer node which should be triggered",
+              "ActionType": "TriggerTimerNode",
+              "Type": "NodeId",
+              "Value": "{{MAIN_TN2_ID}}",
+              "Key": "IncidentResolutionTimerNode",
+              "Required": true
+            }
+          ]
+        }
       }
     ]
   }
@@ -54,7 +73,7 @@ script:post-response {
   if (status == 201) {
     bru.setEnvVar("MAIN_EN4_ID", res.body.Data.id);
   }
-
+  
 }
 
 tests {
@@ -63,18 +82,18 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-
+  
   test("Execution node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-
+  
 }
 
 docs {
   User login with username/phone/email and password.
-
+  
   'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

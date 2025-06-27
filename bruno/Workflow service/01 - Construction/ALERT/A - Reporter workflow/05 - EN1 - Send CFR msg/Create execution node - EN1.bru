@@ -24,27 +24,7 @@ body:json {
     "ParentNodeId": "{{MAIN_YNN1_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
-      {
-        "Type": "SendMessage",
-        "Name": "Send message - Thanks for location",
-        "Sequence": 1,
-        "Input": {
-          "Params": [
-            {
-              "Name": "Reporter Phone",
-              "Type": "Phone",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:Reporter:Phone"
-            },
-            {
-              "Name": "Thanks for the location",
-              "Type": "Text",
-              "Value": "Thanks for sharing location!"
-            }
-          ]
-        }
-      },
+    
       {
         "Type": "RestApiCall",
         "Name": "Make REST API call to get nearest CFRs",
@@ -73,11 +53,11 @@ body:json {
                   },
                   {
                     "QueryParamKey": "radiusInKm",
-                    "QueryParamValue": 10
+                    "QueryParamValue": 5
                   },
                   {
                     "QueryParamKey": "itemsPerPage",
-                    "QueryParamValue": 3
+                    "QueryParamValue": 7
                   }
                 ],
                 "Headers": {

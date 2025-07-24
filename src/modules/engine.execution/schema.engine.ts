@@ -626,7 +626,8 @@ export class SchemaEngine {
             logger.error(`Schema instance not found!`);
             return currentNodeInstance;
         }
-
+        var currentSchemaInstanceId = currentSchemaInstance.id;
+        
         logger.info(`Terminating workflow!`);
 
         logger.info(`Terminating children schema instances!`);
@@ -641,7 +642,7 @@ export class SchemaEngine {
 
         // Set the schema instance status as terminated
         logger.info(`Terminating schema instance: ${currentSchemaInstance.id}`);
-        var currentSchemaInstanceId = currentSchemaInstance.id;
+
         await this._schemaInstanceService.terminate(currentSchemaInstanceId);
 
         await this._schemaInstanceService.recordActivity(

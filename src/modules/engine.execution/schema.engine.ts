@@ -627,22 +627,46 @@ export class SchemaEngine {
             return currentNodeInstance;
         }
 
+        var currentSchemaInstanceId = currentSchemaInstance.id;
+
         logger.info(`Terminating workflow!`);
 
-        logger.info(`Terminating children schema instances!`);
-        // Get children schema instances and terminate them
-        var childrenSchemaInstances = await this._schemaInstanceService.getByParentSchemaInstanceId(currentSchemaInstanceId);
-        if (childrenSchemaInstances.length > 0) {
-            for await (var childSchemaInstance of childrenSchemaInstances) {
-                logger.info(`Terminating child schema instance: ${childSchemaInstance.id}`);
-                await this._schemaInstanceService.terminate(childSchemaInstance.id);
-            }
-        }
+        // Check if the current schema instance is a child schema (has a parent)
+        const isChildSchema = currentSchemaInstance.ParentSchemaInstanceId !== null;
 
-        // Set the schema instance status as terminated
-        logger.info(`Terminating schema instance: ${currentSchemaInstance.id}`);
-        var currentSchemaInstanceId = currentSchemaInstance.id;
-        await this._schemaInstanceService.terminate(currentSchemaInstanceId);
+        if (isChildSchema) {
+            logger.info(`Current schema instance is a child schema. Terminating child schema and its children only.`);
+            
+            // Get children schema instances of this child schema and terminate them
+            logger.info(`Terminating children schema instances of child schema: ${currentSchemaInstanceId}!`);
+            var childrenSchemaInstances = await this._schemaInstanceService.getByParentSchemaInstanceId(currentSchemaInstanceId);
+            if (childrenSchemaInstances.length > 0) {
+                for await (var childSchemaInstance of childrenSchemaInstances) {
+                    logger.info(`Terminating nested child schema instance: ${childSchemaInstance.id}`);
+                    await this._schemaInstanceService.terminate(childSchemaInstance.id);
+                }
+            }
+
+            // Terminate only this child schema instance
+            logger.info(`Terminating child schema instance: ${currentSchemaInstance.id}`);
+            await this._schemaInstanceService.terminate(currentSchemaInstanceId);
+        } else {
+            logger.info(`Current schema instance is a main schema. Terminating all children and main schema.`);
+            
+            // Get children schema instances and terminate them
+            logger.info(`Terminating children schema instances!`);
+            var childrenSchemaInstances = await this._schemaInstanceService.getByParentSchemaInstanceId(currentSchemaInstanceId);
+            if (childrenSchemaInstances.length > 0) {
+                for await (var childSchemaInstance of childrenSchemaInstances) {
+                    logger.info(`Terminating child schema instance: ${childSchemaInstance.id}`);
+                    await this._schemaInstanceService.terminate(childSchemaInstance.id);
+                }
+            }
+
+            // Set the main schema instance status as terminated
+            logger.info(`Terminating main schema instance: ${currentSchemaInstance.id}`);
+            await this._schemaInstanceService.terminate(currentSchemaInstanceId);
+        }
 
         await this._schemaInstanceService.recordActivity(
             this._schemaInstance.id, WorkflowActivityType.TerminateWorkflow, activityPayload, summary);

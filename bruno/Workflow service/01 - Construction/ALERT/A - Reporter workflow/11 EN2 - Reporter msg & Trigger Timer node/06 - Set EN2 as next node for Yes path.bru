@@ -1,0 +1,31 @@
+meta {
+  name: 06 - Set EN2 as next node for No path
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_CFR_AVAILABILITY_CHECK_ID}}/next-node/{{MAIN_EN2_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Set EN2 as next node for the No path of CFR availability check.
+  
+  When CFRs are available (array not empty), IsEmpty condition = false, triggers NoAction = Continue to EN2.
+}

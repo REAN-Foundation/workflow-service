@@ -1,11 +1,11 @@
 meta {
-  name: Set next node of second path
+  name: Set next node of TN
   type: http
-  seq: 3
+  seq: 5
 }
 
 put {
-  url: {{BASE_URL}}/engine/node-paths/{{MAIN_QN2_PATH_2_ID}}/next-node/{{MAIN_EN10_CFR_REACHED_ID}}
+  url: {{BASE_URL}}/engine/nodes/{{TN_CFR_NOT_REACH}}/next-node/{{MAIN_TN1_ID_}}
   body: json
   auth: none
 }

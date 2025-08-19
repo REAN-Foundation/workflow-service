@@ -1,12 +1,12 @@
 meta {
-  name: Set next node of second path
+  name: 04 - Get QN - first node path
   type: http
-  seq: 3
+  seq: 4
 }
 
-put {
-  url: {{BASE_URL}}/engine/node-paths/{{MAIN_QN2_PATH_2_ID}}/next-node/{{MAIN_EN10_CFR_REACHED_ID}}
-  body: json
+get {
+  url: {{BASE_URL}}/engine/node-paths/{{D_ALLOW_PATH_1_ID}}
+  body: none
   auth: none
 }
 

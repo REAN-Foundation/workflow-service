@@ -1,11 +1,11 @@
 meta {
-  name: Set next node of second path
+  name: Set next of OP2
   type: http
-  seq: 3
+  seq: 4
 }
 
 put {
-  url: {{BASE_URL}}/engine/node-paths/{{MAIN_QN1_PATH_2_ID}}/next-node/{{MAIN_EN_NOT_RESOLVED}}
+  url: {{BASE_URL}}/engine/nodes/{{EN_OP2}}/next-node/{{MAIN_TERMINATOR_2_ID}}
   body: json
   auth: none
 }

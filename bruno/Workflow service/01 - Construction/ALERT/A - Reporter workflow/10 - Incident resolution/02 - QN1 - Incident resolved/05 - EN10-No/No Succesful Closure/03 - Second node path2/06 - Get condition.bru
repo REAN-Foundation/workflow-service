@@ -1,12 +1,12 @@
 meta {
-  name: Set next node of second path
+  name: 06 - Get condition - for path rule 1
   type: http
-  seq: 3
+  seq: 6
 }
 
-put {
-  url: {{BASE_URL}}/engine/node-paths/{{MAIN_QN2_PATH_2_ID}}/next-node/{{MAIN_EN10_CFR_REACHED_ID}}
-  body: json
+get {
+  url: {{BASE_URL}}/engine/conditions/{{AMB_PATH_1_RULE_CONDITION_ID}}
+  body: none
   auth: none
 }
 
@@ -21,6 +21,13 @@ tests {
       expect(res.getStatus()).to.equal(200);
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Question node first path condition is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
   });
   
 }

@@ -1,5 +1,5 @@
 meta {
-  name: 1 - TN1 - Check incident resolution
+  name: 1 -TimerNode for not reached cfr
   type: http
   seq: 1
 }
@@ -18,13 +18,13 @@ headers {
 
 body:json {
   {
-    "Name": "CFR Check Resolution Timer node",
-    "Description": "This node is triggered - once the timer expires - asks question to the reporter whether the incident is successfully resolved.",
+    "Name": "CFR Check Reach Timer node",
+    "Description": "This node is triggered - once the timer expires - asks question to the CFR whether the incident is successfully resolved.",
     "Type": "TimerNode",
     "ParentNodeId": null,
     "NumberOfTries": 1,
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
-    "DelaySeconds": 180
+    "DelaySeconds": 1620
    }
 }
 
@@ -32,7 +32,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_TN1_ID_", res.body.Data.id);
+    bru.setEnvVar("TN_CFR_NOT_REACH", res.body.Data.id);
   }
   
 }

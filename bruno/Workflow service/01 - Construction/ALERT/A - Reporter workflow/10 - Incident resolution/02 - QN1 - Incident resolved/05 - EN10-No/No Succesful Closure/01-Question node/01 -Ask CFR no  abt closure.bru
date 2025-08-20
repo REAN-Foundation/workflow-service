@@ -1,0 +1,119 @@
+meta {
+  name: 01 -Ask CFR no  abt closure
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/question-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "CFR No SuccessfulIncident Resolution",
+    "Description": "This question asks the CFR if the why incident has been not resolved successfully.",
+    "Type": "QuestionNode",
+    "ParentNodeId": "{{T_INCI_NOT_RESOLVE}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [],
+    "DelaySeconds": 0,
+    "QuestionText": "Has any of following condition happened?",
+    "ResponseType": "Single Choice Selection",
+    "Input": {
+      "Params": [
+        {
+          "Name": "Primary CFR Phone",
+          "Type": "Phone",
+          "Value": null,
+          "Source": "Almanac",
+          "Key": "CFR:PrimaryCFR:Phone"
+        }
+      ]
+    },
+    "Options": [
+      { 
+        "Text": "Victim shifted",
+        "Sequence": 1,
+        "Metadata": [
+          {
+            "Key": "ButtonId",
+            "Value": "button-id-1"
+          }
+        ]
+      },
+      {
+        "Text": "Ambulance arrived",
+        "Sequence": 2,
+        "Metadata": [
+          {
+            "Key": "ButtonId",
+            "Value": "button-id-2"
+          }
+        ]
+      },
+      {
+        "Text": "Didnt allow",
+        "Sequence": 3,
+        "Metadata": [
+          {
+            "Key": "ButtonId",
+            "Value": "button-id-3"
+          }
+        ]
+      },
+      {
+        "Text": "Other reasons",
+        "Sequence": 4,
+        "Metadata": [
+          {
+            "Key": "ButtonId",
+            "Value": "button-id-4"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("NO_CLOSE_ID", res.body.Data.id);
+    bru.setEnvVar("CLOSE_OP1_ID", res.body.Data.Question.Options[0].id);
+    bru.setEnvVar("CLOSE_OP2_ID", res.body.Data.Question.Options[1].id);
+    bru.setEnvVar("CLOSE_OP3_ID", res.body.Data.Question.Options[2].id);
+    bru.setEnvVar("CLOSE_OP4_ID", res.body.Data.Question.Options[3].id)
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Question node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

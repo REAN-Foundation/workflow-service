@@ -1,7 +1,7 @@
 meta {
-  name: Create execution node
+  name: Create EN OP3
   type: http
-  seq: 1
+  seq: 4
 }
 
 post {
@@ -18,7 +18,7 @@ headers {
 
 body:json {
   {
-    "Name": "Send thanks to cfr",
+    "Name": "Send thanks to cfr OP3",
     "Description": "This execution node holds actions to send message to cfr .",
     "Type": "ExecutionNode",
     "ParentNodeId": "{{NO_CLOSE_ID}}",
@@ -53,7 +53,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_EN_NOT_RESOLVED", res.body.Data.id);
+    bru.setEnvVar("EN_OP3", res.body.Data.id);
   }
   
 }

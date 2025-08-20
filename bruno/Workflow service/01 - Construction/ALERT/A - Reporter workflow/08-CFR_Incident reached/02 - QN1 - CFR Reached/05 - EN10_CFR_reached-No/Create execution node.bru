@@ -1,7 +1,7 @@
 meta {
   name: Create execution node
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
@@ -59,12 +59,12 @@ body:json {
         "Input": {
           "Params": [
             {
-              "Name": "T1 CFR -Check Resolution Timer node",
+              "Name": "CFR Check Reach Timer node",
               "Description": "Node Id of the timer node which should be triggered",
               "ActionType": "TriggerTimerNode",
               "Type": "NodeId",
-              "Value": "{{MAIN_TN1_ID_}}",
-              "Key": "IncidentResolutionTimerNode",
+              "Value": "{{TN_CFR_NOT_REACH}}",
+              "Key": "IncidentnotReachedTimerNode",
               "Required": true
             }
           ]

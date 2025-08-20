@@ -24,6 +24,33 @@ body:json {
     "ParentNodeId": "{{MAIN_QN2_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send CFR Reach message - To reporter",
+        "Description": "Sending CFR Reach message",
+        "Sequence": 0,
+        "Input": {
+          "Params": [
+            {
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Type": "Text",
+              "Name": "Message",
+              "Value": "CFR has reached the incident spot"
+            },
+            {
+              "Name": "Incident code",
+              "Type": "Placeholder",
+              "Key": "ContextParams:IncidenceCode",
+              "Source": "Almanac"
+            }
+          ]
+        }
+      },
        {
         "Type": "TriggerTimerNode",
         "Name": "CFR Check Resolution Timer node",

@@ -1,11 +1,11 @@
 meta {
-  name: Create terminator node
+  name: 03 - Create condition - for path rule 1
   type: http
-  seq: 1
+  seq: 3
 }
 
 post {
-  url: {{BASE_URL}}/engine/nodes
+  url: {{BASE_URL}}/engine/conditions
   body: json
   auth: none
 }
@@ -18,12 +18,24 @@ headers {
 
 body:json {
   {
-    "Name": "Terminator Node",
-    "Description": "This is the terminator node.",
-    "Type": "TerminatorNode",
-    "ParentNodeId": "{{MAIN_EN_NOT_RESOLVED}}",
-    "SchemaId": "{{MAIN_SCHEMA_ID}}",
-    "DelaySeconds": 20
+    "Name": "Base rule condition for ambulance arrived said by CFR",
+    "Description": "This is the base rule condition for the second option. Mark the incident as NOT handled.",
+    "ParentRuleId": "{{AMB_PATH_1_RULE_ID}}",
+    "ParentConditionId": null,
+    "OperatorType": "Logical",
+    "LogicalOperatorType": "Equal",
+    "FirstOperand": {
+      "DataType": "Integer",
+      "Name": "Expected option sequence",
+      "Value": 2
+    },
+    "SecondOperand": {
+      "DataType": "Integer",
+      "Name": "Chosen option sequence",
+      "Value": null,
+      "Source": "UserEvent",
+      "Key": "ClosureQuestionResponse:ChosenOptionSequence"
+    }
   }
 }
 
@@ -31,7 +43,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_TERMINATOR_2_ID", res.body.Data.id);
+    bru.setEnvVar("AMB_PATH_1_RULE_CONDITION_ID", res.body.Data.id);
   }
   
 }
@@ -43,7 +55,7 @@ tests {
       expect(jsonRes.Status).to.eql('success');
   });
   
-  test("Execution node is created", function () {
+  test("Question node first path condition is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');

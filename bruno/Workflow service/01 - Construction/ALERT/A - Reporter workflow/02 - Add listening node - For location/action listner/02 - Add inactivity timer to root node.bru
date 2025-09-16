@@ -1,0 +1,58 @@
+meta {
+  name: 02 - Add inactivity timer to root node
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/engine/node-actions
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Type": "TriggerTimerNode",
+    "Name": "Start inactivity monitoring timer",
+    "Description": "Starts the 5-minute inactivity timer that will terminate the workflow if no user interaction occurs",
+    "Sequence": 10,
+    "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+    "Input": {
+      "Params": [
+        {
+          "Name": "Inactivity Timer Node",
+          "Description": "Timer node that monitors for user inactivity",
+          "Type": "NodeId",
+          "Value": "{{INACTIVITY_TIMER_ID}}",
+          "Key": "InactivityTimerNode",
+          "Required": true
+        }
+      ]
+    }
+  }
+}
+
+tests {
+    test("Request is successfull", function () {
+        expect(res.getStatus()).to.equal(201);
+        var jsonRes = res.getBody();
+        expect(jsonRes.Status).to.eql('success');
+    });
+  
+    test("Action is added", function () {
+        var jsonRes = res.getBody();
+        expect(jsonRes.Data).to.have.property('id');
+        expect(jsonRes.Data).to.have.property('Name');
+    });
+}
+
+docs {
+  Adds an action to the root node to start the inactivity timer when the workflow begins.
+  This ensures the timer is running from the start of the workflow.
+}

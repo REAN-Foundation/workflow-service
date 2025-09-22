@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { FileResourceMetadata } from "../../../domain.types/general/file.resource/file.resource.types";
 import {
     Column,
     Entity,
@@ -11,7 +10,6 @@ import {
 } from 'typeorm';
 
 import { User } from './../user/user.model';
-import { FileResourceVersion } from "./file.resource.version.model";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -53,13 +51,13 @@ export class FileResource {
     @Column({ type: 'uuid', nullable: true })
     UploadedBy : User;
 
-    @Column({ type: 'simple-json', nullable: true})
+    @Column({ type: 'simple-json', nullable: true })
     Tags : string[];
 
-    @Column({ type: 'uuid', nullable : true })
+    @Column({ type: 'uuid', nullable: true })
     DefaultVersionId: string;
 
-    @Column({ type: 'simple-json', nullable : true })
+    @Column({ type: 'simple-json', nullable: true })
     DefaultVersion: any;
 
     @CreateDateColumn()

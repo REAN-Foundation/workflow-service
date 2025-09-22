@@ -116,6 +116,6 @@ export class ErrorHandler {
 
     static isArrayOfStrings = (arr) => {
         return Array.isArray(arr) && arr.every(item => typeof item === 'string');
-    }
+    };
 
 }

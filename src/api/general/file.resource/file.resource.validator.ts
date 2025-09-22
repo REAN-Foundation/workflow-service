@@ -6,7 +6,6 @@ import { FileResourceMetadata } from '../../../domain.types/general/file.resourc
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 export class FileResourceValidator extends BaseValidator {
-
     
     getByVersionName = async (request: express.Request): Promise<FileResourceMetadata> => {
 

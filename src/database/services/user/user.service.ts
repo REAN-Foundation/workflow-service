@@ -3,19 +3,17 @@ import { User } from '../../models/user/user.model';
 import { UserLoginSession } from '../../models/user/user.login.session.model';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { passwordStrength } from 'check-password-strength';
-import { Helper } from '../../../common/helper';
 import { TimeUtils } from '../../../common/utilities/time.utils';
 import { StringUtils } from '../../../common/utilities/string.utils';
 import { TypeUtils } from '../../../common/utilities/type.utils';
 import { DurationType } from '../../../domain.types/miscellaneous/time.types';
 import { FindManyOptions, Like, Repository } from 'typeorm';
 import { UserCreateModel, UserResponseDto, UserSearchFilters, UserSearchResults, UserUpdateModel } from '../../../domain.types/user/user.domain.types';
-import { logger } from '../../../logger/logger';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { Client } from '../../../database/models/client/client.model';
 import { UserMapper } from '../../../database/mappers/user/user.mapper';
 import { Role } from '../../../database/models/user/role.model';
-import { Trace, endSpan, getServiceName, recordSpanException, startSpan } from '../../../telemetry/instrumenter';
+import { endSpan, getServiceName, recordSpanException, startSpan } from '../../../telemetry/instrumenter';
 import e from 'express';
 import { trace } from '@opentelemetry/api';
 
@@ -111,7 +109,7 @@ export class UserService {
         } finally {
             endSpan(span);
         }
-    };
+    }
 
     // @Trace('DbAccess:UserService:getById')
     // async getById(id): Promise<UserResponseDto> {
@@ -421,31 +419,31 @@ export class UserService {
     createUserLoginSession = async (userId: uuid) => {
         const tracer = trace.getTracer(getServiceName());
         return tracer.startActiveSpan('DbAccess:UserService:createUserLoginSession', async (span) => {
-        try {
-            var now = new Date();
-            var till = TimeUtils.addDuration(now, 3, DurationType.Day);
-            var user = await this._userRepository.findOne({
-                where : {
-                    id : userId
+            try {
+                var now = new Date();
+                var till = TimeUtils.addDuration(now, 3, DurationType.Day);
+                var user = await this._userRepository.findOne({
+                    where : {
+                        id : userId
+                    }
+                });
+                if (!user) {
+                    ErrorHandler.throwNotFoundError('User not found!');
                 }
-            });
-            if (!user) {
-                ErrorHandler.throwNotFoundError('User not found!');
+                var session = await this._userLoginSessionRepository.create({
+                    User      : user,
+                    IsActive  : true,
+                    StartedAt : now,
+                    ValidTill : till
+                });
+                var record = await this._userLoginSessionRepository.save(session);
+                span.end();
+                return record;
+            } catch (error) {
+                span.recordException(error);
+                ErrorHandler.throwDbAccessError('Unable to create user login session!', error);
             }
-            var session = await this._userLoginSessionRepository.create({
-                User      : user,
-                IsActive  : true,
-                StartedAt : now,
-                ValidTill : till
-            });
-            var record = await this._userLoginSessionRepository.save(session);
-            span.end();
-            return record;
-        } catch (error) {
-            span.recordException(error);
-            ErrorHandler.throwDbAccessError('Unable to create user login session!', error);
-        }
-    });
+        });
     };
 
     invalidateUserLoginSession = async (sessionId) => {

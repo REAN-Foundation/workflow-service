@@ -4,7 +4,6 @@ import { IClientAuthenticator } from '../interfaces/client.authenticator.interfa
 import { injectable, inject } from "tsyringe";
 import { ResponseHandler } from '../../common/handlers/response.handler';
 import { logger } from '../../logger/logger';
-import { ErrorHandler } from '../../common/handlers/error.handler';
 
 ////////////////////////////////////////////////////////////////////////
 

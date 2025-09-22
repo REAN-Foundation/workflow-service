@@ -9,27 +9,27 @@ export class PinoProdLogger extends AbstrctPinoLogger {
         super();
 
         this._logger = pino({
-            level: 'error',
+            level     : 'error',
             transport : {
                 target : 'pino-pretty',
                 //target : this._logFile
             },
-            formatters: {
-                level: (label) => {
+            formatters : {
+                level : (label) => {
                     return { level: label };
                 },
             },
-            timestamp: pino.stdTimeFunctions.isoTime,
-            serializers: {
-                req: pino.stdSerializers.req,
-                res: pino.stdSerializers.res,
-                err: pino.stdSerializers.err,
+            timestamp   : pino.stdTimeFunctions.isoTime,
+            serializers : {
+                req : pino.stdSerializers.req,
+                res : pino.stdSerializers.res,
+                err : pino.stdSerializers.err,
             },
-            safe: true,
-            customLevels: {
-                log: 35,
+            safe         : true,
+            customLevels : {
+                log : 35,
             },
-            name: 'workflow-service',
+            name : 'workflow-service',
         });
     }
 

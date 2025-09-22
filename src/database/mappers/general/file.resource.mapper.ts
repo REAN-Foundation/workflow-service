@@ -57,5 +57,4 @@ export class FileResourceMapper {
         return v;
     };
 
-
 }

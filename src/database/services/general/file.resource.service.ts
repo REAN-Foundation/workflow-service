@@ -344,6 +344,7 @@ export class FileResourceService {
     };
 
     DownloadByVersion = async (resourceId: string, versionName: string): Promise<string> => {
+        logger.info(versionName);
         var downloadFolderPath = await this.generateDownloadFolderPath();
         //var versionMetadata = await this._fileResourceRepo.getVersionByVersionName(resourceId, versionName);
 

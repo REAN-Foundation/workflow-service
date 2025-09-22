@@ -14,7 +14,6 @@ import { Client } from '../../../database/models/client/client.model';
 import { UserMapper } from '../../../database/mappers/user/user.mapper';
 import { Role } from '../../../database/models/user/role.model';
 import { endSpan, getServiceName, recordSpanException, startSpan } from '../../../telemetry/instrumenter';
-import e from 'express';
 import { trace } from '@opentelemetry/api';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

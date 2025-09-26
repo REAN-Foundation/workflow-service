@@ -1,11 +1,11 @@
 meta {
-  name: Set next node of action listner
+  name: Set next node as no interaction terminator
   type: http
   seq: 6
 }
 
 put {
-  url: {{BASE_URL}}/engine/nodes/{{INACTIVITY_TIMER_ID}}/next-node/{{MAIN_TERMINATOR_2_ID}}
+  url: {{BASE_URL}}/engine/nodes/{{NOINTERACTION_ID}}/next-node/{{NOINTERACTION_TERMINATOR}}
   body: json
   auth: none
 }

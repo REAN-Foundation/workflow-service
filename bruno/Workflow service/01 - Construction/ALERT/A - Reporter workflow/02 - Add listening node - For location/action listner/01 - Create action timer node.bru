@@ -1,7 +1,7 @@
 meta {
   name: 01 - Create action timer node
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
@@ -23,7 +23,7 @@ body:json {
       "Type": "TimerNode",
       "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
       "SchemaId": "{{MAIN_SCHEMA_ID}}",
-      "DelaySeconds": 5400,
+      "DelaySeconds": 3600,
       "NumberOfTries": 1
     }
 }

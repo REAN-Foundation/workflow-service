@@ -21,7 +21,7 @@ body:json {
     "Name": "Terminator Node",
     "Description": "This is the terminator node.",
     "Type": "TerminatorNode",
-    "ParentNodeId": "{{NOINTERACTION_ID}}",
+    "ParentNodeId": "{{OVERALLTIMER_NID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "DelaySeconds": 20
   }
@@ -31,7 +31,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("NOINTERACTION_TERMINATOR", res.body.Data.id);
+    bru.setEnvVar("OVERALL_TERMINATOR", res.body.Data.id);
   }
   
 }

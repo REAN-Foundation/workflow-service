@@ -19,18 +19,18 @@ headers {
 body:json {
   {
     "Type": "TriggerTimerNode",
-    "Name": "Start inactivity monitoring timer",
-    "Description": "Starts the 5-minute inactivity timer that will terminate the workflow if no user interaction occurs",
+    "Name": "Start timer",
+    "Description": "Starts timer that will terminate the workflow after particular interval of time",
     "Sequence": 10,
-    "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+    "ParentNodeId":"{{MAIN_ROOT_NODE_ID}}",
     "Input": {
       "Params": [
         {
-          "Name": "Inactivity Timer Node",
+          "Name": "Overall Timeout Timer",
           "Description": "Timer node that monitors for user inactivity",
           "Type": "NodeId",
-          "Value": "{{INACTIVITY_TIMER_ID}}",
-          "Key": "InactivityTimerNode",
+          "Value": "{{OVERALL_TIMER_ID}}",
+          "Key": "OverallTimerNode",
           "Required": true
         }
       ]

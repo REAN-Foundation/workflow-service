@@ -18,8 +18,8 @@ headers {
 
 body:json {
   {
-      "Name": "TM1-Inactivity Timeout Timer",
-      "Description": "Timer node that triggers termination after user inactivity period. Timeout is 45 minutes (5400 seconds). When this timer expires without being reset, it will terminate the workflow.",
+      "Name": "Overall Timeout Timer",
+      "Description": "Timer node that triggers termination after timeout ie 60 minutes (3600 seconds). When this timer expires it will terminate the workflow.",
       "Type": "TimerNode",
       "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
       "SchemaId": "{{MAIN_SCHEMA_ID}}",
@@ -32,7 +32,7 @@ script:post-response {
   let status = res.getStatus();
     console.log(status)
     if (status == 201) {
-      bru.setEnvVar("INACTIVITY_TIMER_ID", res.body.Data.id);
+      bru.setEnvVar("OVERALL_TIMER_ID", res.body.Data.id);
     }
 }
 

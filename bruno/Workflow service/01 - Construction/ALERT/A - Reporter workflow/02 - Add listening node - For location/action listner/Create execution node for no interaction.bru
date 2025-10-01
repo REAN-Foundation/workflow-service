@@ -18,15 +18,15 @@ headers {
 
 body:json {
   {
-    "Name": "Get nearby ambulances",
-    "Description": "This execution node holds actions to send message to reporter if no interaction happens from either side.",
+    "Name": "Msg before termination",
+    "Description": "This execution node holds actions to send message to reporter if termination happens by overall timer",
     "Type": "ExecutionNode",
     "ParentNodeId": null,
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
         "Type": "SendMessage",
-        "Name": "Send message to reporter - if no interaction",
+        "Name": "Send message to reporter - after timer",
         "Sequence": 0,
         "Input": {
           "Params": [
@@ -53,7 +53,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("NOINTERACTION_ID", res.body.Data.id);
+    bru.setEnvVar("OVERALLTIMER_NID", res.body.Data.id);
   }
   
 }

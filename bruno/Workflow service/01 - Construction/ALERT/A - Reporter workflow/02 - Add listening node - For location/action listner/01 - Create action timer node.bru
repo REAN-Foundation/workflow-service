@@ -19,11 +19,11 @@ headers {
 body:json {
   {
       "Name": "Overall Timeout Timer",
-      "Description": "Timer node that triggers termination after timeout ie 60 minutes (3600 seconds). When this timer expires it will terminate the workflow.",
+      "Description": "Timer node that triggers termination after timeout ie 45 minutes (2700 seconds). When this timer expires it will terminate the workflow.",
       "Type": "TimerNode",
       "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
       "SchemaId": "{{MAIN_SCHEMA_ID}}",
-      "DelaySeconds": 3600,
+      "DelaySeconds": 2700,
       "NumberOfTries": 1
     }
 }

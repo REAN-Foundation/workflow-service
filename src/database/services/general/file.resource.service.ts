@@ -75,6 +75,7 @@ export class FileResourceService {
                 where : {
                     id : id
                 },
+
                 /*relations : {
                     UploadedBy : true
                 },*/
@@ -89,6 +90,7 @@ export class FileResourceService {
                     Size             : true,
                     StorageKey       : true,
                     Tags             : true,
+
                     /*UploadedBy       : {
                         id     : true,
                         Client : {
@@ -257,7 +259,7 @@ export class FileResourceService {
 
         var exists = fs.existsSync(sourceLocation);
         if (!exists) {
-            console.log('Source file location does not exist!');
+            logger.error('Source file location does not exist!');
         }
 
         var existingStorageKey = await this._storageService.exists(storageKey);
@@ -268,8 +270,8 @@ export class FileResourceService {
             storageKey = await this._storageService.uploadLocally(storageKey, sourceLocation);
         }
 
-        if(!storageKey) {
-            console.log('Unable to upload file to storage!');
+        if (!storageKey) {
+            logger.error('Unable to upload file to storage!');
             return null;
         }
         
@@ -342,6 +344,7 @@ export class FileResourceService {
     };
 
     DownloadByVersion = async (resourceId: string, versionName: string): Promise<string> => {
+        logger.info(versionName);
         var downloadFolderPath = await this.generateDownloadFolderPath();
         //var versionMetadata = await this._fileResourceRepo.getVersionByVersionName(resourceId, versionName);
 

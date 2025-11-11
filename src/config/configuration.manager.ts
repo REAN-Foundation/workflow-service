@@ -26,8 +26,8 @@ export class ConfigurationManager {
                 Authentication : configuration.Auth.Authentication as AuthenticationType,
                 Authorization  : configuration.Auth.Authorization as AuthorizationType,
             },
-            Processor: {
-                Provider: configuration.Processor?.Provider as ProcessorsProvider,
+            Processor : {
+                Provider : configuration.Processor?.Provider as ProcessorsProvider,
             },
             FileStorage : {
                 Provider : configuration.FileStorage.Provider as FileStorageProvider,

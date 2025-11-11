@@ -1,0 +1,31 @@
+meta {
+  name: 10 - Set Terminator as next node of Timer
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{NOCFR_TIMER_ID}}/next-node/{{NOCFR_TERMINATOR}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Set terminator node as next node of timer.
+  
+  This connects the timer to the terminator node to complete the no CFR flow.
+}

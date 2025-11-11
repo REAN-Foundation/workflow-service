@@ -1,0 +1,52 @@
+meta {
+  name: 1 -TimerNode for not reached cfr
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/timer-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "CFR Check Reach Timer node",
+    "Description": "This node is triggered - once the timer expires - asks question to the CFR whether the incident is successfully resolved.",
+    "Type": "TimerNode",
+    "ParentNodeId": null,
+    "NumberOfTries": 1,
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "DelaySeconds": 1620
+   }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("TN_CFR_NOT_REACH", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+  });
+  
+}

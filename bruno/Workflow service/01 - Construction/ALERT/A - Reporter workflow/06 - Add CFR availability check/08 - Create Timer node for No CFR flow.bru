@@ -1,0 +1,58 @@
+meta {
+  name: 08 - Create Timer node for No CFR flow
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/timer-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Timer-No CFR Flow Delay",
+    "Description": "This timer node provides a delay in the no CFR flow before proceeding to terminator.",
+    "Type": "TimerNode",
+    "ParentNodeId": "{{NOCFR_EN_ID}}",
+     "NumberOfTries": 1,
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "DelaySeconds": 20
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("NOCFR_TIMER_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Timer node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+}
+
+docs {
+  Timer node for No CFR flow.
+  
+  This adds a 30-second delay before proceeding to the terminator node.
+}

@@ -116,6 +116,14 @@ export default class TimerNodeTriggerHandler {
                 logger.error(`Timer node execution: Schema instance not found: ${schemaInstanceId}`);
                 return;
             }
+
+            // Check if schema instance is terminated already before timer expires
+            const isSchemaInstanceTerminated = await schemaInstanceService.isTerminated(schemaInstanceId);
+            if (isSchemaInstanceTerminated) {
+                logger.info(`Schema instance is terminated. Timer node will not be processed: ${schemaInstanceId}`);
+                return;
+            }
+
             logger.info(`Setting next node on timer finished!`);
             if (!timerNode.NextNodeId) {
                 logger.error(`Timer node has no next node`);

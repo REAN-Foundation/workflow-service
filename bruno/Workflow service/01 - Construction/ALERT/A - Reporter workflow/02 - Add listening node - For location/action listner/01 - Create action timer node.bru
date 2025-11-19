@@ -1,0 +1,56 @@
+meta {
+  name: 01 - Create action timer node
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/timer-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+      "Name": "Overall Timeout Timer",
+      "Description": "Timer node that triggers termination after timeout ie 45 minutes (2700 seconds). When this timer expires it will terminate the workflow.",
+      "Type": "TimerNode",
+      "ParentNodeId": "{{MAIN_ROOT_NODE_ID}}",
+      "SchemaId": "{{MAIN_SCHEMA_ID}}",
+      "DelaySeconds": 2700,
+      "NumberOfTries": 1
+    }
+}
+
+script:post-response {
+  let status = res.getStatus();
+    console.log(status)
+    if (status == 201) {
+      bru.setEnvVar("OVERALL_TIMER_ID", res.body.Data.id);
+    }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Schema is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+  });
+  
+}
+
+docs {
+  Creates a 5-minute inactivity timer that will terminate the workflow if no user interaction occurs.
+  This timer is attached to the root node as its parent and will be triggered from there.
+}

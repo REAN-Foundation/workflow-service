@@ -1,0 +1,31 @@
+meta {
+  name: 05 - Set CFR availability check as next node of EN1
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_EN1_ID}}/next-node/{{MAIN_CFR_AVAILABILITY_CHECK_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Set CFR availability check node as next node of EN1.
+  
+  This updates the flow so that after EN1 gets the CFR list, it goes to the CFR availability check instead of directly to EN2.
+}

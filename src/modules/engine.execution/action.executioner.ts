@@ -246,13 +246,13 @@ export class ActionExecutioner {
                 placeholderValue = await this._almanac.getFact(placeholderKey);
                 if (placeholderKey === 'Timestamp' || placeholderKey === 'ContextParams:Timestamp') {
                     placeholderValue = new Date(placeholderValue).toLocaleTimeString(locale, {
-                        timeZone : timezone,});
+                        timeZone : timezone, });
                 }
             }
             else if (!placeholderValue &&
                      (placeholderKey === 'Timestamp' || placeholderKey === 'ContextParams:Timestamp')) {
                 placeholderValue = new Date().toLocaleTimeString(locale, {
-                    timeZone : timezone,});
+                    timeZone : timezone, });
             }
             if (placeholderValue) {
                 placeholders.push({ Key: placeholderKey, Value: placeholderValue });

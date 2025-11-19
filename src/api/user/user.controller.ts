@@ -29,7 +29,6 @@ export class UserController {
 
     _validator: UserValidator = new UserValidator();
 
-
     //#endregion
 
     create = async (request: express.Request, response: express.Response): Promise <void> => {

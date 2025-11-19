@@ -38,13 +38,13 @@ export class UserValidator extends BaseValidator {
     public validateSearchRequest = async (request: express.Request): Promise<UserSearchFilters> => {
         try {
             const schema = joi.object({
-                roleId   : joi.number().positive().optional(),
-                prefix   : joi.string().max(16).optional(),
-                firstName: joi.string().max(64).optional(),
-                lastName : joi.string().max(64).optional(),
-                phone    : joi.string().max(16).optional(),
-                email    : joi.string().max(256).optional(),
-                gender   : joi.string().max(64).optional(),
+                roleId    : joi.number().positive().optional(),
+                prefix    : joi.string().max(16).optional(),
+                firstName : joi.string().max(64).optional(),
+                lastName  : joi.string().max(64).optional(),
+                phone     : joi.string().max(16).optional(),
+                email     : joi.string().max(256).optional(),
+                gender    : joi.string().max(64).optional(),
             });
             await schema.validateAsync(request.query);
             const filters = this.getSearchFilters(request.query);
@@ -161,13 +161,13 @@ export class UserValidator extends BaseValidator {
             //     Password    : joi.string().max(512).required(),
             // });
             const schema = joi.object({
-                Phone       : {
+                Phone : {
                     CountryCode : joi.string().max(10).optional(),
-                    PhoneNumber: joi.string().max(16).min(6).required(),
+                    PhoneNumber : joi.string().max(16).min(6).required(),
                 },
-                Email       : joi.string().max(256).email(),
-                UserName    : joi.string().max(64),
-                Password    : joi.string().max(512).required(),
+                Email    : joi.string().max(256).email(),
+                UserName : joi.string().max(64),
+                Password : joi.string().max(512).required(),
             }).xor('Email', 'UserName', 'Phone');
             await schema.validateAsync(request.body);
         } catch (error) {
@@ -185,13 +185,13 @@ export class UserValidator extends BaseValidator {
             //     Otp         : joi.string().max(10),
             // });
             const schema = joi.object({
-                Phone       : {
+                Phone : {
                     CountryCode : joi.string().max(10).optional(),
-                    PhoneNumber: joi.string().max(16).min(6).required(),
+                    PhoneNumber : joi.string().max(16).min(6).required(),
                 },
-                Email       : joi.string().max(256).email(),
-                UserName    : joi.string().max(64),
-                Otp         : joi.string().max(10).required(),
+                Email    : joi.string().max(256).email(),
+                UserName : joi.string().max(64),
+                Otp      : joi.string().max(10).required(),
             }).xor('Email', 'UserName', 'Phone');
             await schema.validateAsync(request.body);
         } catch (error) {

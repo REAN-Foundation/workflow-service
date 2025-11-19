@@ -24,27 +24,7 @@ body:json {
     "ParentNodeId": "{{MAIN_YNN1_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
-      {
-        "Type": "SendMessage",
-        "Name": "Send message - Thanks for location",
-        "Sequence": 1,
-        "Input": {
-          "Params": [
-            {
-              "Name": "Reporter Phone",
-              "Type": "Phone",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:Reporter:Phone"
-            },
-            {
-              "Name": "Thanks for the location",
-              "Type": "Text",
-              "Value": "Thanks for sharing location!"
-            }
-          ]
-        }
-      },
+    
       {
         "Type": "RestApiCall",
         "Name": "Make REST API call to get nearest CFRs",
@@ -73,7 +53,7 @@ body:json {
                   },
                   {
                     "QueryParamKey": "radiusInKm",
-                    "QueryParamValue": 10
+                    "QueryParamValue": 5
                   },
                   {
                     "QueryParamKey": "itemsPerPage",
@@ -98,40 +78,6 @@ body:json {
               "Destination": "Almanac",
               "Key": "ContextParams:CFR:Phonenumbers",
               "SubType": "Phone"
-            }
-          ]
-        }
-      },
-      {
-        "Type": "TriggerMultipleChildrenWorkflow",
-        "Name": "Trigger multiple workflows one for each CFR in the vicinity.",
-        "Sequence": 3,
-        "Input": {
-          "Params": [
-            {
-              "Name": "List of CFR phonenumbers",
-              "Type": "Array",
-              "Value": null,
-              "Source": "Almanac",
-              "Key": "ContextParams:CFR:Phonenumbers",
-              "SubType": "Phone"
-            },
-            {
-              "Name": "Schema Id",
-              "Type": "SchemaId",
-              "Value": "{{CHILD_SCHEMA_ID}}",
-              "Key": "SchemaId"
-            }
-          ]
-        },
-        "Output": {
-          "Params": [
-            {
-              "Name": "CFR Phone",
-              "Type": "Phone",
-              "Value": null,
-              "Destination": "Almanac",
-              "Key": "ContextParams:CFR:Phone"
             }
           ]
         }

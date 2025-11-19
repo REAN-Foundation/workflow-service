@@ -548,6 +548,12 @@ export class SchemaEngine {
         else {
             result = await this.executeAction(actionToExecute, actionExecutioner);
             logger.info(`Yes/No Node Action Result: ${JSON.stringify(result.Success)}`);
+            if (result.Success) {
+                const res = result.Result;
+                if (res && res['currentNode'] && res['currentNodeInstance']) {
+                    return res['currentNodeInstance'];
+                }
+            }
         }
         return currentNodeInstance;
     }
@@ -626,6 +632,7 @@ export class SchemaEngine {
             logger.error(`Schema instance not found!`);
             return currentNodeInstance;
         }
+        var currentSchemaInstanceId = currentSchemaInstance.id;
 
         logger.info(`Terminating workflow!`);
 
@@ -641,7 +648,7 @@ export class SchemaEngine {
 
         // Set the schema instance status as terminated
         logger.info(`Terminating schema instance: ${currentSchemaInstance.id}`);
-        var currentSchemaInstanceId = currentSchemaInstance.id;
+        
         await this._schemaInstanceService.terminate(currentSchemaInstanceId);
 
         await this._schemaInstanceService.recordActivity(
@@ -905,7 +912,7 @@ export class SchemaEngine {
         var nextNodeId = currentNode?.NextNodeId;
         return this.setThisAsNextNodeInstance(currentNode, currentNodeInstance, nextNodeId);
     }
-
+    
     private async executeAction(actionInstance: NodeActionInstanceResponseDto, actionExecutioner: ActionExecutioner) {
         var result: NodeActionResult = {
             Success : false,

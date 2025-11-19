@@ -2,8 +2,6 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { logger } from '../../logger/logger';
 import { AuthenticationResult } from '../../domain.types/user/auth.domain.types';
-import { ClientService } from '../../database/services/client/client.service';
-import { Injector } from '../../startup/injector';
 import { IUserAuthenticator } from '../interfaces/user.authenticator.interface';
 
 /////////////////////////////////////////////////////////////////////////////////

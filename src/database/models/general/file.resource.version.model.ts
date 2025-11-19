@@ -20,7 +20,7 @@ export class FileResourceVersion {
     id : string;
 
     @OneToOne(() => FileResource)
-    @Column({ type: 'uuid'})
+    @Column({ type: 'uuid' })
     ResourceId : string;
 
     @Column({ type: 'uuid', length: 256, nullable: true })

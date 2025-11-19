@@ -196,11 +196,11 @@ export class NodeValidator extends BaseValidator {
                     Input        : joi.object().optional(),
                     Output       : joi.object().optional(),
                 })).optional(),
-                RuleId       : joi.string().uuid().optional(),
-                DelaySeconds : joi.number().integer().required(),
-                NumberOfTries: joi.number().integer().required(),
-                RawData      : joi.object().allow(null).optional(),
-                Input        : joi.object({
+                RuleId        : joi.string().uuid().optional(),
+                DelaySeconds  : joi.number().integer().required(),
+                NumberOfTries : joi.number().integer().required(),
+                RawData       : joi.object().allow(null).optional(),
+                Input         : joi.object({
                     Params : joi.array().items(joi.object({
                         Name        : joi.string().max(128).required(),
                         Description : joi.string().max(512).optional(),
@@ -218,17 +218,17 @@ export class NodeValidator extends BaseValidator {
             var delaySeconds = request.body.DelaySeconds ?? null;
             delaySeconds = delaySeconds ?? DEFAULT_DELAY_SECS;
             return {
-                Type         : NodeType.TimerNode,
-                Name         : request.body.Name,
-                Description  : request.body.Description ?? null,
-                ParentNodeId : request.body.ParentNodeId,
-                SchemaId     : request.body.SchemaId,
-                Actions      : request.body.Actions ?? null,
-                DelaySeconds : delaySeconds,
-                NumberOfTries: request.body.NumberOfTries,
-                RuleId       : request.body.RuleId ?? null,
-                RawData      : request.body.RawData ?? null,
-                Input        : request.body.Input ?? null,
+                Type          : NodeType.TimerNode,
+                Name          : request.body.Name,
+                Description   : request.body.Description ?? null,
+                ParentNodeId  : request.body.ParentNodeId,
+                SchemaId      : request.body.SchemaId,
+                Actions       : request.body.Actions ?? null,
+                DelaySeconds  : delaySeconds,
+                NumberOfTries : request.body.NumberOfTries,
+                RuleId        : request.body.RuleId ?? null,
+                RawData       : request.body.RawData ?? null,
+                Input         : request.body.Input ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

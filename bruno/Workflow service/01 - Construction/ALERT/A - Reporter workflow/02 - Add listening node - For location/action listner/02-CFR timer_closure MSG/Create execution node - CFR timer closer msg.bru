@@ -1,7 +1,7 @@
 meta {
-  name: Create execution node for no interaction
+  name: Create execution node - CFR timer closer msg
   type: http
-  seq: 3
+  seq: 1
 }
 
 post {
@@ -18,34 +18,37 @@ headers {
 
 body:json {
   {
-    "Name": "Msg before termination",
-    "Description": "This execution node holds actions to send message to reporter if termination happens by overall timer",
+    "Name": "Send CFR timer closure message",
+    "Description": "This execution node holds actions to send message to CFR telling no response was given within timer period hence flow has terminated.",
     "Type": "ExecutionNode",
     "ParentNodeId": null,
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
-        "Type": "SendMessage",
-        "Name": "Send message to reporter - after timer",
-        "Sequence": 0,
+        "Type": "SendOneMessageToMultipleUsers",
+        "Name": "Send message - CFR Phone",
+        "Description": "Sending closing message.",
+        "Sequence": 1,
         "Input": {
           "Params": [
             {
-              "Name": "Reporter Phone",
-              "Type": "Phone",
+              "Name": "List of CFR phonenumbers",
+              "Type": "Array",
               "Value": null,
               "Source": "Almanac",
-              "Key": "ContextParams:Reporter:Phone"
+              "Key": "ContextParams:CFR:Phonenumbers",
+              "SubType": "Phone"
             },
             {
-              "Name": "Send message - No interaction.",
               "Type": "Text",
+              "Name": "Message",
               "Value": "This request is closed because of no response for long time. We hope the incident has been handled. Thank you."
             }
           ]
         }
-       }
-      ]
+      }
+     
+    ]
   }
 }
 
@@ -53,7 +56,7 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("OVERALLTIMER_NID", res.body.Data.id);
+    bru.setEnvVar("CLOSER_MSG_CFR", res.body.Data.id);
   }
   
 }

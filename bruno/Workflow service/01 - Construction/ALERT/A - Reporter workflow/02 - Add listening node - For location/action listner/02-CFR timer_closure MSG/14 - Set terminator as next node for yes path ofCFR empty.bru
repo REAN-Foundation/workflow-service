@@ -1,0 +1,31 @@
+meta {
+  name: 14 - Set terminator as next node for yes path ofCFR empty
+  type: http
+  seq: 14
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{CFR_ARRAY_EMPTY_CHECK}}/next-node/{{NOCFR_IN_LIST_TERMINATOR}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Set EN2 as next node for the No path of CFR availability check.
+  
+  When CFRs are available (array not empty), IsEmpty condition = false, triggers NoAction = Continue to EN2.
+}

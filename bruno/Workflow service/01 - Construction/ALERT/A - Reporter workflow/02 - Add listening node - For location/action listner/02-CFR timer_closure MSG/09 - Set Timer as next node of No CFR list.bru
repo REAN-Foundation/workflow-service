@@ -1,11 +1,11 @@
 meta {
-  name: Set next node as no interaction terminator
+  name: 09 - Set Timer as next node of No CFR list
   type: http
-  seq: 6
+  seq: 9
 }
 
 put {
-  url: {{BASE_URL}}/engine/nodes/{{OVERALLTIMER_NID}}/next-node/{{OVERALL_TERMINATOR}}
+  url: {{BASE_URL}}/engine/nodes/{{CLOSER_MSG_CFR}}/next-node/{{NOCFR_TIMER}}
   body: json
   auth: none
 }
@@ -22,11 +22,10 @@ tests {
       var jsonRes = res.getBody();
       expect(jsonRes.Status).to.eql('success');
   });
-  
 }
 
 docs {
-  User login with username/phone/email and password.
+  Set timer node as next node of No CFR execution node.
   
-  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+  This connects the No CFR execution node to the timer for the delay.
 }

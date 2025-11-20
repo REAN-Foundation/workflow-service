@@ -1,0 +1,31 @@
+meta {
+  name: 10 - No CFR in list nxt node
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{CFR_ARRAY_EMPTY_CHECK}}/next-node/{{CLOSER_MSG_CFR}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Set timer node as next node of No CFR execution node.
+  
+  This connects the No CFR execution node to the timer for the delay.
+}

@@ -1,0 +1,55 @@
+meta {
+  name: 02 - Create CFR list check rule
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/engine/rules
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "CFR availability check rule",
+    "Description": "This rule checks if the CFR Phonenumbers array contains any entries",
+    "ParentNodeId": "{{CFR_ARRAY_EMPTY_CHECK}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}"
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("CFR_CHECK_RULE", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("CFR availability check rule is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+}
+
+docs {
+  CFR availability check rule creation.
+  
+  This rule will be used to determine if CFRs are available within 5km radius.
+}

@@ -1,0 +1,64 @@
+meta {
+  name: 03 - Create CFR list check base condition
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/engine/conditions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Base condition for CFR availability check",
+    "Description": "This condition checks if the CFR Phonenumbers array is empty",
+    "ParentRuleId": "{{CFR_CHECK_RULE}}",
+    "ParentConditionId": null,
+    "OperatorType": "Logical",
+    "LogicalOperatorType": "IsEmpty",
+    "FirstOperand": {
+      "DataType": "Array",
+      "Name": "CFR Phonenumbers list",
+      "Value": null,
+      "Source": "Almanac",
+      "Key": "ContextParams:CFR:Phonenumbers"
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("CFR_CHECK_CONDITION", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("CFR availability base condition is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+}
+
+docs {
+  CFR availability base condition creation.
+  
+  This condition checks if the CFR Phonenumbers array length is greater than 0, indicating CFRs are available.
+}

@@ -1,0 +1,31 @@
+meta {
+  name: 03_5 - Set CFR checklist condition to rule
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{BASE_URL}}/engine/rules/{{CFR_CHECK_RULE}}/base-condition/{{CFR_CHECK_CONDITION}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Set CFR availability check condition to the rule.
+  
+  This assigns the base condition to the CFR availability check rule.
+}

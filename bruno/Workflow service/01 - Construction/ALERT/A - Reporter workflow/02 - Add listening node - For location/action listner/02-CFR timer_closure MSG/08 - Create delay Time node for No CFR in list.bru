@@ -1,11 +1,11 @@
 meta {
-  name: Create terminator node NOINTERACTION
+  name: 08 - Create delay Time node for No CFR in list
   type: http
-  seq: 5
+  seq: 8
 }
 
 post {
-  url: {{BASE_URL}}/engine/nodes
+  url: {{BASE_URL}}/engine/nodes/timer-node
   body: json
   auth: none
 }
@@ -18,12 +18,13 @@ headers {
 
 body:json {
   {
-    "Name": "Terminator Node",
-    "Description": "This is the terminator node.",
-    "Type": "TerminatorNode",
-    "ParentNodeId": "{{OVERALLTIMER_NID}}",
+    "Name": "Timer-No CFR Flow Delay",
+    "Description": "This timer node provides a delay in the no CFR flow before proceeding to terminator.",
+    "Type": "TimerNode",
+    "ParentNodeId": "{{CLOSER_MSG_CFR}}",
+     "NumberOfTries": 1,
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
-    "DelaySeconds": 20
+    "DelaySeconds": 10
   }
 }
 
@@ -31,9 +32,8 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("OVERALL_TERMINATOR", res.body.Data.id);
+    bru.setEnvVar("NOCFR_TIMER", res.body.Data.id);
   }
-  
 }
 
 tests {
@@ -43,17 +43,16 @@ tests {
       expect(jsonRes.Status).to.eql('success');
   });
   
-  test("Execution node is created", function () {
+  test("Timer node is created", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('id');
       expect(jsonRes.Data).to.have.property('Name');
       expect(jsonRes.Data).to.have.property('Description');
   });
-  
 }
 
 docs {
-  User login with username/phone/email and password.
+  Timer node for No CFR flow.
   
-  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+  This adds a 30-second delay before proceeding to the terminator node.
 }

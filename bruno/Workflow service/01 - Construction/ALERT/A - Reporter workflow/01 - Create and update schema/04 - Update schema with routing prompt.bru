@@ -1,0 +1,67 @@
+meta {
+  name: 04 - Update schema with routing prompt
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{BASE_URL}}/engine/schema/{{MAIN_SCHEMA_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Alert Report Workflow - V1",
+    "Description": "This schema represents a workflow for ALERT emergency response management with enhanced routing capabilities.",
+    "RoutingPrompt": "Emergency alert workflow with CFR coordination. Handles urgent health emergencies requiring immediate response within 90 minutes. Features: location-based CFR dispatch, timer-based escalation, ambulance coordination, and incident resolution tracking."
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+    console.log("Updated Schema:", res.body.Data);
+    if (res.body.Data.RoutingPrompt) {
+      console.log("Routing Prompt:", res.body.Data.RoutingPrompt);
+    }
+  }
+
+}
+
+tests {
+  test("Request is successful", function () {
+      expect(res.getStatus()).to.equal(200);
+      expect(res.body.Status).to.eql('success');
+  });
+
+  test("Schema is updated with routing prompt", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+      expect(jsonRes.Data).to.have.property('RoutingPrompt');
+  });
+
+}
+
+docs {
+  Updates a schema including its routing prompt through the standard update endpoint.
+
+  This demonstrates that RoutingPrompt can be updated along with other schema properties.
+
+  The routing prompt is optional - you can update other fields without providing it.
+
+  Benefits of using routing prompt:
+  1. AI-powered schema selection
+  2. Better workflow discovery
+  3. Enhanced documentation
+  4. Improved search and categorization
+}

@@ -1,0 +1,62 @@
+meta {
+  name: 03 - Set routing prompt
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{BASE_URL}}/engine/schema/{{MAIN_SCHEMA_ID}}/routing-prompt
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "RoutingPrompt": "This workflow handles emergency ALERT response scenarios. Use this for urgent health emergencies requiring immediate response with CFR (Community First Responder) coordination. Includes location-based routing, timer-based escalation, and ambulance dispatch. Suitable for time-critical health incidents with 90-minute overall monitoring."
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+    console.log("Updated Routing Prompt:", res.body.Data.RoutingPrompt);
+  }
+
+}
+
+tests {
+  test("Request is successful", function () {
+      expect(res.getStatus()).to.equal(200);
+      expect(res.body.Status).to.eql('success');
+  });
+
+  test("Routing prompt is updated", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('RoutingPrompt');
+      expect(jsonRes.Data.RoutingPrompt).to.be.a('string');
+  });
+
+}
+
+docs {
+  Updates or sets the routing prompt for a specific schema.
+
+  The routing prompt is used to describe the workflow's purpose and characteristics in natural language.
+
+  Use Cases:
+  - AI-based workflow routing: Help AI systems route incoming messages to the appropriate workflow
+  - Schema discovery: Enable users to search and find relevant workflows
+  - Documentation: Provide context for workflow builders and maintainers
+
+  Example prompts:
+  - "Emergency response workflow for time-critical health situations"
+  - "Customer complaint handling with escalation to supervisor"
+  - "Multi-step onboarding process with document verification"
+}

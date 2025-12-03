@@ -123,6 +123,14 @@ export default class LogicalTimerNodeTriggerHandler {
                 logger.error(`Timer node execution: Schema instance not found: ${schemaInstanceId}`);
                 return;
             }
+
+            // Check if schema instance is terminated already before timer expires
+            const isSchemaInstanceTerminated = await schemaInstanceService.isTerminated(schemaInstanceId);
+            if (isSchemaInstanceTerminated) {
+                logger.info(`Schema instance is terminated. Timer node will not be processed: ${schemaInstanceId}`);
+                return;
+            }
+
             var almanac = await Almanac.getAlmanac(schemaInstance.id);
 
             const ruleId = timerNode.RuleId;

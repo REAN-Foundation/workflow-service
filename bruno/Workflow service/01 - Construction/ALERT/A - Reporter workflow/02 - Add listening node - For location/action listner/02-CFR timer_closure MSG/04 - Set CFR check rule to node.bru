@@ -1,0 +1,31 @@
+meta {
+  name: 04 - Set CFR check rule to node
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{CFR_ARRAY_EMPTY_CHECK}}/base-rule/{{CFR_CHECK_RULE}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Set CFR availability check rule to the decision node.
+  
+  This assigns the rule to the CFR availability check decision node.
+}

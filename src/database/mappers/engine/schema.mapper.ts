@@ -31,6 +31,7 @@ export class SchemaMapper {
                 NextNodeId  : rootNode.NextNodeId,
             } : null,
             ContextParams : schema.ContextParams,
+            RoutingPrompt : schema.RoutingPrompt,
             CreatedAt     : schema.CreatedAt,
             UpdatedAt     : schema.UpdatedAt,
         };

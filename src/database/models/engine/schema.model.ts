@@ -52,6 +52,9 @@ export class Schema {
     @Column({ type: 'simple-json', nullable: true })
     ContextParams : ContextParams;
 
+    @Column({ type: 'text', nullable: true })
+    RoutingPrompt : string;
+
     @CreateDateColumn()
     CreatedAt : Date;
 

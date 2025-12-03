@@ -22,6 +22,7 @@ export interface SchemaCreateModel {
     ExecuteImmediately?: boolean;
     ContextParams     ?: ContextParams;
     ParentSchemaId    ?: uuid;
+    RoutingPrompt     ?: string;
 }
 
 export interface SchemaUpdateModel {
@@ -31,6 +32,7 @@ export interface SchemaUpdateModel {
     ParentSchemaId?    : uuid;
     ExecuteImmediately?: boolean;
     ContextParams     ?: ContextParams;
+    RoutingPrompt     ?: string;
 }
 
 export interface SchemaResponseDto {
@@ -51,6 +53,7 @@ export interface SchemaResponseDto {
        NextNodeId : uuid;
     };
     ContextParams?: ContextParams;
+    RoutingPrompt?: string;
     CreatedAt     : Date;
     UpdatedAt     : Date;
 }

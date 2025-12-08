@@ -88,6 +88,7 @@ export class SchemaService extends BaseService {
             RootNodeId         : rootNodeRecord.id,
             ExecuteImmediately : createModel.ExecuteImmediately,
             ContextParams      : createModel.ContextParams,
+            RoutingPrompt      : createModel.RoutingPrompt,
         });
         var schemaRecord = await this._schemaRepository.save(schema);
 
@@ -181,6 +182,9 @@ export class SchemaService extends BaseService {
             if (model.ExecuteImmediately != null) {
                 schema.ExecuteImmediately = model.ExecuteImmediately;
             }
+            if (model.RoutingPrompt != null) {
+                schema.RoutingPrompt = model.RoutingPrompt;
+            }
             const rootNode = await this._commonUtilsService.getNode(schema.RootNodeId);
             var record = await this._schemaRepository.save(schema);
             return SchemaMapper.toResponseDto(record, rootNode);
@@ -199,6 +203,43 @@ export class SchemaService extends BaseService {
             });
             var result = await this._schemaRepository.remove(record);
             return result != null;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getRoutingPrompt = async (id: uuid): Promise<string | null> => {
+        try {
+            const schema = await this._schemaRepository.findOne({
+                where : {
+                    id : id
+                },
+                select : ['id', 'RoutingPrompt']
+            });
+            if (!schema) {
+                ErrorHandler.throwNotFoundError('Schema not found!');
+            }
+            return schema.RoutingPrompt;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public setRoutingPrompt = async (id: uuid, routingPrompt: string): Promise<string> => {
+        try {
+            const schema = await this._schemaRepository.findOne({
+                where : {
+                    id : id
+                }
+            });
+            if (!schema) {
+                ErrorHandler.throwNotFoundError('Schema not found!');
+            }
+            schema.RoutingPrompt = routingPrompt;
+            const record = await this._schemaRepository.save(schema);
+            return record.RoutingPrompt;
         } catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);

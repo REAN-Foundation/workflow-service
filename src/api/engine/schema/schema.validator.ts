@@ -19,6 +19,7 @@ export class SchemaValidator extends BaseValidator {
                 Description        : joi.string().max(512).optional(),
                 ParentSchemaId     : joi.string().uuid().optional(),
                 ExecuteImmediately : joi.boolean().optional(),
+                RoutingPrompt      : joi.string().optional(),
                 ContextParams      : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
@@ -71,6 +72,7 @@ export class SchemaValidator extends BaseValidator {
                 RootNode           : request.body.RootNode ?? null,
                 ExecuteImmediately : request.body.ExecuteImmediately ?? false,
                 ContextParams      : request.body.ContextParams ?? null,
+                RoutingPrompt      : request.body.RoutingPrompt ?? null,
             };
 
         } catch (error) {
@@ -86,6 +88,7 @@ export class SchemaValidator extends BaseValidator {
                 Description        : joi.string().max(512).optional(),
                 ParentSchemaId     : joi.string().uuid().optional(),
                 ExecuteImmediately : joi.boolean().optional(),
+                RoutingPrompt      : joi.string().optional(),
                 ContextParams      : joi.object({
                     Name   : joi.string().max(128).required(),
                     Params : joi.array().items(joi.object({
@@ -107,6 +110,7 @@ export class SchemaValidator extends BaseValidator {
                 Description        : request.body.Description ?? null,
                 ExecuteImmediately : request.body.ExecuteImmediately ?? null,
                 ContextParams      : request.body.ContextParams ?? null,
+                RoutingPrompt      : request.body.RoutingPrompt ?? null,
             };
         } catch (error) {
             ErrorHandler.handleValidationError(error);

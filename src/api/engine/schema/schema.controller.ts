@@ -78,6 +78,34 @@ export class SchemaController {
         }
     };
 
+    getRoutingPrompt = async (request: express.Request, response: express.Response): Promise < void > => {
+        try {
+            var id: uuid = await this._validator.requestParamAsUUID(request, 'id');
+            const routingPrompt = await this._service.getRoutingPrompt(id);
+            const message = 'Routing prompt retrieved successfully!';
+            ResponseHandler.success(request, response, message, 200, { RoutingPrompt: routingPrompt });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    setRoutingPrompt = async (request: express.Request, response: express.Response): Promise < void > => {
+        try {
+            var id: uuid = await this._validator.requestParamAsUUID(request, 'id');
+            const routingPrompt = request.body.RoutingPrompt;
+
+            if (typeof routingPrompt !== 'string') {
+                ErrorHandler.throwInputValidationError(['RoutingPrompt must be a string']);
+            }
+
+            const updatedRoutingPrompt = await this._service.setRoutingPrompt(id, routingPrompt);
+            const message = 'Routing prompt updated successfully!';
+            ResponseHandler.success(request, response, message, 200, { RoutingPrompt: updatedRoutingPrompt });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
     //#endregion
 
 }

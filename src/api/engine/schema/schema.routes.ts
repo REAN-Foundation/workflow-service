@@ -22,5 +22,9 @@ export const register = (app: express.Application): void => {
     router.put('/:id', Auth.handle(`${contextBase}.Update`, true, true, true), controller.update);
     router.delete('/:id', Auth.handle(`${contextBase}.Delete`, true, true, true), controller.delete);
 
+    // Routing Prompt endpoints
+    router.get('/:id/routing-prompt', Auth.handle(`${contextBase}.GetRoutingPrompt`, true, true, true), controller.getRoutingPrompt);
+    router.put('/:id/routing-prompt', Auth.handle(`${contextBase}.SetRoutingPrompt`, true, true, true), controller.setRoutingPrompt);
+
     app.use('/api/v1/engine/schema', router);
 };

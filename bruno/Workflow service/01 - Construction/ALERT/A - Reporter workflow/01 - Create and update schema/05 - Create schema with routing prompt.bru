@@ -1,0 +1,102 @@
+meta {
+  name: 05 - Create schema with routing prompt
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/engine/schema
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "TenantCode": "{{TENANT_CODE}}",
+    "Name": "Test Schema with Routing Prompt",
+    "Description": "Test schema demonstrating routing prompt feature",
+    "Type": "ChatBot",
+    "RoutingPrompt": "This is a test workflow for validating the routing prompt feature. Use for testing AI-based routing, classification, and schema discovery capabilities.",
+    "ContextParams": {
+      "Name": "Test Schema Context",
+      "Params": [
+        {
+          "Name": "User Phone",
+          "Type": "Phone",
+          "Description": "Phone number of the user",
+          "Value": null,
+          "Key": "ContextParams:User:Phone",
+          "Required": true
+        },
+        {
+          "Name": "Timestamp",
+          "Description": "Timestamp when workflow started",
+          "Type": "DateTime",
+          "Value": null,
+          "Key": "ContextParams:Timestamp",
+          "Required": false
+        }
+      ]
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    console.log("Created Schema ID:", res.body.Data.id);
+    console.log("Routing Prompt:", res.body.Data.RoutingPrompt);
+    bru.setEnvVar("TEST_SCHEMA_ID", res.body.Data.id);
+  }
+
+}
+
+tests {
+  test("Request is successful", function () {
+      expect(res.getStatus()).to.equal(201);
+      expect(res.body.Status).to.eql('success');
+  });
+
+  test("Schema is created with routing prompt", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('TenantId');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+      expect(jsonRes.Data).to.have.property('RootNode');
+      expect(jsonRes.Data).to.have.property('RoutingPrompt');
+      expect(jsonRes.Data.RoutingPrompt).to.be.a('string');
+  });
+
+}
+
+docs {
+  Creates a new schema with a routing prompt included in the initial creation.
+
+  This demonstrates that RoutingPrompt is an optional field during schema creation.
+
+  Example Routing Prompts by Use Case:
+
+  1. Emergency Response:
+     "Emergency response workflow for time-critical health situations with CFR coordination"
+
+  2. Customer Support:
+     "Customer complaint handling with automated escalation and supervisor notification"
+
+  3. Onboarding:
+     "Multi-step customer onboarding with document verification and compliance checks"
+
+  4. Order Processing:
+     "E-commerce order workflow with payment processing, inventory check, and shipping"
+
+  5. Appointment Scheduling:
+     "Healthcare appointment scheduling with availability checking and reminder notifications"
+}

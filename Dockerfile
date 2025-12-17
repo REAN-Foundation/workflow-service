@@ -1,12 +1,9 @@
-FROM node:16.14.0-alpine3.15 AS builder
+FROM node:24-alpine3.22 AS builder
 ADD . /app
 RUN apk add bash
 RUN apk add --no-cache \
         python3 \
         py3-pip \
-    && pip3 install --upgrade pip \
-    && pip3 install \
-        awscli \
     && rm -rf /var/cache/apk/*
 RUN apk add --update alpine-sdk
 WORKDIR /app
@@ -19,18 +16,18 @@ RUN npm run build
 
 # RUN npm run build
 
-FROM node:16.14.0-alpine3.15
+FROM node:24-alpine3.22
 RUN apk add bash
 RUN apk add --no-cache \
         python3 \
         py3-pip \
-    && pip3 install --upgrade pip \
-    && pip3 install \
-        awscli \
+    # && pip3 install --upgrade pip \
+    #&& pip3 install --break-system-packages awscli \
     && rm -rf /var/cache/apk/*
 RUN apk add --update alpine-sdk
 RUN apk update
 RUN apk upgrade
+RUN apk add aws-cli
 ADD . /app
 WORKDIR /app
 

@@ -1,7 +1,7 @@
 meta {
   name: 03 - Set routing prompt
   type: http
-  seq: 3
+  seq: 2
 }
 
 put {
@@ -28,7 +28,7 @@ script:post-response {
   if (status == 200) {
     console.log("Updated Routing Prompt:", res.body.Data.RoutingPrompt);
   }
-
+  
 }
 
 tests {
@@ -36,25 +36,25 @@ tests {
       expect(res.getStatus()).to.equal(200);
       expect(res.body.Status).to.eql('success');
   });
-
+  
   test("Routing prompt is updated", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('RoutingPrompt');
       expect(jsonRes.Data.RoutingPrompt).to.be.a('string');
   });
-
+  
 }
 
 docs {
   Updates or sets the routing prompt for a specific schema.
-
+  
   The routing prompt is used to describe the workflow's purpose and characteristics in natural language.
-
+  
   Use Cases:
   - AI-based workflow routing: Help AI systems route incoming messages to the appropriate workflow
   - Schema discovery: Enable users to search and find relevant workflows
   - Documentation: Provide context for workflow builders and maintainers
-
+  
   Example prompts:
   - "Emergency response workflow for time-critical health situations"
   - "Customer complaint handling with escalation to supervisor"

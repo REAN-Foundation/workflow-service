@@ -1,7 +1,7 @@
 meta {
   name: 02 - Get routing prompt
   type: http
-  seq: 2
+  seq: 1
 }
 
 get {
@@ -22,7 +22,7 @@ script:post-response {
   if (status == 200) {
     console.log("Routing Prompt:", res.body.Data.RoutingPrompt);
   }
-
+  
 }
 
 tests {
@@ -30,21 +30,21 @@ tests {
       expect(res.getStatus()).to.equal(200);
       expect(res.body.Status).to.eql('success');
   });
-
+  
   test("Routing prompt is returned", function () {
       var jsonRes = res.getBody();
       expect(jsonRes.Data).to.have.property('RoutingPrompt');
   });
-
+  
 }
 
 docs {
   Retrieves the routing prompt for a specific schema.
-
+  
   The routing prompt helps identify schema characteristics and can be used for:
   - AI-based workflow routing
   - Schema classification
   - Workflow discovery
-
+  
   Returns null if no routing prompt has been set.
 }

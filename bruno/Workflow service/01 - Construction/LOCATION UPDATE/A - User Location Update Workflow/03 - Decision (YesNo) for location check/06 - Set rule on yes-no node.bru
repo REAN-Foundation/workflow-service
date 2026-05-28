@@ -1,0 +1,30 @@
+meta {
+  name: 06 - Set rule on yes-no node
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{YNN1_ID}}/base-rule/{{LOCATION_RULE_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Attaches the location check rule to YNN1 as its base rule.
+  The engine's traverseLogicalYesNoActionNode reads this rule to decide yes vs no.
+}

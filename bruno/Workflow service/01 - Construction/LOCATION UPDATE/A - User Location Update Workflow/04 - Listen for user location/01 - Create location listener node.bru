@@ -1,0 +1,105 @@
+meta {
+  name: 01 - Create location listener node
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/event-listener-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "LN1 - User Location Listener",
+    "Description": "Listens for the user's location input event. Once the location is received, it stores it in the almanac and updates the context params, then proceeds to the update node.",
+    "Type": "EventListenerNode",
+    "ParentNodeId": null,
+    "SchemaId": "{{SCHEMA_ID}}",
+    "Input": {
+      "Params": [
+        {
+          "Name": "Location",
+          "Description": "Current location of the user.",
+          "Type": "Location",
+          "Value": {
+            "Longitude": null,
+            "Latitude": null
+          },
+          "Key": "ContextParams:Location",
+          "Required": true,
+          "Source": "UserEvent"
+        }
+      ]
+    },
+    "Actions": [
+      {
+        "Type": "StoreToAlmanac",
+        "Name": "Store user location to almanac",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Type": "Location",
+              "Value": null,
+              "Source": "UserEvent",
+              "Key": "ContextParams:Location"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "UpdateContextParams",
+        "Name": "Update context params with user location",
+        "Sequence": 2,
+        "Input": {
+          "Params": [
+            {
+              "Type": "Location",
+              "Value": null,
+              "Source": "UserEvent",
+              "Key": "ContextParams:Location"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("LOCATION_LISTENER_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Event listener node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates LN1, the event listener node that waits for the user to send their location.
+  On receiving the location it runs two actions:
+    1. StoreToAlmanac  - persists the location for later use in the RestApiCall
+    2. UpdateContextParams - updates the schema instance context with the new location
+  Captures LOCATION_LISTENER_ID for use in subsequent requests.
+}

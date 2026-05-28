@@ -1,0 +1,58 @@
+meta {
+  name: 04 - Add trigger timer action to root node
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/engine/node-actions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Type": "TriggerTimerNode",
+    "Name": "Start 5-minute timeout timer",
+    "Description": "Triggers the 5-minute timeout timer as soon as the workflow starts, so it runs in parallel with the main flow.",
+    "Sequence": 10,
+    "ParentNodeId": "{{ROOT_NODE_ID}}",
+    "Input": {
+      "Params": [
+        {
+          "Name": "10-Minute Timeout Timer",
+          "Description": "Timer node that auto-terminates the workflow on inactivity",
+          "Type": "NodeId",
+          "Value": "{{TIMEOUT_TIMER_ID}}",
+          "Key": "TimeoutTimerNode",
+          "Required": true
+        }
+      ]
+    }
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Action is added", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Adds a TriggerTimerNode action to the root node so the 5-minute timeout timer
+  starts automatically when the workflow instance begins execution.
+}

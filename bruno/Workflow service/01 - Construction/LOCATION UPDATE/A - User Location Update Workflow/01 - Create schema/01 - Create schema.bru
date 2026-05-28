@@ -1,0 +1,97 @@
+meta {
+  name: 01 - Create schema
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/schema
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "TenantCode": "{{TENANT_CODE}}",
+    "Name": "User Location Update Workflow - V1",
+    "Description": "This schema represents a workflow that asks a user to share their current location and updates it in the location service.",
+    "Type": "ChatBot",
+    "RoutingPrompt": "Route here when a user wants to update, change, refresh, or correct their stored location (e.g. messages like 'update my location', 'I moved', 'change my address', 'set my new location', 'where I am now'). The workflow asks the user to share their current GPS location via the chat channel, persists the new latitude/longitude to the location service for the user's registered phone number, and confirms the update. Two-step interaction with a 5-minute timeout if the user does not respond. Suitable for community first responders (CFRs), field volunteers, or any user whose location is tracked for proximity-based routing. Do NOT route here for emergency alerts, navigation assistance, or location lookups of OTHER users.\n\nCONFIRMATION_REQUIRED: false. When this workflow is selected as the matched workflow, the classifier MUST set \"requiredConfirmation\": \"false\" in its JSON response. The user has explicitly stated their intent to update their stored location; no confirmation prompt (\"Are you in an emergency?\") is needed before this workflow starts. Do NOT set requiredConfirmation to \"true\" for any match on this workflow.",
+    "ContextParams": {
+      "Name": "Schema instance context",
+      "Params": [
+        {
+          "Name": "User Phone",
+          "Type": "Phone",
+          "Description": "Phone number of the user whose location is being updated.",
+          "Value": null,
+          "Key": "ContextParams:User:Phone",
+          "Required": true
+        },
+        {
+          "Name": "Location",
+          "Description": "Current location of the user.",
+          "Type": "Location",
+          "Value": {
+            "Longitude": null,
+            "Latitude": null
+          },
+          "Key": "ContextParams:Location",
+          "Required": false
+        },
+        {
+          "Name": "Time Zone",
+          "Description": "Time Zone for the workflow.",
+          "Type": "Timezone",
+          "Value": "Asia/Kolkata",
+          "Key": "ContextParams:Timezone"
+        },
+        {
+          "Name": "Locale",
+          "Description": "Locale for the workflow.",
+          "Type": "Locale",
+          "Value": "en-IN",
+          "Key": "ContextParams:Locale"
+        }
+      ]
+    }
+  }
+  
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("SCHEMA_ID", res.body.Data.id);
+    bru.setEnvVar("ROOT_NODE_ID", res.body.Data.RootNode.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.body.Status).to.eql('success');
+  });
+  
+  test("Schema is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('TenantId');
+    expect(jsonRes.Data).to.have.property('Name');
+    expect(jsonRes.Data).to.have.property('Description');
+    expect(jsonRes.Data).to.have.property('RootNode');
+  });
+}
+
+docs {
+  Creates the User Location Update Workflow schema.
+  Captures SCHEMA_ID and ROOT_NODE_ID for use in subsequent requests.
+}

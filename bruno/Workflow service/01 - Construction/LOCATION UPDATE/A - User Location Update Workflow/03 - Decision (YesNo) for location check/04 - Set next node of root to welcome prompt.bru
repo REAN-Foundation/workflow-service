@@ -1,0 +1,32 @@
+meta {
+  name: 04 - Set next node of root to welcome prompt
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{ROOT_NODE_ID}}/next-node/{{WELCOME_PROMPT_NODE_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Links the root node to EN_PROMPT (welcome message execution node).
+  After Root fires its actions (TriggerTimerNode, TriggerEventListenerNode), the
+  engine traverses to EN_PROMPT which sends "Please share your updated location..."
+  to the user, then advances to YNN1 - the decision node that polls for the user's location.
+}

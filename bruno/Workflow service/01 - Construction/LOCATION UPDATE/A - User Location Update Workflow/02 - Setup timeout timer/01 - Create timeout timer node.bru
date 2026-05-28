@@ -1,0 +1,57 @@
+meta {
+  name: 01 - Create timeout timer node
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/timer-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "5-Minute Timeout Timer",
+    "Description": "Timer node that auto-terminates the workflow if the user does not provide their location within 5 minutes (300 seconds).",
+    "Type": "TimerNode",
+    "ParentNodeId": "{{ROOT_NODE_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "DelaySeconds": 300,
+    "NumberOfTries": 1
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("TIMEOUT_TIMER_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Timer node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates a 5-minute (300 seconds) timeout timer attached to the root node.
+  If the user does not respond within this time, the timer fires and routes to the timeout message node.
+  Captures TIMEOUT_TIMER_ID for use in subsequent requests.
+}

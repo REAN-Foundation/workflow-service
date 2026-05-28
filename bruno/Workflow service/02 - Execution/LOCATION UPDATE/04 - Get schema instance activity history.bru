@@ -1,0 +1,44 @@
+meta {
+  name: 04 - Get schema instance activity history
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BASE_URL}}/engine/schema-instances/{{LOCATION_UPDATE_SCHEMA_INSTANCE_ID}}/activity-history
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Fetches the full execution activity history of the workflow instance.
+  Use this to verify what happened after each step:
+
+  Happy path — expect to see these nodes executed in order:
+    Root Node       → started the workflow and triggered the timer
+    EN1             → sent "Please share your current location"
+    LN1             → received the user's location event
+    EN2             → called PUT /responders/:phone on the location service
+    EN3             → sent "Your location has been successfully updated. Thank you!"
+
+  Timeout path — if "03 - User sends location" is NOT run within 10 minutes:
+    Root Node       → started the workflow and triggered the timer
+    EN1             → sent "Please share your current location"
+    LN1             → waiting (never received location)
+    Timeout Timer   → fired after 600 seconds
+    EN_TIMEOUT      → sent timeout closure message to user
+}

@@ -1,0 +1,69 @@
+meta {
+  name: 02 - Create timeout terminator node
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "TN_TIMEOUT - Workflow Terminator (Timeout Path)",
+    "Description": "Terminator node reached when the 5-minute timer fires without the schema instance already being terminated. The engine routes here silently - no message is sent to the user, the instance is just marked Terminated=true.",
+    "Type": "TerminatorNode",
+    "ParentNodeId": "{{TIMEOUT_TIMER_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}"
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("TERMINATOR_TIMEOUT_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Terminator node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates the TerminatorNode for the timeout path.
+  Routed to directly from the timer node (no intermediate message-sending step).
+
+  When this node is reached, the engine's traverseTerminatorNode method:
+    - Sets schema_instance.Terminated = true
+    - Sets schema_instance.TerminatedTimestamp = NOW()
+    - Records a TerminateWorkflow activity in the history
+
+  No message is sent to the user on timeout - we don't know whether the user's
+  location update operation may have completed successfully in some other path,
+  so silent termination is safer than sending a misleading closure message.
+
+  Note: if the success path's TN_SUCCESS already terminated the instance, the
+  engine's isTerminated() check in the timer handler short-circuits BEFORE this
+  node is reached, so this node never executes.
+
+  Captures TERMINATOR_TIMEOUT_ID for the next-node link.
+}

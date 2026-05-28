@@ -1,0 +1,30 @@
+meta {
+  name: 08 - Set condition on rule
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{BASE_URL}}/engine/rules/{{LOCATION_RULE_ID}}/base-condition/{{LOCATION_CONDITION_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Attaches the "location exists" condition to the location check rule as its base condition.
+  This completes the YNN1 decision setup: YNN1 -> Rule -> Condition.
+}

@@ -1,0 +1,110 @@
+meta {
+  name: 01 - Create update location execution node
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN2 - Update Location in Location Service",
+    "Description": "Calls the location service REST API (PUT /responders/:phone) to update the user's current latitude and longitude using the location stored in the almanac.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": null,
+    "SchemaId": "{{SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "RestApiCall",
+        "Name": "PUT - Update CFR location",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Type": "RestApiParams",
+              "Value": {
+                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/responders/{{USER_PHONE}}",
+                "Method": "PUT",
+                "Headers": {
+                  "ContentType": "application/json"
+                },
+                "QueryParams": [
+                  {
+                    "QueryParamKey": "Latitude",
+                    "QueryParamValue": null,
+                    "Source": "Almanac",
+                    "SourceKey": "ContextParams:Location",
+                    "SourceValueKey": "Latitude"
+                  },
+                  {
+                    "QueryParamKey": "Longitude",
+                    "QueryParamValue": null,
+                    "Source": "Almanac",
+                    "SourceKey": "ContextParams:Location",
+                    "SourceValueKey": "Longitude"
+                  }
+                ],
+                "ResponseField": "Data:CFR",
+                "ResponseType": "Object"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("UPDATE_LOCATION_NODE_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Execution node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+    expect(jsonRes.Data).to.have.property('Description');
+  });
+}
+
+docs {
+  Creates EN2 which makes a PUT REST API call to the location service to update the CFR location.
+  Endpoint: PUT /api/v1/{TENANT_ID}/responders/{USER_PHONE}
+
+  The engine's RestApiCall implementation (action.executioner.ts) only supports QueryParams - it
+  appends them as a URL query string. The location service validator accepts Latitude/Longitude
+  from req.query (already updated to support this).
+
+  Latitude and Longitude are pulled from the almanac key "ContextParams:Location" using
+  SourceValueKey to extract the nested Latitude and Longitude properties respectively.
+
+  ResponseField is REQUIRED even though we don't need the response data. The engine's
+  executeRestApiCallAction returns Success: false if `data` extracted from the response is null,
+  regardless of HTTP status. Without a ResponseField the action is treated as failed,
+  EN2 stays unexecuted, traversal halts, and the timer eventually terminates via TN_TIMEOUT
+  instead of TN_SUCCESS. Setting ResponseField to "Data:CFR" extracts the updated CFR object,
+  which is a non-null value, so the action is marked Success and traversal continues to EN3.
+
+  Captures UPDATE_LOCATION_NODE_ID for use in subsequent requests.
+}

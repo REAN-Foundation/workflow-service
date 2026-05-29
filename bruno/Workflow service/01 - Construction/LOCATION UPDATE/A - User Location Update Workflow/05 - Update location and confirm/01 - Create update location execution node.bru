@@ -19,7 +19,7 @@ headers {
 body:json {
   {
     "Name": "EN2 - Update Location in Location Service",
-    "Description": "Calls the location service REST API (PUT /responders/:phone) to update the user's current latitude and longitude using the location stored in the almanac.",
+    "Description": "Calls the location service REST API to update the active user's current latitude and longitude. Phone, Latitude, and Longitude are all resolved from the almanac at runtime - none of them are baked into the stored URL.",
     "Type": "ExecutionNode",
     "ParentNodeId": null,
     "SchemaId": "{{SCHEMA_ID}}",
@@ -33,12 +33,18 @@ body:json {
             {
               "Type": "RestApiParams",
               "Value": {
-                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/responders/{{USER_PHONE}}",
+                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/responders",
                 "Method": "PUT",
                 "Headers": {
                   "ContentType": "application/json"
                 },
                 "QueryParams": [
+                  {
+                    "QueryParamKey": "Phone",
+                    "QueryParamValue": null,
+                    "Source": "Almanac",
+                    "SourceKey": "ContextParams:User:Phone"
+                  },
                   {
                     "QueryParamKey": "Latitude",
                     "QueryParamValue": null,
@@ -89,22 +95,35 @@ tests {
 }
 
 docs {
-  Creates EN2 which makes a PUT REST API call to the location service to update the CFR location.
-  Endpoint: PUT /api/v1/{TENANT_ID}/responders/{USER_PHONE}
+  Creates EN2 which makes a PUT REST API call to the location service to update the CFR location
+  of the user currently interacting with the workflow.
 
-  The engine's RestApiCall implementation (action.executioner.ts) only supports QueryParams - it
-  appends them as a URL query string. The location service validator accepts Latitude/Longitude
-  from req.query (already updated to support this).
+  Endpoint at runtime:
+    PUT /api/v1/{TENANT_ID}/responders?Phone=<X>&Latitude=<Y>&Longitude=<Z>
 
-  Latitude and Longitude are pulled from the almanac key "ContextParams:Location" using
-  SourceValueKey to extract the nested Latitude and Longitude properties respectively.
+  IMPORTANT - why Phone is a QueryParam, NOT a URL path segment:
+    The engine's RestApiCall implementation (action.executioner.ts) only resolves QueryParams
+    from the almanac at runtime - the URL string itself is used verbatim from what was stored
+    at construction time. If we put {{USER_PHONE}} in the URL path, Bruno would substitute
+    that Bruno-env value at construction time and bake one specific phone into the stored URL.
+    Every workflow instance would then call the same URL regardless of which user is actually
+    on the conversation - wrong by design. By moving Phone to QueryParams with Source: Almanac,
+    the engine reads ContextParams:User:Phone from the active instance's almanac at runtime,
+    so the URL is per-user and correct.
+
+    TENANT_ID stays as a Bruno-substituted value because the schema itself is per-tenant -
+    the tenant doesn't change between instances of the same schema.
+
+  Location service requirement:
+    The location service controller must accept Phone from req.query (in addition to or instead
+    of the legacy req.params.phone path segment). The route should also accept
+    PUT /:tenantId/responders (without trailing /:phone). If the existing route is kept, add
+    a sibling route, or have the controller read phone from params OR query.
 
   ResponseField is REQUIRED even though we don't need the response data. The engine's
   executeRestApiCallAction returns Success: false if `data` extracted from the response is null,
-  regardless of HTTP status. Without a ResponseField the action is treated as failed,
-  EN2 stays unexecuted, traversal halts, and the timer eventually terminates via TN_TIMEOUT
-  instead of TN_SUCCESS. Setting ResponseField to "Data:CFR" extracts the updated CFR object,
-  which is a non-null value, so the action is marked Success and traversal continues to EN3.
+  regardless of HTTP status. Setting ResponseField to "Data:CFR" extracts the updated CFR object,
+  which is non-null on success, so the action is marked Success and traversal continues to EN3.
 
   Captures UPDATE_LOCATION_NODE_ID for use in subsequent requests.
 }

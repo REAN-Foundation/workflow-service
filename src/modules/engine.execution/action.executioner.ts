@@ -884,7 +884,7 @@ export class ActionExecutioner {
                 updatedUrl += paramList.join('&');
             }
             var methodToUse = method.toLowerCase();
-            var response = await needle(methodToUse, updatedUrl, options);
+            var response = await needle(methodToUse, updatedUrl, null, options);
             if (response.statusCode === 200) {
                 responseBody = response.body;
             }

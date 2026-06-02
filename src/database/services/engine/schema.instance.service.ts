@@ -111,8 +111,9 @@ export class SchemaInstanceService extends BaseService {
             var schemaInstances = await this._schemaInstanceRepository.find({
                 where : {
                     Schema : {
-                        id : schemaId
-                    }
+                        id : schemaId as string
+                    },
+                    Terminated : false
                 },
                 relations : {
                     Schema : {
@@ -140,7 +141,8 @@ export class SchemaInstanceService extends BaseService {
         try {
             var schemaInstances = await this._schemaInstanceRepository.find({
                 where : {
-                    ParentSchemaInstanceId : parentSchemaInstanceId
+                    ParentSchemaInstanceId : parentSchemaInstanceId,
+                    Terminated             : false
                 },
                 relations : {
                     Schema : {

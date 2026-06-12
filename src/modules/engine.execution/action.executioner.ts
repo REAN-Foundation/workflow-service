@@ -1348,9 +1348,23 @@ export class ActionExecutioner {
             };
         }
 
+        var pFilterOperator = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'FilterOperator');
+        var filterOperator = pFilterOperator ? pFilterOperator.Value : 'equals';
+
         var filterBy = pFilterBy.Value;
+
         var filterValue = pFilterValue.Value;
+        if (pFilterValue.Source && pFilterValue.Source === InputSourceType.Almanac) {
+            filterValue = await this._almanac.getFact(pFilterValue.Value);
+        }
+
         var array = pArray.Value;
+        if (!array) {
+            const source = pArray.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                array = await this._almanac.getFact(pArray.Key);
+            }
+        }
 
         if (!array || Array.isArray(array) === false) {
             logger.error('Array not found in input parameters');
@@ -1360,7 +1374,9 @@ export class ActionExecutioner {
             };
         }
 
-        var filteredArray = array.filter(x => x[filterBy] === filterValue);
+        var filteredArray = filterOperator === 'notEquals'
+            ? array.filter(x => x[filterBy] !== filterValue)
+            : array.filter(x => x[filterBy] === filterValue);
 
         var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
         if (op) {

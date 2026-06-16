@@ -1,0 +1,101 @@
+meta {
+  name: Create action node
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/engine/node-actions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Type": "ArrayFilter",
+    "Name": "Exclude primary CFR from responders",
+    "Description": "Builds CFR:OtherResponders = CFR:Responders minus the primary CFR (matched by phone), so the acknowledgement is not sent to the primary first responder.",
+    "ParentNodeId": "{{PARENT_NODE_ID}}",
+    "Sequence": 1,
+    "IsPathAction": false,
+    "Input": {
+      "Params": [
+        {
+          "Name": "Responded CFR Details",
+          "Type": "Array",
+          "Source": "Almanac",
+          "SubType": "Object",
+          "Key": "CFR:Responders",
+          "Value": null
+        },
+        {
+          "Name": "Filter by field",
+          "Type": "Text",
+          "Key": "FilterBy",
+          "Value": "Phone"
+        },
+        {
+          "Name": "Filter operator",
+          "Type": "Text",
+          "Key": "FilterOperator",
+          "Value": "notEquals"
+        },
+        {
+          "Name": "Primary CFR phone (resolved from almanac)",
+          "Type": "Text",
+          "Key": "FilterValue",
+          "Source": "Almanac",
+          "Value": "CFR:PrimaryCFR:Phone"
+        }
+      ]
+    },
+    "Output": {
+      "Params": [
+        {
+          "Name": "Non-primary responders",
+          "Type": "Array",
+          "Destination": "Almanac",
+          "Key": "CFR:OtherResponders"
+        }
+      ]
+    }
+  }
+  
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_EN1_ID", res.body.Data.id);
+  }
+  
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+  
+  test("Execution node is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('id');
+      expect(jsonRes.Data).to.have.property('Name');
+      expect(jsonRes.Data).to.have.property('Description');
+  });
+  
+}
+
+docs {
+  User login with username/phone/email and password.
+  
+  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
+}

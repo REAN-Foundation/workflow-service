@@ -1,4 +1,4 @@
-FROM node:20-alpine3.20 AS builder
+FROM node:24-alpine3.22 AS builder
 
 # Layer 1: system deps (cached unless Alpine changes)
 RUN apk add --no-cache bash python3 py3-pip alpine-sdk
@@ -18,7 +18,7 @@ COPY service.config.local.json ./
 COPY seed.data ./seed.data
 RUN npm run build
 
-FROM node:20-alpine3.20
+FROM node:24-alpine3.22
 
 # Layer 1: system deps (cached)
 RUN apk add --no-cache bash python3 py3-pip aws-cli

@@ -1,0 +1,54 @@
+meta {
+  name: 06 - Create registration check rule
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/engine/rules
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Responder registration check rule",
+    "Description": "Rule attached to YNN2 that decides whether the user's phone is registered as a responder.",
+    "ParentNodeId": "{{YNN2_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}"
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("REG_RULE_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Rule is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates the rule that drives YNN2's yes/no evaluation.
+  The actual logic lives in a Condition that gets created and attached in subsequent steps.
+  Captures REG_RULE_ID for use in subsequent requests.
+}

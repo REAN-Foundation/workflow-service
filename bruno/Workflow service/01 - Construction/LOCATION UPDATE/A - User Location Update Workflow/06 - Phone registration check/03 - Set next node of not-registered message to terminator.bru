@@ -1,0 +1,31 @@
+meta {
+  name: 03 - Set next node of not-registered message to terminator
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{NOTREG_NODE_ID}}/next-node/{{TERMINATOR_NOTREG_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Links EN_NOTREG (phone-not-registered message) to TN_NOTREG (terminator).
+  Completes the not-registered path:
+    YNN2 (no) -> EN_NOTREG (SendMessage) -> TN_NOTREG (Terminated=true)
+}

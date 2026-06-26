@@ -1,0 +1,109 @@
+meta {
+  name: 04 - Create responder-exists check node
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN_CHECK - Check Responder Registration",
+    "Description": "Calls the location service to check whether the active user's phone is registered as a responder, BEFORE attempting the update. The exists endpoint returns HTTP 200 with a boolean Data.Exists (true/false) in BOTH cases, so the call never fails/stalls the node. The boolean is stored to the almanac under ContextParams:ResponderExists for YNN2 to branch on.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": null,
+    "SchemaId": "{{SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "RestApiCall",
+        "Name": "GET - Check if responder phone is registered",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Type": "RestApiParams",
+              "Value": {
+                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/responders/exists",
+                "Method": "GET",
+                "Headers": {
+                  "ContentType": "application/json"
+                },
+                "QueryParams": [
+                  {
+                    "QueryParamKey": "Phone",
+                    "QueryParamValue": null,
+                    "Source": "Almanac",
+                    "SourceKey": "ContextParams:User:Phone"
+                  }
+                ],
+                "ResponseField": "Data:Exists",
+                "ResponseType": "Boolean"
+              }
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "Responder exists flag",
+              "Type": "Boolean",
+              "Value": null,
+              "Destination": "Almanac",
+              "Key": "ContextParams:ResponderExists"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("REG_CHECK_NODE_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Execution node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates EN_CHECK which makes a GET call to the location service exists endpoint:
+    GET /api/v1/{TENANT_ID}/responders/exists?Phone=<X>
+
+  IMPORTANT - why a separate exists check instead of branching on the PUT:
+    The location service PUT /responders returns HTTP 404 when the phone is not registered.
+    The engine's RestApiCall marks any non-200 response as Success=false, which leaves the
+    ExecutionNode un-executed and STALLS it (traverseExecutionNode only advances on Executed).
+    A stalled node cannot branch. The exists endpoint instead returns HTTP 200 with a boolean
+    Data.Exists in both the found and not-found cases, so the node always succeeds and advances
+    to YNN2, which then branches on the stored ContextParams:ResponderExists flag.
+
+  Phone is sent as a QueryParam with Source: Almanac so the engine resolves the active
+  instance's ContextParams:User:Phone at runtime (per-user), exactly like the EN2 update call.
+
+  Captures REG_CHECK_NODE_ID for use in subsequent requests.
+}

@@ -1,0 +1,82 @@
+meta {
+  name: 01 - Create phone-not-registered message node
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN_NOTREG - Phone Not Registered Message",
+    "Description": "Sends a message telling the user their phone number is not registered in the location service, so the location could not be updated. Reached from YNN2 when the responder-exists check returns false. Its next node is the not-registered terminator, which closes the instance.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": null,
+    "SchemaId": "{{SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send phone-not-registered message to user",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Name": "User Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:User:Phone"
+            },
+            {
+              "Name": "Not registered message",
+              "Type": "Text",
+              "Value": "We could not find your phone number in our responder records, so your location could not be updated. Please contact your administrator to get registered. This request has now been closed."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("NOTREG_NODE_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Execution node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates EN_NOTREG, the user-facing node for the "phone not registered" path.
+
+  Sends "We could not find your phone number in our responder records..." via the chatbot
+  to the phone stored in ContextParams:User:Phone, then advances to TN_NOTREG which
+  terminates the instance.
+
+  Captures NOTREG_NODE_ID for use in subsequent requests.
+}

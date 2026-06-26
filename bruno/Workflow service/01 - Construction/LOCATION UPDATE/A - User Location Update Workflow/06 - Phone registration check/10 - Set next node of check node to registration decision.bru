@@ -1,0 +1,31 @@
+meta {
+  name: 10 - Set next node of check node to registration decision
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{REG_CHECK_NODE_ID}}/next-node/{{YNN2_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Links EN_CHECK (responder-exists API call) to YNN2 (registration decision).
+  After EN_CHECK's RestApiCall stores ContextParams:ResponderExists, the engine advances
+  to YNN2 which branches on that flag.
+}

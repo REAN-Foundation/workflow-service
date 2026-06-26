@@ -1,0 +1,30 @@
+meta {
+  name: 09 - Set condition on registration rule
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{BASE_URL}}/engine/rules/{{REG_RULE_ID}}/base-condition/{{REG_CONDITION_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Attaches the "responder exists" condition to the registration check rule as its base condition.
+  This completes the YNN2 decision setup: YNN2 -> Rule -> Condition.
+}

@@ -1,0 +1,75 @@
+meta {
+  name: 08 - Create responder-exists condition
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/engine/conditions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Responder exists in location service",
+    "Description": "Evaluates to true when EN_CHECK stored ContextParams:ResponderExists = true (the user's phone is registered as a responder).",
+    "ParentRuleId": "{{REG_RULE_ID}}",
+    "ParentConditionId": null,
+    "OperatorType": "Logical",
+    "LogicalOperatorType": "Equal",
+    "FirstOperand": {
+      "DataType": "Boolean",
+      "Name": "Responder Exists Expected",
+      "Value": true
+    },
+    "SecondOperand": {
+      "DataType": "Boolean",
+      "Name": "Does responder exist in location service?",
+      "Value": null,
+      "Source": "Almanac",
+      "Key": "ContextParams:ResponderExists"
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("REG_CONDITION_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Condition is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates the condition that the rule will evaluate.
+  Logic: true == Almanac['ContextParams:ResponderExists']
+
+  EN_CHECK stores the boolean Data.Exists from the location service to the almanac under
+  ContextParams:ResponderExists. When that flag is true, this condition is true and YNN2's
+  YesAction (Continue) fires (-> EN2 update). When false (or missing - coerced to false by the
+  condition processor's Boolean handling), the condition is false and YNN2's NoAction
+  (SetNextNode -> EN_NOTREG) fires.
+
+  Captures REG_CONDITION_ID for use in subsequent requests.
+}

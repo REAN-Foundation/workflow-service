@@ -1,0 +1,99 @@
+meta {
+  name: 02 - EN2b - Reporter msg & trigger children
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN2b-Send message to reporter assuring help (attempt 2)",
+    "Description": "Attempt-2 mirror of EN2. Reassures the reporter and triggers a child CFR workflow for each phone in the 3-5 km ring.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{MAIN_EN1B_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send message - Assuring reporter CFR informed",
+        "Sequence": 0,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Reporter Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:Reporter:Phone"
+            },
+            {
+              "Name": "CFR notified message",
+              "Type": "Text",
+              "Value": "Nearby responders have been notified. In the mean time call 108 for ambulance assistance.Tell us what the issue is with the victim. We can help you with first aid tips. "
+            }
+          ]
+        }
+      },
+      {
+        "Type": "TriggerMultipleChildrenWorkflow",
+        "Name": "Trigger multiple workflows one for each CFR in the vicinity.",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Name": "List of CFR phonenumbers",
+              "Type": "Array",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:CFR:Phonenumbers",
+              "SubType": "Phone"
+            },
+            {
+              "Name": "Schema Id",
+              "Type": "SchemaId",
+              "Value": "{{CHILD_SCHEMA_ID}}",
+              "Key": "SchemaId"
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "CFR Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Destination": "Almanac",
+              "Key": "ContextParams:CFR:Phone"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_EN2B_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      expect(res.body.Status).to.eql('success');
+  });
+}

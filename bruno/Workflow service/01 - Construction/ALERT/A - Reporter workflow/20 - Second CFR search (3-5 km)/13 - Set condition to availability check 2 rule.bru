@@ -1,0 +1,24 @@
+meta {
+  name: 13 - Set condition to availability check 2 rule
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{BASE_URL}}/engine/rules/{{CFR_AVAILABILITY_CHECK_2_RULE_ID}}/base-condition/{{CFR_AVAILABILITY_CHECK_2_BASE_CONDITION_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      expect(res.body.Status).to.eql('success');
+  });
+}

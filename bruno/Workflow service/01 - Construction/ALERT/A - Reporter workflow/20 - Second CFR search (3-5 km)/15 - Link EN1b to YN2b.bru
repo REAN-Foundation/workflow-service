@@ -1,0 +1,24 @@
+meta {
+  name: 15 - Link EN1b to YN2b
+  type: http
+  seq: 15
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_EN1B_ID}}/next-node/{{MAIN_CFR_AVAILABILITY_CHECK_2_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      expect(res.body.Status).to.eql('success');
+  });
+}

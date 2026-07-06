@@ -1,0 +1,24 @@
+meta {
+  name: 28 - LTN2b_P3 timeout to EN5 (ambulance)
+  type: http
+  seq: 28
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_LTN2B_ID_P3}}/next-node-on-timer-timeout/{{MAIN_EN5_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      expect(res.body.Status).to.eql('success');
+  });
+}

@@ -1,0 +1,47 @@
+meta {
+  name: 09 - LTN2b_P3 - 120s timer
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/logical-timer-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "T1b-CFR Yes Response Checking Timer (attempt 2 - 120s)",
+    "Description": "Attempt-2 fourth/final 30s poll (120s cumulative). On timeout (still no available CFR) the flow goes to the ambulance fallback. Reuses T1_RULE via RuleId.",
+    "Type": "LogicalTimerNode",
+    "ParentNodeId": "{{MAIN_EN2B_ID_P3}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "RuleId": "{{T1_RULE_ID}}",
+    "NumberOfTries": 1,
+    "DelaySeconds": 30,
+    "NextNodeIdOnSuccess": null,
+    "NextNodeIdOnTimeout": null
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_LTN2B_ID_P3", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      expect(res.body.Status).to.eql('success');
+  });
+}

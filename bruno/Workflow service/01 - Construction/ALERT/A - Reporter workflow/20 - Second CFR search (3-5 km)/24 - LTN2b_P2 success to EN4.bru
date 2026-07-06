@@ -1,0 +1,24 @@
+meta {
+  name: 24 - LTN2b_P2 success to EN4
+  type: http
+  seq: 24
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_LTN2B_ID_P2}}/next-node-on-timer-success/{{MAIN_EN4_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      expect(res.body.Status).to.eql('success');
+  });
+}

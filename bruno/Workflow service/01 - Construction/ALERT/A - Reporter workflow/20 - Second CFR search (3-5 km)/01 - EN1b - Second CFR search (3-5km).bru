@@ -1,5 +1,5 @@
 meta {
-  name: Create execution node - EN1
+  name: 01 - EN1b - Second CFR search (3-5km)
   type: http
   seq: 1
 }
@@ -18,17 +18,16 @@ headers {
 
 body:json {
   {
-    "Name": "EN1-Actions after reporter shares location",
-    "Description": "This execution node holds actions to find nearby CFRs and send notify them of the incident happened.",
+    "Name": "EN1b-Second CFR search (3-5 km)",
+    "Description": "Second, wider CFR search. Re-queries nearest-responders in the 3-5 km ring and overwrites CFR:Phonenumbers. Reached when the first 0-3 km attempt found no available CFR.",
     "Type": "ExecutionNode",
-    "ParentNodeId": "{{MAIN_YNN1_ID}}",
+    "ParentNodeId": "{{MAIN_CFR_AVAILABILITY_CHECK_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
-    
       {
         "Type": "RestApiCall",
-        "Name": "Make REST API call to get nearest CFRs",
-        "Sequence": 2,
+        "Name": "Make REST API call to get nearest CFRs in 3-5 km ring",
+        "Sequence": 0,
         "Input": {
           "Params": [
             {
@@ -59,11 +58,11 @@ body:json {
                   },
                   {
                     "QueryParamKey": "minRadiusInKm",
-                    "QueryParamValue": 0
+                    "QueryParamValue": 3
                   },
                   {
                     "QueryParamKey": "maxRadiusInKm",
-                    "QueryParamValue": 3
+                    "QueryParamValue": 5
                   },
                   {
                     "QueryParamKey": "itemsPerPage",
@@ -100,29 +99,13 @@ script:post-response {
   let status = res.getStatus();
   console.log(status)
   if (status == 201) {
-    bru.setEnvVar("MAIN_EN1_ID", res.body.Data.id);
+    bru.setEnvVar("MAIN_EN1B_ID", res.body.Data.id);
   }
-  
 }
 
 tests {
   test("Request is successfull", function () {
       expect(res.getStatus()).to.equal(201);
-      var jsonRes = res.getBody();
-      expect(jsonRes.Status).to.eql('success');
+      expect(res.body.Status).to.eql('success');
   });
-  
-  test("Execution node is created", function () {
-      var jsonRes = res.getBody();
-      expect(jsonRes.Data).to.have.property('id');
-      expect(jsonRes.Data).to.have.property('Name');
-      expect(jsonRes.Data).to.have.property('Description');
-  });
-  
-}
-
-docs {
-  User login with username/phone/email and password.
-  
-  'LoginRoleId' is the role id through which user wants to log into the system provided the user has the role.
 }

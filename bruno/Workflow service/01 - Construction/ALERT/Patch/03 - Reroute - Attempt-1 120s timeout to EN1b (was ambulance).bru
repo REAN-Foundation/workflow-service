@@ -1,0 +1,31 @@
+meta {
+  name: 03 - Reroute - Attempt-1 120s timeout to EN1b (was ambulance)
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_LTN2_ID_P3}}/next-node-on-timer-timeout/{{MAIN_EN1B_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      expect(res.body.Status).to.eql('success');
+  });
+}
+
+docs {
+  Re-points attempt-1's final (120s) poll timeout from the ambulance node (EN5 /
+  MAIN_EN5_ID) to the second, wider search (EN1b). After this, EN5 is only reached
+  from attempt-2's own 120s timeout - i.e. ambulance fallback happens only after
+  BOTH the 0-3 km and 3-5 km attempts fail.
+}

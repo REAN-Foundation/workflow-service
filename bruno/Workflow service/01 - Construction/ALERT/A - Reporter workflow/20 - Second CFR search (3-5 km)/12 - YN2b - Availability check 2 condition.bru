@@ -1,0 +1,50 @@
+meta {
+  name: 12 - YN2b - Availability check 2 condition
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/engine/conditions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Base condition for CFR availability check (attempt 2)",
+    "Description": "This condition checks if the 3-5 km CFR Phonenumbers array is empty",
+    "ParentRuleId": "{{CFR_AVAILABILITY_CHECK_2_RULE_ID}}",
+    "ParentConditionId": null,
+    "OperatorType": "Logical",
+    "LogicalOperatorType": "IsEmpty",
+    "FirstOperand": {
+      "DataType": "Array",
+      "Name": "CFR Phonenumbers list",
+      "Value": null,
+      "Source": "Almanac",
+      "Key": "ContextParams:CFR:Phonenumbers"
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("CFR_AVAILABILITY_CHECK_2_BASE_CONDITION_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      expect(res.body.Status).to.eql('success');
+  });
+}

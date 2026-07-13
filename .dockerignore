@@ -1,0 +1,12 @@
+.git
+.gitignore
+.vscode
+.github
+.claude
+node_modules
+dist
+docs
+bruno
+*.md
+.env
+.env.*

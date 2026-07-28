@@ -1,0 +1,47 @@
+meta {
+  name: LOCATION UPDATE - Local (Mock)
+}
+
+docs {
+  Local end-to-end test of the User Location Update Workflow WITHOUT the bot-wrapper service,
+  using the pluggable Mock messaging provider.
+
+  Prerequisites
+  -------------
+  1. Run workflow-service locally (BASE_URL = http://localhost:2345/api/v1).
+  2. The "User Location Update Workflow - V1" schema must already be constructed/seeded in the
+     local DB. SCHEMA_ID, TENANT_ID, API_KEY, USER_PHONE, MODERATOR_PASSWORD must be set in the
+     environment.
+  3. Run the service with the Mock messaging provider active — set in the config file the service
+     loads:  Communication.Messaging.Provider = "Mock"  (service.config.local.json is already "Mock",
+     so NODE_ENV=local works out of the box; otherwise set it in service.config.json). The endpoint
+     /api/v1/debug/messages is ALWAYS available, but it only captures/returns data under the Mock
+     provider (BotWrapper delivers instead, leaving the store empty). Messages keep their real
+     channel, e.g. "WhatsApp". Restart the service after changing the config.
+
+  How verification works
+  ----------------------
+  The Mock provider captures each outbound message in memory (instead of POSTing to bot-wrapper).
+  We read them from GET /api/v1/debug/messages. Each captured message carries its SchemaInstanceId,
+  so step 04 derives the exact instance id from the captured prompt — this avoids the schema-instance
+  search, which orders by CreatedAt and cannot reliably return the instance you just started.
+
+  IMPORTANT — use a fresh phone per run
+  -------------------------------------
+  When you send "Hi" without a SchemaInstanceId, the engine RESUMES any existing non-terminated
+  instance for that phone (e.g. one parked waiting for a location) instead of starting fresh — a
+  resumed instance often produces no new message. To test a clean run, change USER_PHONE to a new
+  value each time, or finish/terminate the previous instance first.
+
+  Note on external calls
+  ----------------------
+  The registration check (EN_CHECK -> GET /responders/exists) and the update (EN2 -> PUT /responders)
+  are RestApiCall actions to the external location service; they are NOT mocked. If the phone isn't
+  a registered responder (or the endpoint is unreachable) the workflow goes down the not-registered
+  path and terminates before the location prompt/confirmation.
+
+  Run order
+  ---------
+  01 login -> 02 clear captured -> 03 start ("Hi") -> 04 resolve instance id (from captured msg)
+  -> 05 captured (prompt) -> 06 send location -> 07 captured (confirmation) -> 08 activity history.
+}

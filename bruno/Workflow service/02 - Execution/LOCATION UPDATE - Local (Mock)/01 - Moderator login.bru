@@ -1,0 +1,51 @@
+meta {
+  name: 01 - Moderator login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/users/login-password
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+body:json {
+  {
+    "UserName": "{{MODERATOR_USER_NAME}}",
+    "Password": "{{MODERATOR_PASSWORD}}"
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 200) {
+    bru.setEnvVar("MODERATOR_USER_JWT", res.body.Data.AccessToken);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Access token is returned", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('AccessToken');
+    expect(jsonRes.Data.AccessToken).to.not.be.null;
+  });
+}
+
+docs {
+  Moderator login. Sets MODERATOR_USER_JWT, used by the authenticated GET routes below
+  (schema-instance search and activity-history). The user-message POST and the debug
+  endpoint are open and do not require the JWT.
+}

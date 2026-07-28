@@ -7,6 +7,7 @@ export type SMSServiceProvider = 'Twilio' | 'Mock';
 export type EmailServiceProvider = 'SendGrid' | 'Mock';
 export type InAppNotificationServiceProvider = 'Firebase' | 'Mock';
 export type ProcessorsProvider = 'Custom' | 'Mock';
+export type MessagingProvider = 'BotWrapper' | 'Mock';
 export type AuthorizationType = 'Custom'; //TBD: Other options need to be supported
 export type AuthenticationType = 'Custom'; //TBD: Other options need to be supported
 
@@ -36,6 +37,10 @@ export interface CommunicationConfig {
     EmailProvider            : EmailServiceProvider
 }
 
+export interface MessagingConfig {
+    Provider: MessagingProvider;
+}
+
 export interface TemporaryFoldersConfig {
     Upload                    : string,
     Download                  : string,
@@ -62,6 +67,7 @@ export interface Configurations {
     Auth                : AuthConfig;
     Processor          : Processor;
     FileStorage         : FileStorageConfig;
+    Messaging           : MessagingConfig;
     TemporaryFolders    : TemporaryFoldersConfig;
     MaxUploadFileSize   : number;
     JwtExpiresIn        : number;

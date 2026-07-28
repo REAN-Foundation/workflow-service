@@ -1,0 +1,69 @@
+meta {
+  name: 07 - Resolve CFR child instances
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BASE_URL}}/debug/messages
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 200) {
+    var data = res.body.Data || [];
+    var reporterPhone = bru.getEnvVar("REPORTER_PHONE");
+    // CFR child messages are those NOT addressed to the reporter. Each carries the child instance's
+    // SchemaInstanceId and the CFR's phone. Collect distinct child instances in order of appearance.
+    var seen = {};
+    var cfrs = [];
+    data.forEach(function (m) {
+      if (m.ToPhone !== reporterPhone && m.SchemaInstanceId && !seen[m.SchemaInstanceId]) {
+        seen[m.SchemaInstanceId] = true;
+        cfrs.push({ instance: m.SchemaInstanceId, phone: m.ToPhone, schemaId: m.SchemaId });
+      }
+    });
+    for (var i = 0; i < cfrs.length && i < 3; i++) {
+      bru.setEnvVar("CFR_SCHEMA_INSTANCE_" + (i + 1) + "_ID", cfrs[i].instance);
+      bru.setEnvVar("CFR_" + (i + 1) + "_PHONE", cfrs[i].phone);
+      console.log("CFR " + (i + 1) + ": instance=" + cfrs[i].instance + " phone=" + cfrs[i].phone);
+    }
+    // Every CFR child message carries the child schema's id — derive CFR_SCHEMA_ID at runtime so it
+    // never has to be set manually.
+    if (cfrs.length > 0 && cfrs[0].schemaId) {
+      bru.setEnvVar("CFR_SCHEMA_ID", cfrs[0].schemaId);
+      console.log("CFR_SCHEMA_ID = " + cfrs[0].schemaId);
+    }
+    console.log("Distinct CFR child instances found: " + cfrs.length);
+    if (cfrs.length === 0) {
+      console.log("No CFR children — likely the no-CFR/ambulance branch (external nearest-responders returned nothing). Skip steps 08-11.");
+    }
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Derives CFR_SCHEMA_INSTANCE_1/2/3_ID, CFR_1/2/3_PHONE, and CFR_SCHEMA_ID from the captured CFR-child
+  messages (any message not addressed to REPORTER_PHONE belongs to a CFR child, and carries that
+  child's SchemaInstanceId, the CFR phone, and the child SchemaId). These are what steps 08-10 use to
+  answer as each CFR — all resolved at runtime, nothing set manually, and no parentSchemaInstanceId
+  search needed.
+
+  If "Distinct CFR child instances found: 0" is logged, the workflow took the no-CFR / ambulance path
+  (external responder lookup returned nothing); steps 08-11 don't apply for this run.
+}

@@ -1,0 +1,72 @@
+meta {
+  name: 08 - CFR-1 answers Available
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/engine/events/user-message
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{CFR_SCHEMA_ID}}",
+    "SchemaInstanceId": "{{CFR_SCHEMA_INSTANCE_1_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "{{CFR_1_PHONE}}",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "QuestionResponse",
+      "MessageChannel": "WhatsApp",
+      "QuestionResponse": {
+        "ResponseContent": "Available",
+        "QuestionResponseType": "Single Choice Selection",
+        "SingleChoiceChosenOptionSequence": 1,
+        "SingleChoiceChosenOption": "Available"
+      },
+      "Payload": {}
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  CFR-1 answers "Available" (option sequence 1) on their child instance. The engine routes by the
+  top-level SchemaInstanceId (CFR_SCHEMA_INSTANCE_1_ID) and reads SingleChoiceChosenOptionSequence.
+  The CFR child then sends "Thanks for the support! We appreciate your help." (captured).
+
+  A positive CFR answer also lets the parent's escalation timer (LTN2, ~30s) advance the reporter to
+  the EN4/EN6/EN7 messages — see step 11 after a short wait.
+
+  TIMING: send this within ~30s of step 05. The reporter's CFR-response timer fires at 30s; if no CFR
+  has answered by then it escalates to the 3-5 km search and later terminates the CFR children, after
+  which this answer is silently dropped (201 returned, nothing advances). Fast path: 05 -> 07 -> 08
+  back-to-back (skip 06 during the window). To relax the window, see the SQL in folder docs.
+}

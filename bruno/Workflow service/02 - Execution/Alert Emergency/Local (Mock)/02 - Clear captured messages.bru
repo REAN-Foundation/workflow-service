@@ -1,0 +1,29 @@
+meta {
+  name: 02 - Clear captured messages
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{BASE_URL}}/debug/messages
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Clears the in-memory mock message buffer so this run starts clean. The endpoint is always available;
+  it only holds messages when Communication.Messaging.Provider = "Mock". Optional — skip to accumulate.
+}

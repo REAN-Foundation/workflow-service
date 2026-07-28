@@ -1,0 +1,52 @@
+meta {
+  name: 05 - Get captured messages (prompt)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{BASE_URL}}/debug/messages
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 200) {
+    console.log("Captured messages so far: " + (res.body.Data || []).length);
+    (res.body.Data || []).forEach((m, i) => {
+      console.log(`  [${i}] instance=${m.SchemaInstanceId} channel=${m.MessageChannel} type=${m.MessageType} text=${m.TextMessage || m.QuestionText || ''}`);
+    });
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("A prompt message was captured", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.lengthOf.above(0);
+  });
+}
+
+docs {
+  Lists ALL messages the Mock provider captured so far (the buffer was cleared in step 02, so
+  everything here belongs to this run). After "03 - Start workflow" for a registered phone,
+  expect the location-request prompt
+  ("To update your location, please share your current GPS location ..."), proving the reply was
+  produced locally without bot-wrapper. For a non-registered phone you'll instead see the
+  "We could not find your phone number in our responder records ..." message.
+
+  If empty: the workflow likely stalled at the registration check (external /responders/exists
+  not reachable), or the service isn't running with Communication.Messaging.Provider = "Mock".
+}

@@ -1,0 +1,68 @@
+meta {
+  name: 05 - Reporter sends location
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/engine/events/user-message
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "SchemaInstanceId": "{{REPORTER_SCHEMA_INSTANCE_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "{{REPORTER_PHONE}}",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "Location",
+      "MessageChannel": "WhatsApp",
+      "Location": {
+        "Latitude": 18.56678109,
+        "Longitude": 74.76602509
+      }
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("LOCATION_EVENT_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Reporter shares location (Pune city centre by default). This advances the reporter workflow:
+    location gate passes -> EN1 calls the external nearest-responders service ->
+    - CFRs found: EN2 sends the reporter "Nearby responders have been notified. ... call 108 ..."
+      and spawns one CFR child per phone (each child messages the CFR + asks Available/Not Available).
+    - No CFRs (or external unreachable): EN5 sends "Unfortunately no responder seems to be available
+      ..." plus nearby-ambulance details.
+  Inspect the results with step 06. SchemaInstanceId pins this event to the reporter instance from 04.
+}

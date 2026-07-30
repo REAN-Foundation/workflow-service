@@ -3,7 +3,8 @@ import { ActionType, InputSourceType, MessageChannelType, OutputDestinationType,
 import { ActionInputParams, ActionOutputParams, ContextParams, Params } from "../../domain.types/engine/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
-import { ChatbotMessageService } from "../communication/chatbot.message.service";
+import { Injector } from "../../startup/injector";
+import { IMessagingProvider } from "../communication/interfaces/messaging.provider.interface";
 import { NodeActionInstanceResponseDto, NodeInstanceResponseDto } from "../../domain.types/engine/node.instance.types";
 import { NodeService } from "../../database/services/engine/node.service";
 import { SchemaService } from "../../database/services/engine/schema.service";
@@ -1732,7 +1733,7 @@ export class ActionExecutioner {
         message: WorkflowMessage)
         : Promise<boolean> => {
 
-        var messageService = new ChatbotMessageService();
+        var messageService = Injector.Container.resolve<IMessagingProvider>('IMessagingProvider');
         const phonenumber = message.Phone;
 
         const workflowEvent: WorkflowEvent = {
@@ -1799,7 +1800,7 @@ export class ActionExecutioner {
                 Metadata                  : eventPayload ? eventPayload.Metadata : null,
             }
         };
-        var messageService = new ChatbotMessageService();
+        var messageService = Injector.Container.resolve<IMessagingProvider>('IMessagingProvider');
 
         const workflowEvent: WorkflowEvent = {
             EventType        : EventType.SystemMessage,

@@ -78,7 +78,7 @@ export class ErrorHandler {
     };
 
     static throwDbAccessError = (message, error) => {
-        throw new ApiError(message, error);
+        throw new ApiError(message, 500, error);
     };
 
     static throwConflictError = (message) => {
@@ -90,7 +90,7 @@ export class ErrorHandler {
     };
 
     static throwInternalServerError = (message, error = null) => {
-        throw new ApiError(message, error);
+        throw new ApiError(message, 500, error);
     };
 
     static handleValidationError = (error) => {

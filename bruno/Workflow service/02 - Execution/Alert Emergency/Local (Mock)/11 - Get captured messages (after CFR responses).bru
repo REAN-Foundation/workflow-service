@@ -1,0 +1,46 @@
+meta {
+  name: 11 - Get captured messages (after CFR responses)
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{BASE_URL}}/debug/messages
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 200) {
+    console.log("Captured messages total: " + (res.body.Data || []).length);
+    (res.body.Data || []).forEach((m, i) => {
+      console.log(`  [${i}] to=${m.ToPhone} instance=${m.SchemaInstanceId} type=${m.MessageType} text=${m.TextMessage || m.QuestionText || ''}`);
+    });
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Run this ~30s AFTER the CFR answers (steps 08-10) — the parent LTN2 escalation timer runs on real
+  wall-clock. Expect, added to the earlier messages:
+    - to each answering CFR: "Thanks for the support! ..." (Available) / "Looks like you are unable
+      to handle the request ..." (Not Available)
+    - to REPORTER_PHONE: "Some responders have positively responded. The details will be shared
+      shortly." (EN4), then the primary-CFR details (EN6) and thanks-others (EN7) messages, and
+      eventually the incident-resolution question.
+  If the reporter messages aren't there yet, wait a bit longer and re-run (timer hasn't fired).
+}

@@ -1,0 +1,63 @@
+meta {
+  name: 09 - CFR-2 answers Available
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/engine/events/user-message
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{CFR_SCHEMA_ID}}",
+    "SchemaInstanceId": "{{CFR_SCHEMA_INSTANCE_2_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "{{CFR_2_PHONE}}",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "QuestionResponse",
+      "MessageChannel": "WhatsApp",
+      "QuestionResponse": {
+        "ResponseContent": "Available",
+        "QuestionResponseType": "Single Choice Selection",
+        "SingleChoiceChosenOptionSequence": 1,
+        "SingleChoiceChosenOption": "Available"
+      },
+      "Payload": {}
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  CFR-2 answers "Available" (sequence 1) on CFR_SCHEMA_INSTANCE_2_ID. Optional — run only if step 07
+  found a second CFR child. Same shape as step 08.
+}

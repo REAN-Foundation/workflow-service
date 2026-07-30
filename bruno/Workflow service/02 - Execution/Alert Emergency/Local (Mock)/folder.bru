@@ -1,0 +1,68 @@
+meta {
+  name: Local (Mock)
+}
+
+docs {
+  Local end-to-end test of the ALERT (Emergency) workflow WITHOUT bot-wrapper, using the Mock
+  messaging provider so you can observe the full sequence of system messages (reporter + CFRs) via
+  GET /api/v1/debug/messages.
+
+  The Alert flow is multi-actor: a parent "Reporter" workflow (MAIN_SCHEMA_ID) that finds nearby
+  community first responders (CFRs) and spawns a child "CFR" workflow (CFR_SCHEMA_ID) per responder.
+
+  PREREQUISITES (all three matter)
+  --------------------------------
+  1. Run the service with the Mock messaging provider active. Set in the config file the service
+     loads:  Communication.Messaging.Provider = "Mock"  (service.config.local.json is already "Mock",
+     so running with NODE_ENV=local works out of the box; otherwise set it in service.config.json).
+     When the provider is "Mock", EVERY outbound message is captured in memory regardless of its
+     channel. The capture endpoint GET /api/v1/debug/messages is ALWAYS mounted, but it only returns
+     data under the Mock provider (with BotWrapper the store stays empty). Messages keep their real
+     channel value, e.g. "WhatsApp" — the provider, not the channel, decides mock vs delivery.
+     NOTE: restart the service after changing the config so the change takes effect.
+  2. External responder lookup must be reachable. EN1 calls the external nearest-responders service
+     (NOT mocked). If it's unreachable, no CFRs are found and the flow takes the no-CFR / ambulance
+     branch (EN5) instead of spawning CFR children — steps 07-11 (CFR answers) then don't apply.
+  3. TIMING IS CRITICAL — answer a CFR within ~30 seconds of step 05. The reporter runs a
+     "CFR Yes Response Checking Timer" (LogicalTimer, DelaySeconds=30) after the fan-out. If no CFR
+     has answered "Available" by the time it fires, the reporter escalates to the 3-5 km second search
+     and eventually terminates — which cascades and TERMINATES the CFR child instances while they are
+     still at the "Availability question". A CFR answer that arrives after that is silently dropped
+     (you get HTTP 201, but nothing advances, no primary CFR is set). This is the #1 reason CFR
+     responses "don't get recorded". The CFR question node itself has no timeout; only the parent's
+     timer does. Keep the server running (timers are wall-clock; a restart drops them).
+
+     Practical fast path to beat the 30s window: run 05 -> 07 -> 08 back-to-back (SKIP step 06 during
+     the timed window; inspect messages afterwards). Answering ONE CFR "Available" quickly is enough —
+     the 30s timer's next fire detects it and advances the reporter to EN4/EN6/EN7.
+
+     If the window is too tight for a manual retest, widen it once with SQL (test DB), then re-run:
+        UPDATE nodes SET "DelaySeconds" = 300
+        WHERE "Type" = 'LogicalTimerNode' AND "Name" LIKE '%CFR Yes Response Checking Timer%';
+     (Gives ~5 min per check instead of 30s. The reporter's EN4 message then appears within one timer
+     interval after you answer.)
+
+  PRECONDITIONS (env vars)
+  ------------------------
+  Only ONE workflow-specific id must be set manually: MAIN_SCHEMA_ID (which workflow to start), plus
+  the usual TENANT_ID, API_KEY, REPORTER_PHONE, MODERATOR_USER_NAME, MODERATOR_PASSWORD.
+  Everything else is resolved at runtime by the collection: MODERATOR_USER_JWT,
+  REPORTER_SCHEMA_INSTANCE_ID, CFR_SCHEMA_ID, CFR_SCHEMA_INSTANCE_1/2/3_ID, CFR_1/2/3_PHONE.
+
+  Note: no question-id variables are needed. The engine resolves the question from the current node of
+  the targeted instance and ignores any QuestionId in the answer — so the CFR/reporter answers only
+  send the chosen option sequence (1 = Available/Yes, 2 = Not Available/No).
+
+  Use a FRESH REPORTER_PHONE for each clean run (a resent text otherwise resumes a parked instance).
+
+  RUN ORDER
+  ---------
+  01 login -> 02 clear -> 03 reporter text -> 04 resolve reporter instance -> 05 reporter location
+  -> 06 captured (fan-out) -> 07 resolve CFR child instances -> 08/09/10 CFR answers
+  -> (wait ~30s) 11 captured (after CFR responses) -> 12 reporter resolution answer
+  -> 13 captured (final) -> 14 activity history.
+
+  How instance ids are resolved: every captured message carries its SchemaInstanceId and ToPhone, so
+  we derive the reporter and CFR-child instance ids straight from GET /debug/messages instead of the
+  schema-instance search (which orders by CreatedAt and can't reliably find the run you just started).
+}

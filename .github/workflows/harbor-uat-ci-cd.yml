@@ -3,7 +3,7 @@ name: UAT-CI-CD
 on:
   push:
     branches:
-      - 'release/uat-0.0.14'
+      - 'release/**'
 
 
 jobs:

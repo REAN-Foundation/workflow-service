@@ -24,11 +24,8 @@ export class BotWrapperMessagingProvider implements IMessagingProvider {
                 agent = new HttpsAgent({ keepAlive: true });
             }
             const options = {
-                httpAgent        : agent,
-                open_timeout     : 5000,
-                response_timeout : 8000,
-                read_timeout     : 8000,
-                headers          : {
+                httpAgent : agent,
+                headers   : {
                     'Content-Type'    : 'application/json',
                     Accept            : '*/*',
                     'Cache-Control'   : 'no-cache',

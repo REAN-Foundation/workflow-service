@@ -953,6 +953,9 @@ export class SchemaEngine {
         else if (actionInstance.ActionType === ActionType.TriggerMultipleChildrenWorkflow) {
             result = await actionExecutioner.executeTriggerMultipleChildrenWorkflowAction(actionInstance);
         }
+        else if (actionInstance.ActionType === ActionType.TerminateChildInstances) {
+            result = await actionExecutioner.executeTerminateChildInstancesAction(actionInstance);
+        }
         else if (actionInstance.ActionType === ActionType.SetNextNode) {
             result = await actionExecutioner.executeSetNextNodeAction(actionInstance);
         }

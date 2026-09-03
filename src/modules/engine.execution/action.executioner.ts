@@ -988,6 +988,33 @@ export class ActionExecutioner {
         };
     };
 
+    public executeTerminateChildInstancesAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const currentSchemaInstance = this._schemaInstance;
+        var terminatedCount = 0;
+
+        var childrenSchemaInstances = await this._schemaInstanceService.getByParentSchemaInstanceId(currentSchemaInstance.id);
+        if (childrenSchemaInstances.length > 0) {
+            for await (var childSchemaInstance of childrenSchemaInstances) {
+                if (childSchemaInstance.Terminated) {
+                    continue;
+                }
+                logger.info(`Terminating stale child schema instance: ${childSchemaInstance.id}`);
+                await this._schemaInstanceService.terminate(childSchemaInstance.id);
+                terminatedCount++;
+            }
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, { TerminatedChildCount: terminatedCount });
+
+        return {
+            Success : true,
+            Result  : terminatedCount
+        };
+    };
+
     public executeSetNextNodeAction = async (
         action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
 

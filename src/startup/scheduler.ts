@@ -1,6 +1,7 @@
 import * as cron from 'node-cron';
 import * as CronSchedules from '../../seed.data/cron.schedules.json';
 import { logger } from '../logger/logger';
+import { StatisticsService } from '../database/services/statistics/statistics.service';
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +32,7 @@ export class Scheduler {
             try {
 
                 this.scheduleDailyReminders();
+                this.scheduleDailyStatisticsSnapshot();
 
                 resolve(true);
             } catch (error) {
@@ -51,6 +53,16 @@ export class Scheduler {
             // var service = Loader.container.resolve(UserTaskService);
             // await service.sendTaskReminders();
             // })();
+        });
+    };
+
+    private scheduleDailyStatisticsSnapshot = () => {
+        cron.schedule(Scheduler._schedules['DailyStatisticsSnapshot'], () => {
+            logger.info('Running scheduled job: Daily statistics snapshot...');
+            (async () => {
+                const service = new StatisticsService();
+                await service.generateDailySnapshot();
+            })();
         });
     };
 

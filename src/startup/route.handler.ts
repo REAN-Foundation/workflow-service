@@ -10,6 +10,7 @@ import { register as registerRuleRoutes } from '../api/engine/rule/rule.routes';
 import { register as registerConditionRoutes } from '../api/engine/condition/condition.routes';
 import { register as registerEventRoutes } from '../api/engine/event/event.routes';
 import { register as registerSchemaInstanceRoutes } from '../api/engine/schema.instance/schema.instance.routes';
+import { register as registerStatisticsRoutes } from '../api/statistics/statistics.routes';
 import { register as registerTypesRoutes } from '../api/types/types.routes';
 import { register as registerFileResourceRoutes } from '../api/general/file.resource/file.resource.routes';
 import { register as registerDebugRoutes } from '../api/debug/debug.routes';
@@ -48,6 +49,7 @@ export class RouteHandler {
                 registerConditionRoutes(expressApp);
                 registerEventRoutes(expressApp);
                 registerSchemaInstanceRoutes(expressApp);
+                registerStatisticsRoutes(expressApp);
                 registerTypesRoutes(expressApp);
                 registerFileResourceRoutes(expressApp);
 

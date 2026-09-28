@@ -28,6 +28,7 @@ import { QuestionOption } from "./models/engine/question.option.model";
 import { QuestionInstance } from "./models/engine/question.instance.model";
 import { Event } from "./models/engine/event.model";
 import { SchemaInstanceActivity } from "./models/engine/schema.instance.activity.model";
+import { DailySchemaInstanceStat } from "./models/statistics/daily.schema.instance.stat.model";
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -77,6 +78,7 @@ class DatabaseConnector {
             QuestionOption,
             QuestionInstance,
             SchemaInstanceActivity,
+            DailySchemaInstanceStat,
         ],
         migrations  : [],
         subscribers : [],

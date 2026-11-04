@@ -1,0 +1,181 @@
+
+name: Harbor-Production-CI-CD
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  Build-Push-Harbor:
+    name: Build and Replicate Production Image
+    runs-on: ubuntu-latest
+    environment: sb-prod
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Declare image variables
+        id: vars
+        shell: bash
+        run: |
+          echo "sha_short=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+          echo "repo_name=workflow-service-prod" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-prod-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-prod-
+
+      - name: Build and push production image
+        id: docker_build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/workflow-service-prod:sb.main_${{ steps.vars.outputs.sha_short }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+
+      - name: Display image digest
+        run: echo "${{ steps.docker_build.outputs.digest }}"
+
+      - name: Replicate image from ECR to production Harbor
+        shell: bash
+        env:
+          HARBOR: https://registry.reanfoundation.org
+          HARBOR_ROBOT: ${{ secrets.HARBOR_ROBOT }}
+          HARBOR_ROBOT_SECRET: ${{ secrets.HARBOR_ROBOT_SECRET }}
+          ECR_REPO: workflow-service-prod
+          TAG: sb.main_${{ steps.vars.outputs.sha_short }}
+          HARBOR_PROJECT: rean-prod
+          ECR_REGISTRY_ID: "1"
+        run: |
+          set -euo pipefail
+
+          AUTH=(-u "${HARBOR_ROBOT}:${HARBOR_ROBOT_SECRET}")
+          POLICY_NAME="ci-${ECR_REPO}"
+
+          BODY=$(jq -n \
+            --arg name "$POLICY_NAME" \
+            --arg repo "$ECR_REPO" \
+            --arg tag "$TAG" \
+            --arg project "$HARBOR_PROJECT" \
+            --argjson registry_id "$ECR_REGISTRY_ID" \
+            '{
+              name: $name,
+              src_registry: {id: $registry_id},
+              dest_namespace: $project,
+              dest_namespace_replace_count: 0,
+              trigger: {type: "manual"},
+              filters: [
+                {type: "name", value: $repo},
+                {type: "tag", value: $tag}
+              ],
+              enabled: true,
+              override: true,
+              speed: -1
+            }')
+
+          # Find or create the Harbor replication policy.
+          PID=$(curl -fsS "${AUTH[@]}" \
+            --get \
+            --data-urlencode "q=name=${POLICY_NAME}" \
+            "${HARBOR}/api/v2.0/replication/policies" \
+            | jq -r '.[0].id // empty')
+
+          if [ -z "$PID" ]; then
+            RESPONSE=$(curl -fsS "${AUTH[@]}" \
+              -X POST \
+              -H 'Content-Type: application/json' \
+              -d "$BODY" \
+              -D - \
+              -o /dev/null \
+              "${HARBOR}/api/v2.0/replication/policies")
+
+            PID=$(echo "$RESPONSE" \
+              | awk 'tolower($1)=="location:" {print $2}' \
+              | tr -d '\r' \
+              | awk -F/ '{print $NF}')
+          else
+            curl -fsS "${AUTH[@]}" \
+              -X PUT \
+              -H 'Content-Type: application/json' \
+              -d "$BODY" \
+              "${HARBOR}/api/v2.0/replication/policies/${PID}"
+          fi
+
+          if [ -z "$PID" ]; then
+            echo "Could not obtain Harbor replication policy ID"
+            exit 1
+          fi
+
+          echo "Harbor replication policy ID: $PID"
+
+          # Trigger replication.
+          RESPONSE=$(curl -fsS "${AUTH[@]}" \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            -d "{\"policy_id\":${PID}}" \
+            -D - \
+            -o /dev/null \
+            "${HARBOR}/api/v2.0/replication/executions")
+
+          EXECUTION_ID=$(echo "$RESPONSE" \
+            | awk 'tolower($1)=="location:" {print $2}' \
+            | tr -d '\r' \
+            | awk -F/ '{print $NF}')
+
+          if [ -z "$EXECUTION_ID" ]; then
+            echo "Could not obtain Harbor replication execution ID"
+            exit 1
+          fi
+
+          echo "Harbor execution ID: $EXECUTION_ID"
+
+          # Wait for replication to finish.
+          for i in $(seq 1 60); do
+            STATUS=$(curl -fsS "${AUTH[@]}" \
+              "${HARBOR}/api/v2.0/replication/executions/${EXECUTION_ID}" \
+              | jq -r '.status')
+
+            echo "Replication status: $STATUS"
+
+            [ "$STATUS" = "Succeed" ] && break
+
+            if [[ "$STATUS" == "Failed" || "$STATUS" == "Stopped" ]]; then
+              echo "Harbor replication failed"
+              exit 1
+            fi
+
+            if [ "$i" -eq 60 ]; then
+              echo "Timed out waiting for Harbor replication"
+              exit 1
+            fi
+
+            sleep 5
+          done
+
+          echo "Successfully replicated ${ECR_REPO}:${TAG} to ${HARBOR_PROJECT}"

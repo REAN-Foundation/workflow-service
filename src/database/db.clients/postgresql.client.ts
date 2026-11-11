@@ -32,7 +32,7 @@ export class PostgresqlClient implements IDbClient {
                 user     : Config.username,
                 host     : Config.host,
                 password : Config.password,
-                port     : 5432,
+                port     : Config.port,
             });
             await client.connect();
             await client.query(query);

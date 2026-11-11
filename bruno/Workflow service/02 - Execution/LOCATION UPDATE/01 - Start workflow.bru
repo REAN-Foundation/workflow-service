@@ -1,0 +1,71 @@
+meta {
+  name: 01 - Start workflow
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/events/user-message
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "{{USER_PHONE}}",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "Text",
+      "MessageChannel": "WhatsApp",
+      "TextMessage": "Hi"
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("START_EVENT_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Event is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+  });
+}
+
+docs {
+  Starts the User Location Update Workflow by sending the first user message event.
+  The engine matches the event to the schema via SchemaId and TenantId, creates a new
+  schema instance, and executes the root node which:
+    1. Starts the 10-minute timeout timer (in parallel)
+    2. Routes to EN1 which sends "Please share your current location" back to the user
+    3. Advances to LN1 (EventListenerNode) which waits for the user's location input
+
+  After running this request, run "02 - Get schema instance id" to capture the instance ID,
+  then run "03 - User sends location" to simulate the user sharing their location.
+}

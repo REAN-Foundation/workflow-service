@@ -12,6 +12,7 @@ import { register as registerEventRoutes } from '../api/engine/event/event.route
 import { register as registerSchemaInstanceRoutes } from '../api/engine/schema.instance/schema.instance.routes';
 import { register as registerTypesRoutes } from '../api/types/types.routes';
 import { register as registerFileResourceRoutes } from '../api/general/file.resource/file.resource.routes';
+import { register as registerDebugRoutes } from '../api/debug/debug.routes';
 import path from "path";
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -49,6 +50,8 @@ export class RouteHandler {
                 registerSchemaInstanceRoutes(expressApp);
                 registerTypesRoutes(expressApp);
                 registerFileResourceRoutes(expressApp);
+
+                registerDebugRoutes(expressApp);
 
                 resolve(true);
 

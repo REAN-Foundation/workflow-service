@@ -1,0 +1,70 @@
+meta {
+  name: 03 - Reporter sends emergency text
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/engine/events/user-message
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "{{REPORTER_PHONE}}",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "Text",
+      "MessageChannel": "WhatsApp",
+      "TextMessage": "Emergency"
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("START_EVENT_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Event is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+  });
+}
+
+docs {
+  Starts the reporter (parent) workflow by sending an emergency text with SchemaId = MAIN_SCHEMA_ID
+  (explicit id avoids depending on AI routing). The engine creates the reporter instance and, because
+  no location is present yet, emits the location-request prompt:
+  "Please send location of emergency. To know how, please click <drive link>" — captured by the Mock
+  provider. Verify with step 04/06.
+
+  Use a fresh REPORTER_PHONE for a clean run; otherwise the engine resumes a previous non-terminated
+  instance for that phone.
+}

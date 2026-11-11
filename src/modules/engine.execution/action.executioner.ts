@@ -3,7 +3,8 @@ import { ActionType, InputSourceType, MessageChannelType, OutputDestinationType,
 import { ActionInputParams, ActionOutputParams, ContextParams, Params } from "../../domain.types/engine/params.types";
 import { logger } from "../../logger/logger";
 import { Almanac } from "./almanac";
-import { ChatbotMessageService } from "../communication/chatbot.message.service";
+import { Injector } from "../../startup/injector";
+import { IMessagingProvider } from "../communication/interfaces/messaging.provider.interface";
 import { NodeActionInstanceResponseDto, NodeInstanceResponseDto } from "../../domain.types/engine/node.instance.types";
 import { NodeService } from "../../database/services/engine/node.service";
 import { SchemaService } from "../../database/services/engine/schema.service";
@@ -884,7 +885,7 @@ export class ActionExecutioner {
                 updatedUrl += paramList.join('&');
             }
             var methodToUse = method.toLowerCase();
-            var response = await needle(methodToUse, updatedUrl, options);
+            var response = await needle(methodToUse, updatedUrl, null, options);
             if (response.statusCode === 200) {
                 responseBody = response.body;
             }
@@ -984,6 +985,33 @@ export class ActionExecutioner {
         return {
             Success : true,
             Result  : randomCode
+        };
+    };
+
+    public executeTerminateChildInstancesAction = async (
+        action: NodeActionInstanceResponseDto): Promise<NodeActionResult> => {
+
+        const currentSchemaInstance = this._schemaInstance;
+        var terminatedCount = 0;
+
+        var childrenSchemaInstances = await this._schemaInstanceService.getByParentSchemaInstanceId(currentSchemaInstance.id);
+        if (childrenSchemaInstances.length > 0) {
+            for await (var childSchemaInstance of childrenSchemaInstances) {
+                if (childSchemaInstance.Terminated) {
+                    continue;
+                }
+                logger.info(`Terminating stale child schema instance: ${childSchemaInstance.id}`);
+                await this._schemaInstanceService.terminate(childSchemaInstance.id);
+                terminatedCount++;
+            }
+        }
+
+        await this._commonUtilsService.markActionInstanceAsExecuted(action.id);
+        await this.recordActionActivity(action, { TerminatedChildCount: terminatedCount });
+
+        return {
+            Success : true,
+            Result  : terminatedCount
         };
     };
 
@@ -1348,9 +1376,23 @@ export class ActionExecutioner {
             };
         }
 
+        var pFilterOperator = input.Params.find(x => x.Type === ParamType.Text && x.Key === 'FilterOperator');
+        var filterOperator = pFilterOperator ? pFilterOperator.Value : 'equals';
+
         var filterBy = pFilterBy.Value;
+
         var filterValue = pFilterValue.Value;
+        if (pFilterValue.Source && pFilterValue.Source === InputSourceType.Almanac) {
+            filterValue = await this._almanac.getFact(pFilterValue.Value);
+        }
+
         var array = pArray.Value;
+        if (!array) {
+            const source = pArray.Source || InputSourceType.Almanac;
+            if (source === InputSourceType.Almanac) {
+                array = await this._almanac.getFact(pArray.Key);
+            }
+        }
 
         if (!array || Array.isArray(array) === false) {
             logger.error('Array not found in input parameters');
@@ -1360,7 +1402,9 @@ export class ActionExecutioner {
             };
         }
 
-        var filteredArray = array.filter(x => x[filterBy] === filterValue);
+        var filteredArray = filterOperator === 'notEquals'
+            ? array.filter(x => x[filterBy] !== filterValue)
+            : array.filter(x => x[filterBy] === filterValue);
 
         var op = output.Params.find(x => x.Destination === OutputDestinationType.Almanac);
         if (op) {
@@ -1716,7 +1760,7 @@ export class ActionExecutioner {
         message: WorkflowMessage)
         : Promise<boolean> => {
 
-        var messageService = new ChatbotMessageService();
+        var messageService = Injector.Container.resolve<IMessagingProvider>('IMessagingProvider');
         const phonenumber = message.Phone;
 
         const workflowEvent: WorkflowEvent = {
@@ -1783,7 +1827,7 @@ export class ActionExecutioner {
                 Metadata                  : eventPayload ? eventPayload.Metadata : null,
             }
         };
-        var messageService = new ChatbotMessageService();
+        var messageService = Injector.Container.resolve<IMessagingProvider>('IMessagingProvider');
 
         const workflowEvent: WorkflowEvent = {
             EventType        : EventType.SystemMessage,

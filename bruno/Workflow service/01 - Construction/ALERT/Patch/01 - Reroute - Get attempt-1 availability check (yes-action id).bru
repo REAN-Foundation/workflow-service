@@ -1,0 +1,34 @@
+meta {
+  name: 01 - Reroute - Get attempt-1 availability check (yes-action id)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_CFR_AVAILABILITY_CHECK_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 200) {
+    // Capture the YesAction (empty-path / IsEmpty=true) node-action id so we can
+    // re-point it from the ambulance node (NOCFR_EN_ID) to the second search (EN1b).
+    bru.setEnvVar("YN1_YES_ACTION_ID", res.body.Data.YesAction.id);
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      expect(res.body.Data).to.have.property('YesAction');
+  });
+}

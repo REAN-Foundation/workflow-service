@@ -1,0 +1,61 @@
+meta {
+  name: 04 - Resolve instance id from captured message
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BASE_URL}}/debug/messages
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 200) {
+    var data = res.body.Data || [];
+    if (data.length > 0) {
+      // The captured outbound message carries the exact SchemaInstanceId of the run
+      // that just executed — reliable even when CreatedAt-based search ordering is not.
+      var last = data[data.length - 1];
+      bru.setEnvVar("LOCATION_UPDATE_SCHEMA_INSTANCE_ID", last.SchemaInstanceId);
+      console.log("Resolved SchemaInstanceId: " + last.SchemaInstanceId);
+    } else {
+      console.log("No captured messages yet — the workflow may not have sent anything, or the service isn't running with Communication.Messaging.Provider = 'Mock' (BotWrapper delivers instead of capturing).");
+    }
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("A message was captured and carries a SchemaInstanceId", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.lengthOf.above(0);
+    expect(jsonRes.Data[jsonRes.Data.length - 1]).to.have.property('SchemaInstanceId');
+  });
+}
+
+docs {
+  Resolves LOCATION_UPDATE_SCHEMA_INSTANCE_ID from the captured mock message (GET /debug/messages)
+  instead of the schema-instance search. Why: the search endpoint orders by CreatedAt ascending
+  (oldest first) and can't reliably return the instance you just started — especially when
+  CreatedAt is null. Every captured outbound message includes its SchemaInstanceId, so the last
+  captured message points at the exact instance from "03 - Start workflow".
+
+  Requires the capture endpoint (Communication.Messaging.Provider = "Mock"). If the
+  workflow ran but produced no message (e.g. it stalled before any send), Data will be empty.
+
+  Timing: the workflow executes asynchronously after "03 - Start workflow" returns. Run this a
+  moment later (manual clicks are fine); if empty on a fast "Run folder", re-run this request.
+}

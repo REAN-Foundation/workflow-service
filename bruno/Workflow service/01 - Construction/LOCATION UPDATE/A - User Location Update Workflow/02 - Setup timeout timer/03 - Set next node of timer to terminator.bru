@@ -1,0 +1,37 @@
+meta {
+  name: 03 - Set next node of timer to terminator
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{TIMEOUT_TIMER_ID}}/next-node/{{TERMINATOR_TIMEOUT_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Links the timer node directly to TN_TIMEOUT - bypassing any "send timeout message" step.
+  Completes the timer path:
+    Timer (600s)  ->  TN_TIMEOUT  (instance Terminated=true, no message sent)
+
+  Rationale: when the timer fires we don't know if the user's location update
+  may have completed via the listener path, so we silently terminate rather
+  than send a potentially-stale "request closed" message. The success path
+  (TN_SUCCESS) terminates the instance the moment the location is updated,
+  which makes this timer path a no-op via the engine's isTerminated check.
+}

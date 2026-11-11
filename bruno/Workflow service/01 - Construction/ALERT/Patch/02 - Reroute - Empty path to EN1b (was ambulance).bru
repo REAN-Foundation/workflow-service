@@ -1,0 +1,50 @@
+meta {
+  name: 02 - Reroute - Empty path to EN1b (was ambulance)
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{BASE_URL}}/engine/node-actions/{{YN1_YES_ACTION_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Input": {
+      "Params": [
+        {
+          "Name": "Second CFR search (3-5 km)",
+          "Type": "NodeId",
+          "Value": "{{MAIN_EN1B_ID}}"
+        }
+      ]
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      expect(res.body.Status).to.eql('success');
+  });
+}
+
+docs {
+  Re-points attempt-1's availability-check "empty" branch (YesAction SetNextNode)
+  from the ambulance node (NOCFR_EN_ID) to the second, wider search (EN1b).
+  Only the Input is updated; the action Type (SetNextNode) is preserved because the
+  node-action update only writes non-null fields.
+}

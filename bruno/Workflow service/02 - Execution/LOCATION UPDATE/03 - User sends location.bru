@@ -1,0 +1,75 @@
+meta {
+  name: 03 - User sends location
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/engine/events/user-message
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "SchemaInstanceId": "{{LOCATION_UPDATE_SCHEMA_INSTANCE_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "{{USER_PHONE}}",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "Location",
+      "MessageChannel": "WhatsApp",
+      "Location": {
+        "Latitude": 18.5074,
+        "Longitude": 73.8077
+      }
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("LOCATION_EVENT_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Location event is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+  });
+}
+
+docs {
+  Simulates the user sending their current location.
+  This event is picked up by LN1 (User Location Listener) which:
+    1. Stores the location to the almanac under "ContextParams:Location"
+    2. Updates the context params with the new location
+    3. Advances to EN2 which calls PUT /responders/:phone on the location service
+    4. Advances to EN3 which sends "Your location has been successfully updated. Thank you!"
+
+  Latitude/Longitude default to Pune city centre — change to test different coordinates.
+  SchemaInstanceId pins the event to the specific instance from step 02.
+}

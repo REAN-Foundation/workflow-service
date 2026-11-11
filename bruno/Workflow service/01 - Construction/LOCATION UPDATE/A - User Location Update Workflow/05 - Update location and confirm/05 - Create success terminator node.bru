@@ -1,0 +1,68 @@
+meta {
+  name: 05 - Create success terminator node
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "TN_SUCCESS - Workflow Terminator (Success Path)",
+    "Description": "Terminator node reached after EN3 sends the confirmation message to the user. Sets Terminated=true on the schema instance and the 5-minute timer becomes a no-op (it checks isTerminated before firing).",
+    "Type": "TerminatorNode",
+    "ParentNodeId": "{{CONFIRM_NODE_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}"
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("TERMINATOR_SUCCESS_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Terminator node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates the TerminatorNode for the success path.
+  Reached after EN3 sends the user-facing confirmation message.
+
+  When this node is reached, the engine's traverseTerminatorNode method:
+    - Sets schema_instance.Terminated = true
+    - Sets schema_instance.TerminatedTimestamp = NOW()
+    - Records a TerminateWorkflow activity in the history
+    - Causes the still-running 5-minute timer to become a no-op when it fires
+      (the timer handler checks Terminated before executing)
+
+  Captures TERMINATOR_SUCCESS_ID for the next-node link.
+
+  NOTE: If the chatbot endpoint is unreachable, EN3's SendMessage returns Success: false,
+  which prevents EN3 from being marked Executed and the workflow stalls at EN3 until the
+  5-minute timer fires and routes to TN_TIMEOUT instead. Location update itself still
+  succeeds (EN2 ran), but the instance terminates via the timeout path.
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Alert Emergency
+}
+
+docs {
+  Execution collections for the ALERT (Emergency) workflow, grouped into two runnable variants:
+
+    - Local (Mock)  : drive the workflow locally with the Mock messaging provider and observe every
+                      system message via GET /api/v1/debug/messages (no bot-wrapper needed).
+                      Run the service with Communication.Messaging.Provider = "Mock" (config file;
+                      service.config.local.json is already "Mock").
+
+    - Global        : the original execution requests that run against a real deployment — messages
+                      are delivered through the bot-wrapper service on the WhatsApp channel.
+
+  Both drive the same workflow (parent "Reporter" schema + child "CFR" schema): reporter emergency
+  text -> location -> CFR search/fan-out -> CFR Available/Not-Available answers -> reporter resolution.
+  See each subfolder's folder.bru for prerequisites and run order.
+}

@@ -23,10 +23,10 @@ export class FileResourceVersion {
     @Column({ type: 'uuid' })
     ResourceId : string;
 
-    @Column({ type: 'uuid', length: 256, nullable: true })
+    @Column({ type: 'varchar', length: 256, nullable: true })
     FileName : string;
 
-    @Column({ type: 'uuid', length: 256, nullable: true })
+    @Column({ type: 'varchar', length: 256, nullable: true })
     OriginalFileName : string;
 
     @Column({ type: 'varchar', length: 32, nullable: true })

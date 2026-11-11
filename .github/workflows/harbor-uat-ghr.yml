@@ -1,0 +1,53 @@
+
+name: Harbor-UAT-GHR
+
+on:
+  push:
+    branches:
+      - 'release/**'
+
+jobs:
+  Build-Push-Harbor:
+    environment: uat
+    runs-on: [self-hosted, linux, x64, rean-dev-runner]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Declare variables
+        id: vars
+        shell: bash
+        run: |
+          echo "branch=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
+          echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "repo_name=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - name: Display build variables
+        run: |
+          echo "Branch: ${{ steps.vars.outputs.branch }}"
+          echo "SHA: ${{ steps.vars.outputs.sha_short }}"
+          echo "Repository: ${{ steps.vars.outputs.repo_name }}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: artifacts.reanfoundation.org
+          username: ${{ secrets.GHR_HARBOR_USERNAME }}
+          password: ${{ secrets.GHR_HARBOR_PASSWORD }}
+
+      - name: Build and push directly to Harbor
+        id: docker_build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: true
+          tags: |
+            artifacts.reanfoundation.org/rean-dev/workflow-service-dev-uat:sb.${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}
+
+      - name: Image digest
+        run: echo "${{ steps.docker_build.outputs.digest }}"

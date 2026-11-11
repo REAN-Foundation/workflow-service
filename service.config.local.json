@@ -13,6 +13,9 @@
         },
         "Email": {
             "Provider": "Mock"
+        },
+        "Messaging": {
+            "Provider": "Mock"
         }
     },
     "Processor" : {

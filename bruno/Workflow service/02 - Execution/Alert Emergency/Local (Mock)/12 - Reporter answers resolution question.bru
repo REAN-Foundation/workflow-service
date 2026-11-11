@@ -1,0 +1,69 @@
+meta {
+  name: 12 - Reporter answers resolution question
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/engine/events/user-message
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "SchemaInstanceId": "{{REPORTER_SCHEMA_INSTANCE_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "{{REPORTER_PHONE}}",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "QuestionResponse",
+      "MessageChannel": "WhatsApp",
+      "QuestionResponse": {
+        "ResponseContent": "No",
+        "QuestionResponseType": "Single Choice Selection",
+        "SingleChoiceChosenOptionSequence": 2,
+        "SingleChoiceChosenOption": "No"
+      },
+      "Payload": {}
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Reporter answers the incident-resolution question with "Yes" (sequence 1) on the reporter instance
+  -> the workflow sends the closing message(s), e.g. "Thank you for being a Good
+  Samaritan." / "The incident is handled and resolved. Thank you". Switch to
+  SingleChoiceChosenOptionSequence 2 / "No" to exercise the not-resolved branch ("We are still
+  searching for responder. Please hang in there").
+  
+  Note: this only applies once the resolution question has actually been posed to the reporter (after
+  the EN4/EN6/EN7 sequence in step 11). If it hasn't been posed yet, this answer has nothing to match.
+}

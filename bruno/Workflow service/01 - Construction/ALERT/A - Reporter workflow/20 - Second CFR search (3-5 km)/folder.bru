@@ -1,0 +1,26 @@
+meta {
+  name: 20 - Second CFR search (3-5 km)
+  seq: 20
+}
+
+docs {
+  Second (wider) CFR search attempt.
+
+  Triggered when the first 0-3 km attempt fails to yield an available CFR:
+    (a) first search returns an empty CFR list, OR
+    (b) CFRs were found but none replied "Available" within the 30/60/90/120s window.
+
+  This section mirrors the attempt-1 "notify + poll" subgraph for a 3-5 km ring:
+    EN1b (search 3-5km) -> YN2b (IsEmpty check) -> EN2b (notify + trigger children)
+      -> LTN2b 30/60/90/120s polling on CFR:Responders
+         - every timer SUCCESS -> reuse EN4 -> EN6 -> EN7 (existing primary path)
+         - final 120s TIMEOUT  -> reuse EN5 (ambulance fallback) -> terminator
+         - YN2b empty          -> reuse NOCFR_EN_ID (ambulance fallback)
+
+  EN2b_P3 (90s) deliberately does NOT re-trigger TN1_R: the reporter-resolution
+  question (QN1_R) already ran during attempt 1 and its nodes are shared/single-use.
+
+  This section only CREATES and internally wires the attempt-2 nodes. The two
+  requests that re-route attempt-1's failure exits (empty list, 120s timeout) into
+  EN1b live in the sibling "Patch" folder, which runs last in a recursive build.
+}

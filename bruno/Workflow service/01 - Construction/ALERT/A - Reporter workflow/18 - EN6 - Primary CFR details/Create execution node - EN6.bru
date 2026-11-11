@@ -173,7 +173,7 @@ body:json {
           ]
         }
       },
-          {
+      {
         "Type": "StoreToAlmanac",
         "Name": "Store input data to almanac of the children schema instance",
         "Description": "Store the primary phone number in each of the children schema instance almanacs",
@@ -200,6 +200,40 @@ body:json {
               "Destination": "ChildSchemaAlmanac",
               "Key": "CFR:PrimaryCFR:Phone",
               "Type": "Phone"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "SendMessage",
+        "Name": "Send another message - CFR",
+        "Description": "Sending another message - Additional message content.",
+        "Sequence": 5,
+        "Input": {
+          "Params": [
+            {
+              "Name": "CFR Primary phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "CFR:PrimaryCFR:Phone"
+            },
+            {
+              "Type": "Text",
+              "Name": "Additional message",
+              "Value": "The emergency incident code is {{ContextParams:IncidenceCode}}, and contact number of incident reporter is {{ContextParams:Reporter:Phone}}."
+            },
+            {
+              "Name": "Incident code",
+              "Type": "Placeholder",
+              "Key": "ContextParams:IncidenceCode",
+              "Source": "Almanac"
+            },
+            {
+              "Name": "Reporter Phone",
+              "Type": "Placeholder",
+              "Key": "ContextParams:Reporter:Phone",
+              "Source": "Almanac"
             }
           ]
         }

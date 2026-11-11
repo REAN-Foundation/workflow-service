@@ -19,6 +19,7 @@ RUN npm run build
 FROM node:24-alpine3.22
 RUN apk add bash
 RUN apk add --no-cache \
+        dos2unix \
         python3 \
         py3-pip \
     # && pip3 install --upgrade pip \
@@ -33,8 +34,9 @@ WORKDIR /app
 
 COPY package*.json /app/
 RUN npm install pm2 -g
-RUN npm install sharp
+RUN npm install --omit=dev
+COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder ./app/dist/ .
 
-RUN chmod +x /app/entrypoint.sh
+RUN dos2unix /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]

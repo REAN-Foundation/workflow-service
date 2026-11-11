@@ -1,0 +1,87 @@
+meta {
+  name: 03 - Create confirmation execution node
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN3 - Location Updated Confirmation",
+    "Description": "Sends a confirmation message to the user that their location has been successfully updated. Reached after EN2's RestApiCall succeeds.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{UPDATE_LOCATION_NODE_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send location update confirmation to user",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Name": "User Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:User:Phone"
+            },
+            {
+              "Name": "Confirmation message",
+              "Type": "Text",
+              "Value": "Your location has been successfully updated. Thank you!"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("CONFIRM_NODE_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Execution node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+    expect(jsonRes.Data).to.have.property('Description');
+  });
+}
+
+docs {
+  Creates EN3, the user-facing confirmation node.
+  Sends "Your location has been successfully updated. Thank you!" via the chatbot
+  to the phone stored in ContextParams:User:Phone.
+
+  Behavior:
+    - If chatbot accepts the call: EN3 marked Executed -> traverse to TN_SUCCESS -> instance terminated.
+    - If chatbot rejects (e.g. ngrok URL down, phone invalid): SendMessage returns Success: false,
+      EN3 NOT marked Executed, workflow stalls at EN3 until the 5-minute timer routes to TN_TIMEOUT.
+      Location update still succeeded (EN2 ran), but the instance terminates via the timeout path.
+
+  Captures CONFIRM_NODE_ID for use in subsequent requests.
+}

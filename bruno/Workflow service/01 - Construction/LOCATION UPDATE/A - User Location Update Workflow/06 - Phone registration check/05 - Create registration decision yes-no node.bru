@@ -1,0 +1,82 @@
+meta {
+  name: 05 - Create registration decision yes-no node
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/logical-yes-no-action-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "YNN2 - Decision (Yes/No) for responder registration",
+    "Description": "Checks the ContextParams:ResponderExists flag set by EN_CHECK. If the responder is registered (true), fires the Continue YesAction to advance to YNN2's next-node (EN2 - update location). If not registered (false), fires the SetNextNode NoAction to route to EN_NOTREG, which messages the user and terminates.",
+    "Type": "LogicalYesNoActionNode",
+    "ParentNodeId": "{{ROOT_NODE_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "YesAction": {
+      "Type": "Continue",
+      "Name": "Continue to update location",
+      "IsPathAction": true,
+      "Description": "Responder is registered - continue the flow to YNN2's next-node (EN2).",
+      "Input": null
+    },
+    "NoAction": {
+      "Type": "SetNextNode",
+      "Name": "Route to phone-not-registered message",
+      "IsPathAction": true,
+      "Description": "Responder is not registered - route to EN_NOTREG.",
+      "Input": {
+        "Params": [
+          {
+            "Name": "Phone not registered node",
+            "Type": "NodeId",
+            "Value": "{{NOTREG_NODE_ID}}"
+          }
+        ]
+      }
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("YNN2_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Yes-no node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates YNN2, the decision node that gates the update on responder registration.
+
+  Behavior at runtime (after EN_CHECK stored ContextParams:ResponderExists):
+    - ResponderExists true  -> condition true  -> YesAction (Continue) -> YNN2.NextNodeId (EN2).
+    - ResponderExists false  -> condition false -> NoAction (SetNextNode) -> EN_NOTREG.
+    - Missing flag           -> coerced to false -> NoAction (SetNextNode) -> EN_NOTREG (safe default).
+
+  Captures YNN2_ID for use in subsequent requests.
+}

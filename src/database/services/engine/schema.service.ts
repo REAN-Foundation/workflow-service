@@ -18,6 +18,9 @@ import { Node } from '../../models/engine/node.model';
 import { Condition } from '../../models/engine/condition.model';
 import { DatabaseUtilsService } from './database.utils.service';
 import { NodeAction } from '../../models/engine/node.action.model';
+import { NodePath } from '../../models/engine/node.path.model';
+import { NodeInstance } from '../../models/engine/node.instance.model';
+import { SchemaInstance } from '../../models/engine/schema.instance.model';
 import { StringUtils } from '../../../common/utilities/string.utils';
 import { NodeType } from '../../../domain.types/engine/engine.enums';
 
@@ -38,6 +41,12 @@ export class SchemaService extends BaseService {
     _ruleRepository: Repository<Rule> = Source.getRepository(Rule);
 
     _conditionRepository: Repository<Condition> = Source.getRepository(Condition);
+
+    _pathRepository: Repository<NodePath> = Source.getRepository(NodePath);
+
+    _nodeInstanceRepository: Repository<NodeInstance> = Source.getRepository(NodeInstance);
+
+    _schemaInstanceRepository: Repository<SchemaInstance> = Source.getRepository(SchemaInstance);
 
     _commonUtilsService: DatabaseUtilsService = new DatabaseUtilsService();
 
@@ -201,6 +210,94 @@ export class SchemaService extends BaseService {
                     id : id
                 }
             });
+            if (!record) {
+                ErrorHandler.throwNotFoundError('Schema not found!');
+            }
+            var nodes = await this._nodeRepository.find({
+                where  : { Schema : { id : id } },
+                select : ['id'],
+            });
+            var nodeIds = nodes.map(n => n.id);
+            if (nodeIds.length > 0) {
+ 
+                const pathRows: { path_id: string }[] = await this._pathRepository
+                    .createQueryBuilder('path')
+                    .select('path.id')
+                    .where('path.parentNodeId IN (:...nodeIds)', { nodeIds })
+                    .getRawMany();
+                var pathIds = pathRows.map(p => p.path_id);
+                
+                if (pathIds.length > 0) {
+                    await this._ruleRepository
+                        .createQueryBuilder()
+                        .delete()
+                        .from(Rule)
+                        .where('nodePathId IN (:...pathIds)', { pathIds })
+                        .execute();
+                }
+                await this._ruleRepository
+                    .createQueryBuilder()
+                    .delete()
+                    .from(Rule)
+                    .where('parentNodeId IN (:...nodeIds)', { nodeIds })
+                    .execute();
+                
+                await this._pathRepository
+                    .createQueryBuilder()
+                    .delete()
+                    .from(NodePath)
+                    .where('parentNodeId IN (:...nodeIds)', { nodeIds })
+                    .execute();
+
+                await this._actionRepository
+                    .createQueryBuilder()
+                    .delete()
+                    .from(NodeAction)
+                    .where('parentNodeId IN (:...nodeIds)', { nodeIds })
+                    .execute();
+
+                await this._schemaInstanceRepository
+                    .createQueryBuilder()
+                    .update(SchemaInstance)
+                    .set({ RootNodeInstance: null, CurrentNodeInstance: null })
+                    .where('schemaId = :id', { id })
+                    .execute();
+
+                await this._nodeInstanceRepository
+                    .createQueryBuilder()
+                    .update(NodeInstance)
+                    .set({ ParentNodeInstance: null })
+                    .where('nodeId IN (:...nodeIds)', { nodeIds })
+                    .execute();
+
+                await this._nodeInstanceRepository
+                    .createQueryBuilder()
+                    .delete()
+                    .from(NodeInstance)
+                    .where('nodeId IN (:...nodeIds)', { nodeIds })
+                    .execute();
+
+                await this._nodeRepository
+                    .createQueryBuilder()
+                    .update(Node)
+                    .set({ ParentNode: null })
+                    .where('id IN (:...nodeIds)', { nodeIds })
+                    .execute();
+
+                await this._nodeRepository
+                    .createQueryBuilder()
+                    .delete()
+                    .from(Node)
+                    .where('id IN (:...nodeIds)', { nodeIds })
+                    .execute();
+            }
+
+            await this._schemaInstanceRepository
+                .createQueryBuilder()
+                .delete()
+                .from(SchemaInstance)
+                .where('schemaId = :id', { id })
+                .execute();
             var result = await this._schemaRepository.remove(record);
             return result != null;
         } catch (error) {

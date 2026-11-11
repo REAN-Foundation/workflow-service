@@ -1,0 +1,38 @@
+meta {
+  name: 13 - Set next node of location check to update
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{YNN1_ID}}/next-node/{{UPDATE_LOCATION_NODE_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Sets YNN1 (location-captured decision) -> EN2 (update location API call).
+
+  In the reordered flow YNN1 comes AFTER the registration check, so once the user shares
+  their location (YNN1 = yes / Continue) the workflow proceeds straight to the update.
+
+  This is the same link originally created in
+  "05 - Update location and confirm / 02 - Set next node of yes-no to update". It is restated
+  here so that folder 06 fully and explicitly defines the reordered wiring - re-running this
+  folder alone re-establishes the correct order even if a previous build had pointed
+  YNN1 -> EN_CHECK.
+}

@@ -1,0 +1,56 @@
+meta {
+  name: 04 - Resolve reporter instance id
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BASE_URL}}/debug/messages
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 200) {
+    var data = res.body.Data || [];
+    var reporterPhone = bru.getEnvVar("REPORTER_PHONE");
+    // The location-request prompt was sent to the reporter — its SchemaInstanceId is the reporter
+    // (parent) instance. Pick the last captured message addressed to the reporter phone.
+    var reporterMsgs = data.filter(function (m) { return m.ToPhone === reporterPhone; });
+    if (reporterMsgs.length > 0) {
+      var last = reporterMsgs[reporterMsgs.length - 1];
+      bru.setEnvVar("REPORTER_SCHEMA_INSTANCE_ID", last.SchemaInstanceId);
+      console.log("REPORTER_SCHEMA_INSTANCE_ID = " + last.SchemaInstanceId);
+    } else {
+      console.log("No message captured for REPORTER_PHONE yet — re-run after step 03, or check that Communication.Messaging.Provider is 'Mock'.");
+    }
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("A reporter message was captured", function () {
+    var jsonRes = res.getBody();
+    var reporterPhone = bru.getEnvVar("REPORTER_PHONE");
+    var reporterMsgs = (jsonRes.Data || []).filter(function (m) { return m.ToPhone === reporterPhone; });
+    expect(reporterMsgs.length).to.be.above(0);
+  });
+}
+
+docs {
+  Resolves REPORTER_SCHEMA_INSTANCE_ID from the captured location-request prompt (its SchemaInstanceId
+  is the reporter/parent instance). Used to target the reporter's location and resolution events.
+  Avoids the schema-instance search (CreatedAt-ordered, unreliable for "the run I just started").
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Patch
+}
+
+docs {
+  Update / patch requests (NOT fresh node creation).
+
+  These requests modify wiring on nodes that were already created by the regular
+  seed collection ("A - Reporter workflow" / "B - CFR Workflow"). They live in this
+  sub-folder so the seed folders stay purely additive / from-scratch.
+
+  Ordering: this folder sits inside ALERT and sorts last ("Patch" > "A..." / "B..."),
+  so a recursive run of the ALERT folder builds the seed first and then applies these
+  patches on top - i.e. running ALERT recursively produces a COMPLETE build. The
+  requests reference ids produced by the seed (e.g. MAIN_EN1B_ID,
+  MAIN_CFR_AVAILABILITY_CHECK_ID, MAIN_LTN2_ID_P3), so they must run after it.
+
+  Current patches:
+    - Re-route attempt-1's two failure exits (empty CFR list, and the 120s
+      no-response timeout) from the ambulance fallback into the second, wider
+      CFR search (EN1b) added in "20 - Second CFR search (3-5 km)".
+}

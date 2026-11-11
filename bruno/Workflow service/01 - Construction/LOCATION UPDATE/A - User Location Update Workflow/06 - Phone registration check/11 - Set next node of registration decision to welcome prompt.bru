@@ -1,0 +1,35 @@
+meta {
+  name: 11 - Set next node of registration decision to welcome prompt
+  type: http
+  seq: 11
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{YNN2_ID}}/next-node/{{WELCOME_PROMPT_NODE_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Links YNN2 (registration decision) to EN_PROMPT (welcome / ask-for-location).
+  When YNN2's condition evaluates true (responder IS registered), its Continue YesAction
+  advances to EN_PROMPT, which asks the user to share their location. From there:
+    EN_PROMPT -> YNN1 (wait for location) -> EN2 (update) -> EN3 (confirm) -> TN_SUCCESS
+
+  This is the reordered flow: registration is verified BEFORE the user is ever asked for
+  their location, so unregistered users are messaged and terminated up front (YNN2 -> EN_NOTREG).
+}

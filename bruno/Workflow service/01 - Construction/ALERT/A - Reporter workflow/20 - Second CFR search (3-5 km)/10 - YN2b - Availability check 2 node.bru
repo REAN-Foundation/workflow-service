@@ -1,0 +1,63 @@
+meta {
+  name: 10 - YN2b - Availability check 2 node
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/logical-yes-no-action-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "Decision (Yes/No) node for CFR availability check (attempt 2)",
+    "Description": "Attempt-2 mirror of the availability check. If the 3-5 km CFR array is empty, Yes-action routes to the ambulance fallback (NOCFR_EN_ID); otherwise Continue to EN2b.",
+    "Type": "LogicalYesNoActionNode",
+    "ParentNodeId": "{{MAIN_EN1B_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "YesAction": {
+      "Type": "SetNextNode",
+      "Name": "Send no CFR available message",
+      "IsPathAction": true,
+      "Input": {
+        "Params": [
+          {
+            "Name": "ENend-Get nearby ambulances",
+            "Type": "NodeId",
+            "Value": "{{NOCFR_EN_ID}}"
+          }
+        ]
+      }
+    },
+    "NoAction": {
+      "Type": "Continue",
+      "Name": "Continue to next node.",
+      "IsPathAction": true,
+      "Description": "This will set the next node as current node.",
+      "Input": null
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_CFR_AVAILABILITY_CHECK_2_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      expect(res.body.Status).to.eql('success');
+  });
+}

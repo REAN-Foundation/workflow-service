@@ -1,0 +1,31 @@
+meta {
+  name: 03 - Set next node of welcome prompt to yes-no
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{WELCOME_PROMPT_NODE_ID}}/next-node/{{YNN1_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Links EN_PROMPT (welcome message) to YNN1 (decision node).
+  After EN_PROMPT's SendMessage action runs, the engine advances to YNN1
+  which then evaluates whether the user's location has been provided.
+}

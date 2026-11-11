@@ -1,0 +1,43 @@
+meta {
+  name: 12 - Rewire root to registration check
+  type: http
+  seq: 12
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{ROOT_NODE_ID}}/next-node/{{REG_CHECK_NODE_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Re-points the ROOT node's next-node from EN_PROMPT (set earlier in
+  "03 - Decision (YesNo) for location check / 04 - Set next node of root to welcome prompt")
+  to EN_CHECK, so the responder registration check runs FIRST - before the user is asked
+  for their location.
+
+  next-node is a set (PUT) operation, so this last write wins. Root's parallel actions
+  (TriggerTimerNode, TriggerEventListenerNode) are unaffected - the timer and the location
+  listener still start at Root. Final chain after this folder:
+
+    Root
+      -> EN_CHECK (GET responders/exists, stores ResponderExists)
+      -> YNN2 (registered?)
+           no  -> EN_NOTREG (not-registered message) -> TN_NOTREG          (terminate up front)
+           yes -> EN_PROMPT (ask for location) -> YNN1 (wait for location)
+                    -> EN2 (PUT update) -> EN3 (confirm) -> TN_SUCCESS
+}

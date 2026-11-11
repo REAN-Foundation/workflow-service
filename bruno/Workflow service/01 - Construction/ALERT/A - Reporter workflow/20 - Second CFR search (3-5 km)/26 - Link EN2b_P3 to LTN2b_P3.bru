@@ -1,0 +1,24 @@
+meta {
+  name: 26 - Link EN2b_P3 to LTN2b_P3
+  type: http
+  seq: 26
+}
+
+put {
+  url: {{BASE_URL}}/engine/nodes/{{MAIN_EN2B_ID_P3}}/next-node/{{MAIN_LTN2B_ID_P3}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      expect(res.body.Status).to.eql('success');
+  });
+}

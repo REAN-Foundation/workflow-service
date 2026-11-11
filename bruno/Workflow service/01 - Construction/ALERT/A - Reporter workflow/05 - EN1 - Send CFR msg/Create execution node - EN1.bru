@@ -34,7 +34,7 @@ body:json {
             {
               "Type": "RestApiParams",
               "Value": {
-                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/nearest-responders",
+                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/nearest-responders1",
                 "Method": "GET",
                 "QueryParams": [
                   {
@@ -51,10 +51,23 @@ body:json {
                     "SourceKey": "ContextParams:Location",
                     "SourceValueKey": "Latitude"
                   },
-                 
+                  {
+                    "QueryParamKey": "reporterPhone",
+                    "QueryParamValue": null,
+                    "Source": "Almanac",
+                    "SourceKey": "ContextParams:Reporter:Phone"
+                  },
+                  {
+                    "QueryParamKey": "minRadiusInKm",
+                    "QueryParamValue": 0
+                  },
+                  {
+                    "QueryParamKey": "maxRadiusInKm",
+                    "QueryParamValue": 3
+                  },
                   {
                     "QueryParamKey": "itemsPerPage",
-                    "QueryParamValue": 3
+                    "QueryParamValue": 15
                   }
                 ],
                 "Headers": {

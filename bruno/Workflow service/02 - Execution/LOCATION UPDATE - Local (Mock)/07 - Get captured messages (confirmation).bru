@@ -1,0 +1,53 @@
+meta {
+  name: 07 - Get captured messages (confirmation)
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BASE_URL}}/debug/messages
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 200) {
+    console.log("Captured messages total: " + (res.body.Data || []).length);
+    (res.body.Data || []).forEach((m, i) => {
+      console.log(`  [${i}] instance=${m.SchemaInstanceId} channel=${m.MessageChannel} type=${m.MessageType} text=${m.TextMessage || m.QuestionText || ''}`);
+    });
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Confirmation message was captured", function () {
+    var jsonRes = res.getBody();
+    var texts = (jsonRes.Data || []).map(m => (m.TextMessage || ''));
+    var hasConfirmation = texts.some(t => t.toLowerCase().indexOf('successfully updated') >= 0);
+    expect(hasConfirmation).to.eql(true);
+  });
+}
+
+docs {
+  Lists ALL captured messages after the location update. Expect at least two for the happy path:
+  the earlier location prompt and the final
+  "Your location has been successfully updated. Thank you!" confirmation — proving the whole
+  workflow ran end-to-end locally with the Mock messaging provider (no bot-wrapper involved).
+
+  If the confirmation is missing: the location update step (EN2 → external PUT /responders) may
+  have failed/stalled, or the instance had already terminated (e.g. the registration check sent
+  the workflow down the not-registered path). Check "08 - Get schema instance activity history".
+}

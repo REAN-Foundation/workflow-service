@@ -1,0 +1,50 @@
+meta {
+  name: 02 - Get schema instance id
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/engine/schema-instances/search?schemaId={{SCHEMA_ID}}
+  body: none
+  auth: none
+}
+
+params:query {
+  schemaId: {{SCHEMA_ID}}
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 200) {
+    bru.setEnvVar("LOCATION_UPDATE_SCHEMA_INSTANCE_ID", res.body.Data.Items[0].id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Schema instance exists", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data.Items).to.have.lengthOf.above(0);
+    expect(jsonRes.Data.Items[0]).to.have.property('id');
+  });
+}
+
+docs {
+  Fetches the active schema instance created by "01 - Start workflow".
+  Captures LOCATION_UPDATE_SCHEMA_INSTANCE_ID from the first item returned.
+  This ID is needed to send the location event to the correct workflow instance
+  and to check the activity history after execution completes.
+}

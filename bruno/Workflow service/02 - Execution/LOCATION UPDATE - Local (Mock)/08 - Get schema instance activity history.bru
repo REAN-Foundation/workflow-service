@@ -1,0 +1,33 @@
+meta {
+  name: 08 - Get schema instance activity history
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{BASE_URL}}/engine/schema-instances/{{LOCATION_UPDATE_SCHEMA_INSTANCE_ID}}/activity-history
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Full execution activity history for the instance — use it to confirm which nodes ran:
+    Root → EN_CHECK (registration) → YNN2 → EN_PROMPT (prompt captured)
+         → YNN1 → EN2 (update) → EN3 (confirmation captured) → TN_SUCCESS
+
+  Cross-check the captured messages (steps 05 and 07) against the nodes shown here.
+}

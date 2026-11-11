@@ -1,0 +1,62 @@
+meta {
+  name: 02 - Create not-registered terminator node
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "TN_NOTREG - Workflow Terminator (Not Registered Path)",
+    "Description": "Terminator node reached after EN_NOTREG tells the user their phone is not registered. Sets Terminated=true on the schema instance; the still-running 5-minute timer then becomes a no-op (it checks isTerminated before firing).",
+    "Type": "TerminatorNode",
+    "ParentNodeId": "{{NOTREG_NODE_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}"
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("TERMINATOR_NOTREG_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Terminator node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates the TerminatorNode for the "phone not registered" path.
+  Reached after EN_NOTREG sends the user-facing "not registered" message.
+
+  When this node is reached, the engine's traverseTerminatorNode method:
+    - Sets schema_instance.Terminated = true
+    - Sets schema_instance.TerminatedTimestamp = NOW()
+    - Records a TerminateWorkflow activity in the history
+    - Causes the still-running 5-minute timer to become a no-op when it fires.
+
+  Captures TERMINATOR_NOTREG_ID for the next-node link.
+}

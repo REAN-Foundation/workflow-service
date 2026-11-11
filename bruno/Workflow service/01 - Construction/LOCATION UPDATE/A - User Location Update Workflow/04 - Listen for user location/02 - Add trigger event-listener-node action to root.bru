@@ -1,0 +1,65 @@
+meta {
+  name: 02 - Add trigger event-listener-node action to root
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/engine/node-actions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Type": "TriggerEventListenerNode",
+    "Name": "Start user location listener",
+    "Description": "Activates LN1 as soon as the workflow starts so it listens for the user's location event in parallel with the main chain (Root -> EN1).",
+    "Sequence": 11,
+    "ParentNodeId": "{{ROOT_NODE_ID}}",
+    "Input": {
+      "Params": [
+        {
+          "Name": "User Location Listener",
+          "Description": "Reference to LN1 - the event listener node that captures the user's location",
+          "Type": "NodeId",
+          "Value": "{{LOCATION_LISTENER_ID}}",
+          "Key": "LocationListenerNode",
+          "Required": true
+        }
+      ]
+    }
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Action is added", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Adds a TriggerEventListenerNode action to the root node so LN1 starts listening for
+  the user's location event as soon as the workflow begins.
+
+  This replaces the (incorrect) approach of linking EN1 -> LN1 via next-node, which the
+  engine does not honor for EventListenerNodes. With this action in place, the listener
+  operates in parallel: EN1 sends the prompt message and the main chain ends there; LN1
+  catches the location whenever the user sends it and then routes to EN2 -> EN3.
+
+  Sequence 11 places this action after the TriggerTimerNode action (sequence 10) on root.
+}

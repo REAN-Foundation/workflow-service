@@ -1,0 +1,90 @@
+meta {
+  name: 02 - Create welcome prompt execution node
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN_PROMPT - Welcome / Ask for Location",
+    "Description": "Always-fires welcome node. Sends a SendMessage to the user instructing them how to share their location via WhatsApp's location feature. Runs once on workflow start. Mirrors the SendMessage pattern from the alert workflow's user-facing ExecutionNodes.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{ROOT_NODE_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "SendMessage",
+        "Name": "Send welcome prompt to user",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Name": "User Phone",
+              "Type": "Phone",
+              "Value": null,
+              "Source": "Almanac",
+              "Key": "ContextParams:User:Phone"
+            },
+            {
+              "Name": "Welcome Prompt Message",
+              "Type": "Text",
+              "Value": "To update your location, please share your current GPS location via WhatsApp's location feature."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("WELCOME_PROMPT_NODE_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Execution node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates EN_PROMPT - the first user-facing node of the workflow.
+
+  Position in chain:  Root  ->  EN_PROMPT  ->  YNN1  ->  ...
+
+  Why this node exists:
+    YNN1's NoAction only fires when YNN1's condition evaluates to false (location not in
+    almanac). If the chatbot routing layer bundles the user's location into the FIRST
+    UserMessage event it forwards to the engine, YNN1's condition is already true at
+    first evaluation - the prompt is skipped entirely and the user never sees a message
+    before the workflow waits for input.
+
+    EN_PROMPT runs unconditionally between Root and YNN1, guaranteeing the user gets a
+    visible "share your location" message even if the chatbot pre-collects location.
+
+  Captures WELCOME_PROMPT_NODE_ID for use in subsequent requests.
+}

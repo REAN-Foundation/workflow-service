@@ -1,0 +1,65 @@
+meta {
+  name: 10 - CFR-3 answers Not Available
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/engine/events/user-message
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "TenantId": "{{TENANT_ID}}",
+    "SchemaId": "{{CFR_SCHEMA_ID}}",
+    "SchemaInstanceId": "{{CFR_SCHEMA_INSTANCE_3_ID}}",
+    "EventType": "UserMessage",
+    "EventTimestamp": "{{TIMESTAMP}}",
+    "UserMessage": {
+      "Phone": "{{CFR_3_PHONE}}",
+      "EventTimestamp": "{{TIMESTAMP}}",
+      "MessageType": "QuestionResponse",
+      "MessageChannel": "WhatsApp",
+      "QuestionResponse": {
+        "ResponseContent": "Not Available",
+        "QuestionResponseType": "Single Choice Selection",
+        "SingleChoiceChosenOptionSequence": 2,
+        "SingleChoiceChosenOption": "Not Available"
+      },
+      "Payload": {}
+    }
+  }
+}
+
+script:pre-request {
+  const nowStr = new Date().toISOString();
+  bru.setEnvVar("TIMESTAMP", nowStr);
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  CFR-3 answers "Not Available" (option sequence 2) on CFR_SCHEMA_INSTANCE_3_ID — the negative branch.
+  The CFR child sends "Looks like you are unable to handle the request. We will reach out next time."
+  and terminates. Optional — run only if step 07 found a third CFR child. This demonstrates the
+  Not-Available path alongside the Available answers in steps 08/09.
+}

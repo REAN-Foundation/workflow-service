@@ -132,6 +132,88 @@ body:json {
             }
           ]
         }
+      },
+      {
+        "Type": "ArrayFilter",
+        "Name": "Exclude primary CFR from responders",
+        "Description": "Builds CFR:OtherResponders = CFR:Responders minus the primary CFR (matched by phone), so the acknowledgement below is not sent to the primary first responder.",
+        "Sequence": 1,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Responded CFR Details",
+              "Type": "Array",
+              "Source": "Almanac",
+              "SubType": "Object",
+              "Key": "CFR:Responders",
+              "Value": null
+            },
+            {
+              "Name": "Filter by field",
+              "Type": "Text",
+              "Key": "FilterBy",
+              "Value": "Phone"
+            },
+            {
+              "Name": "Filter operator",
+              "Type": "Text",
+              "Key": "FilterOperator",
+              "Value": "notEquals"
+            },
+            {
+              "Name": "Primary CFR phone (resolved from almanac)",
+              "Type": "Text",
+              "Key": "FilterValue",
+              "Source": "Almanac",
+              "Value": "CFR:PrimaryCFR:Phone"
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "Non-primary responders",
+              "Type": "Array",
+              "Destination": "Almanac",
+              "Key": "CFR:OtherResponders"
+            }
+          ]
+        }
+      },
+      {
+        "Type": "SendOneMessageToMultipleUsers",
+        "Name": "Acknowledge responders - Primary CFR identified",
+        "Description": "Acknowledgement sent to all responders EXCEPT the primary CFR. Recipients come from CFR:OtherResponders (CFR:Responders minus the primary). Sequence 2 so it runs after the ArrayFilter above.",
+        "Sequence": 2,
+        "Input": {
+          "Params": [
+            {
+              "Name": "Responded CFR Details",
+              "Type": "Array",
+              "Source": "Almanac",
+              "SubType": "Object",
+              "Key": "CFR:OtherResponders",
+              "Value": null,
+              "ObjectParamTypes": [
+                {
+                  "Name": "Phone",
+                  "Type": "Phone",
+                  "Value": null
+                },
+                {
+                  "Name": "ResponseTimestamp",
+                  "Type": "DateTime",
+                  "Value": null
+                }
+              ]
+            },
+            {
+              "Name": "Message",
+              "Type": "Text",
+              "Value": "Thank you for coming forward to help. A first responder has already accepted the request. Please continue to support in future requests."
+            }
+          ]
+        }
       }
     ]
   }

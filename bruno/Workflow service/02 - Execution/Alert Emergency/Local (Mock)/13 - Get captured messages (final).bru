@@ -1,0 +1,42 @@
+meta {
+  name: 13 - Get captured messages (final)
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{BASE_URL}}/debug/messages
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 200) {
+    console.log("=== FULL ALERT MESSAGE SEQUENCE (" + (res.body.Data || []).length + ") ===");
+    (res.body.Data || []).forEach((m, i) => {
+      console.log(`  [${i}] to=${m.ToPhone} instance=${m.SchemaInstanceId} type=${m.MessageType} text=${m.TextMessage || m.QuestionText || ''}`);
+    });
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Final view of the entire captured message sequence for this run — reporter side and every CFR child,
+  in order, each tagged with the recipient phone and instance id. This is the end-to-end "sequence of
+  messages shared by the system" for the ALERT workflow, produced entirely locally via the Mock
+  provider (no bot-wrapper).
+}

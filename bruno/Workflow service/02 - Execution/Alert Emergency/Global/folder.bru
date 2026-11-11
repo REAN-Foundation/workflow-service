@@ -1,0 +1,25 @@
+meta {
+  name: Global
+}
+
+docs {
+  Global (real-deployment) execution of the ALERT workflow. Outbound messages use
+  MessageChannel = "WhatsApp" and are delivered through the bot-wrapper service (so the service must
+  be configured with a reachable BOT_API_URL / BOT_API_KEY, and the other microservices in the
+  pipeline must be running). These are the original Alert execution requests.
+
+  Run order:
+    01/02  reporter emergency text
+    03     reporter location
+    04     get reporter schema instance id (schema-instance search)
+    05     get CFR child schema instance ids (search by parentSchemaInstanceId)
+    06     get nearest CFR details (external responder lookup) -> CFR phones
+    07/08  CFR-1/CFR-2 answer "Available"
+    09     CFR-3 answers "Not Available"
+    09     reporter answers the resolution question
+
+  Requires the full environment (environments/alert_v2.bru): MAIN_SCHEMA_ID, CFR_SCHEMA_ID,
+  CFR_QUESTION_1_ID (+ option ids), MAIN_QN1_ID (+ option ids), TENANT_ID, API_KEY, REPORTER_PHONE,
+  MODERATOR_USER_JWT. For a self-contained local run that needs none of the question/CFR ids and
+  captures the replies instead of sending them, use the sibling "Local (Mock)" folder.
+}

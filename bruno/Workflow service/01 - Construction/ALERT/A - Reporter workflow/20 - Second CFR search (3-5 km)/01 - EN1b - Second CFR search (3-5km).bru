@@ -1,0 +1,111 @@
+meta {
+  name: 01 - EN1b - Second CFR search (3-5km)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "EN1b-Second CFR search (3-5 km)",
+    "Description": "Second, wider CFR search. Re-queries nearest-responders in the 3-5 km ring and overwrites CFR:Phonenumbers. Reached when the first 0-3 km attempt found no available CFR.",
+    "Type": "ExecutionNode",
+    "ParentNodeId": "{{MAIN_CFR_AVAILABILITY_CHECK_ID}}",
+    "SchemaId": "{{MAIN_SCHEMA_ID}}",
+    "Actions": [
+      {
+        "Type": "RestApiCall",
+        "Name": "Make REST API call to get nearest CFRs in 3-5 km ring",
+        "Sequence": 0,
+        "Input": {
+          "Params": [
+            {
+              "Type": "RestApiParams",
+              "Value": {
+                "Url": "https://h8zj79ud2i.execute-api.us-west-2.amazonaws.com/dev/api/v1/{{TENANT_ID}}/nearest-responders1",
+                "Method": "GET",
+                "QueryParams": [
+                  {
+                    "QueryParamKey": "longitude",
+                    "QueryParamValue": null,
+                    "Source": "Almanac",
+                    "SourceKey": "ContextParams:Location",
+                    "SourceValueKey": "Longitude"
+                  },
+                  {
+                    "QueryParamKey": "latitude",
+                    "QueryParamValue": null,
+                    "Source": "Almanac",
+                    "SourceKey": "ContextParams:Location",
+                    "SourceValueKey": "Latitude"
+                  },
+                  {
+                    "QueryParamKey": "reporterPhone",
+                    "QueryParamValue": null,
+                    "Source": "Almanac",
+                    "SourceKey": "ContextParams:Reporter:Phone"
+                  },
+                  {
+                    "QueryParamKey": "minRadiusInKm",
+                    "QueryParamValue": 3
+                  },
+                  {
+                    "QueryParamKey": "maxRadiusInKm",
+                    "QueryParamValue": 5
+                  },
+                  {
+                    "QueryParamKey": "itemsPerPage",
+                    "QueryParamValue": 15
+                  }
+                ],
+                "Headers": {
+                  "ContentType": "application/json"
+                },
+                "ResponseField": "Data:Items",
+                "ResponseType": "Array"
+              }
+            }
+          ]
+        },
+        "Output": {
+          "Params": [
+            {
+              "Name": "CFR Phonenumbers",
+              "Type": "Array",
+              "Value": null,
+              "Destination": "Almanac",
+              "Key": "ContextParams:CFR:Phonenumbers",
+              "SubType": "Phone"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status)
+  if (status == 201) {
+    bru.setEnvVar("MAIN_EN1B_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      expect(res.body.Status).to.eql('success');
+  });
+}

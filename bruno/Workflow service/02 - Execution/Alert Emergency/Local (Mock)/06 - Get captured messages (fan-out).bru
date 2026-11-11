@@ -1,0 +1,46 @@
+meta {
+  name: 06 - Get captured messages (fan-out)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BASE_URL}}/debug/messages
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 200) {
+    console.log("Captured messages so far: " + (res.body.Data || []).length);
+    (res.body.Data || []).forEach((m, i) => {
+      console.log(`  [${i}] to=${m.ToPhone} instance=${m.SchemaInstanceId} type=${m.MessageType} text=${m.TextMessage || m.QuestionText || ''}`);
+    });
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Shows every message captured after the reporter shared location. Expect (CFRs found):
+    - to REPORTER_PHONE: "Nearby responders have been notified. ... call 108 ..."
+    - to each CFR phone: an incident message + a Location + the "Will you be available ...?" question
+      (options Available / Not Available).
+  If instead you see only "Unfortunately no responder seems to be available ..." (+ ambulance lines),
+  the external nearest-responders call returned nothing/was unreachable — the no-CFR branch; steps
+  07-11 (CFR answers) won't apply. The per-line "to / instance / type / text" log makes the reporter
+  vs per-CFR fan-out sequence visible.
+}

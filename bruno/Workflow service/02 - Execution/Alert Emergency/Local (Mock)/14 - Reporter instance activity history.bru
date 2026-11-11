@@ -1,0 +1,33 @@
+meta {
+  name: 14 - Reporter instance activity history
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{BASE_URL}}/engine/schema-instances/{{REPORTER_SCHEMA_INSTANCE_ID}}/activity-history
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(200);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Execution activity history for the reporter (parent) instance — cross-check the nodes that ran
+  against the captured messages:
+    Root -> location gate -> EN1 (CFR search) -> CFR availability check -> EN2 (fan-out)
+    -> LTN2 timers -> EN4 -> EN6 -> EN7 -> resolution question -> EN9_R/EN10_R -> terminator.
+  To trace a specific CFR child instead, call the same endpoint with a CFR_SCHEMA_INSTANCE_n_ID.
+}

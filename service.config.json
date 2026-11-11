@@ -16,6 +16,9 @@
         },
         "Email": {
             "Provider": "SendGrid"
+        },
+        "Messaging": {
+            "Provider": "BotWrapper"
         }
     },
     "TemporaryFolders": {

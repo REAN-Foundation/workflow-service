@@ -1,0 +1,93 @@
+meta {
+  name: 01 - Create yes-no node
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/engine/nodes/logical-yes-no-action-node
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-api-key: {{API_KEY}}
+  Authorization: Bearer {{MODERATOR_USER_JWT}}
+}
+
+body:json {
+  {
+    "Name": "YNN1 - Decision (Yes/No) for location check",
+    "Description": "Checks whether the user's location has been stored in the Almanac. If yes (location captured by LN1), fires the Continue YesAction to advance to the next node (EN2 - update location API). If no, fires a no-op NoAction (StoreToAlmanac waiting flag) so the workflow stays at this node without sending a duplicate prompt - the welcome prompt was already sent by EN_PROMPT. The next event from the user re-evaluates the rule.",
+    "Type": "LogicalYesNoActionNode",
+    "ParentNodeId": "{{ROOT_NODE_ID}}",
+    "SchemaId": "{{SCHEMA_ID}}",
+    "NoAction": {
+      "Type": "StoreToAlmanac",
+      "Name": "No-op - wait at YNN1 for location",
+      "IsPathAction": true,
+      "Input": {
+        "Params": [
+          {
+            "Name": "Waiting Flag",
+            "Type": "Text",
+            "Value": "true",
+            "Key": "ContextParams:WaitingForLocation"
+          }
+        ]
+      }
+    },
+    "YesAction": {
+      "Type": "Continue",
+      "Name": "Continue to next node",
+      "IsPathAction": true,
+      "Description": "Continue the flow to the YNN1's next-node (EN2).",
+      "Input": null
+    }
+  }
+}
+
+script:post-response {
+  let status = res.getStatus();
+  console.log(status);
+  if (status == 201) {
+    bru.setEnvVar("YNN1_ID", res.body.Data.id);
+  }
+}
+
+tests {
+  test("Request is successful", function () {
+    expect(res.getStatus()).to.equal(201);
+    var jsonRes = res.getBody();
+    expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Yes-no node is created", function () {
+    var jsonRes = res.getBody();
+    expect(jsonRes.Data).to.have.property('id');
+    expect(jsonRes.Data).to.have.property('Name');
+  });
+}
+
+docs {
+  Creates the LogicalYesNoActionNode that gates the workflow on location availability.
+
+  Behavior at runtime:
+    - Event without Location:  Condition is false  ->  fires NoAction (no-op StoreToAlmanac).
+                                                  ->  No user-facing message - EN_PROMPT already sent the prompt.
+                                                  ->  Workflow stays at YNN1 since the no-op action returns no
+                                                      new currentNode (per traverseLogicalYesNoActionNode logic).
+    - Event with Location:  LN1's listener stores location to almanac (via handleEventListenerNodes).
+                            Condition now true  ->  fires YesAction (Continue)
+                                               ->  advances to YNN1's NextNodeId (EN2).
+
+  Why NoAction is StoreToAlmanac (no-op) instead of SendMessage:
+    The earlier design had NoAction = SendMessage "Please share your current location...". When
+    EN_PROMPT was added before YNN1, the user received TWO consecutive prompt messages on first
+    event (EN_PROMPT's welcome + YNN1's NoAction prompt). Switching NoAction to a no-op (writes
+    a harmless "WaitingForLocation" flag to the almanac) suppresses the duplicate while
+    preserving the gate behavior. The single visible prompt now comes only from EN_PROMPT.
+
+  Captures YNN1_ID for use in subsequent requests.
+}

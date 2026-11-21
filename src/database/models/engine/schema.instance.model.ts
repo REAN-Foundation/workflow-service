@@ -54,7 +54,7 @@ export class SchemaInstance {
     @Column({ type: 'boolean', nullable: false, default: false })
     ExecutionStarted: boolean;
 
-    @Column({ type: 'datetime', nullable: true })
+    @Column({ type: 'timestamp', nullable: true })
     ExecutionStartedTimestamp: Date;
 
     @Column({ type: 'simple-json', nullable: true })

@@ -178,3 +178,4 @@ jobs:
           done
 
           echo "Successfully replicated ${ECR_REPO}:${TAG} to ${HARBOR_PROJECT}"
+          

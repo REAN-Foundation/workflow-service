@@ -18,16 +18,25 @@ headers {
 
 body:json {
   {
-    "Name": "EN1b-Second CFR search (3-5 km)",
-    "Description": "Second, wider CFR search. Re-queries nearest-responders in the 3-5 km ring and overwrites CFR:Phonenumbers. Reached when the first 0-3 km attempt found no available CFR.",
+    "Name": "EN1b-Second CFR search (0-5 km)",
+    "Description": "Second, wider CFR search covering the full 0-5 km radius (overlaps the first 0-3 km search so a CFR who was slow to respond gets another chance). Terminates any still-open child instances from the first attempt before re-querying nearest-responders and overwriting CFR:Phonenumbers. Reached when the first 0-3 km attempt found no available CFR, or no CFR responded within its window.",
     "Type": "ExecutionNode",
     "ParentNodeId": "{{MAIN_CFR_AVAILABILITY_CHECK_ID}}",
     "SchemaId": "{{MAIN_SCHEMA_ID}}",
     "Actions": [
       {
-        "Type": "RestApiCall",
-        "Name": "Make REST API call to get nearest CFRs in 3-5 km ring",
+        "Type": "TerminateChildInstances",
+        "Name": "Terminate stale first-attempt CFR child instances",
+        "Description": "Terminates any non-terminated child CFR instances left over from the first (0-3 km) search, so re-matched CFRs in the wider search don't end up with two concurrent, ambiguous child workflows.",
         "Sequence": 0,
+        "Input": {
+          "Params": []
+        }
+      },
+      {
+        "Type": "RestApiCall",
+        "Name": "Make REST API call to get nearest CFRs in 0-5 km ring",
+        "Sequence": 1,
         "Input": {
           "Params": [
             {
@@ -58,7 +67,7 @@ body:json {
                   },
                   {
                     "QueryParamKey": "minRadiusInKm",
-                    "QueryParamValue": 3
+                    "QueryParamValue": 0
                   },
                   {
                     "QueryParamKey": "maxRadiusInKm",
